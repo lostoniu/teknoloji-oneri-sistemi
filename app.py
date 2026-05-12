@@ -279,8 +279,8 @@ if "pc_build" not in st.session_state:
 if "pc_builds" not in st.session_state:
     st.session_state.pc_builds = []
 
-if "aktif_sistem_index" not in st.session_state:
-    st.session_state.aktif_sistem_index = 0
+if "selected_pc_build_index" not in st.session_state:
+    st.session_state.selected_pc_build_index = 0
 
 if "aktif_mod" not in st.session_state:
     st.session_state.aktif_mod = None
@@ -522,407 +522,270 @@ def pc_random_sec(df, seed):
     return havuz.loc[secilen_index]
 
 
-def uyumlu_pc_sistem_topla(max_butce, kullanim, seed):
-    if pc_df.empty:
-        return {
-            "basarili": False,
-            "mesaj": "pc_parts_dataset.csv bulunamadı.",
-            "parcalar": {},
-            "toplam_fiyat": 0,
-            "butce": max_butce
-        }
-
-    rnd = random.Random(seed)
-
-    islemciler = pc_parcalari_getir("İşlemci", 0, max_butce)
-
-    if kullanim:
-        kullanim_filtre = islemciler[
-            islemciler["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
-        ]
-
-        if not kullanim_filtre.empty:
-            islemciler = kullanim_filtre
-
-    islemci = pc_random_sec(islemciler, seed + 1)
-
-    if islemci is None:
-        return {
-            "basarili": False,
-            "mesaj": "Uygun işlemci bulunamadı.",
-            "parcalar": {},
-            "toplam_fiyat": 0,
-            "butce": max_butce
-        }
-
-    soket = str(islemci.get("Soket", "Farketmez"))
-    ram_tipi = str(islemci.get("RAM_Tipi", "Farketmez"))
-
-    anakartlar = pc_parcalari_getir("Anakart", 0, max_butce)
-
-    if "Soket" in anakartlar.columns and soket != "Farketmez":
-        anakartlar = anakartlar[anakartlar["Soket"].astype(str) == soket]
-
-    if "RAM_Tipi" in anakartlar.columns and ram_tipi != "Farketmez":
-        anakartlar = anakartlar[anakartlar["RAM_Tipi"].astype(str) == ram_tipi]
-
-    anakart = pc_random_sec(anakartlar, seed + 2)
-
-    ramler = pc_parcalari_getir("RAM", 0, max_butce)
-
-    if "RAM_Tipi" in ramler.columns and ram_tipi != "Farketmez":
-        ramler = ramler[ramler["RAM_Tipi"].astype(str) == ram_tipi]
-
-    ram = pc_random_sec(ramler, seed + 3)
-
-    ekran_kartlari = pc_parcalari_getir("Ekran Kartı", 0, max_butce)
-
-    if kullanim:
-        kullanim_gpu = ekran_kartlari[
-            ekran_kartlari["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
-        ]
-
-        if not kullanim_gpu.empty:
-            ekran_kartlari = kullanim_gpu
-
-    ekran_karti = pc_random_sec(ekran_kartlari, seed + 4)
-
-    ssdler = pc_parcalari_getir("SSD", 0, max_butce)
-    ssd = pc_random_sec(ssdler, seed + 5)
-
-    psular = pc_parcalari_getir("Güç Kaynağı", 0, max_butce)
-    min_psu = 500
-
-    if ekran_karti is not None:
-        gpu_watt = sayi_cek(ekran_karti.get("Watt", 0))
-
-        if gpu_watt > 0:
-            min_psu = max(500, gpu_watt + 250)
-
-    if "Watt" in psular.columns:
-        psular = psular[sayisal_filtre_degeri(psular["Watt"]) >= min_psu]
-
-    psu = pc_random_sec(psular, seed + 6)
-
-    kasalar = pc_parcalari_getir("Kasa", 0, max_butce)
-    kasa = pc_random_sec(kasalar, seed + 7)
-
-    sogutucular = pc_parcalari_getir("Soğutucu", 0, max_butce)
-
-    if "Soket" in sogutucular.columns and soket != "Farketmez":
-        uygun_sogutucu = sogutucular[
-            sogutucular["Soket"].astype(str).str.contains(soket, na=False)
-        ]
-
-        if not uygun_sogutucu.empty:
-            sogutucular = uygun_sogutucu
-
-    sogutucu = pc_random_sec(sogutucular, seed + 8)
-
-    parcalar = {
-        "İşlemci": islemci,
-        "Anakart": anakart,
-        "RAM": ram,
-        "Ekran Kartı": ekran_karti,
-        "SSD": ssd,
-        "Güç Kaynağı": psu,
-        "Kasa": kasa,
-        "Soğutucu": sogutucu
-    }
-
-    temiz_parcalar = {}
-    toplam = 0
-
-    for ad, row in parcalar.items():
-        if row is not None:
-            temiz_parcalar[ad] = row
-            toplam += int(row.get("Fiyat_TL", 0))
-
-    if toplam > max_butce:
-        oranlar = {
-            "İşlemci": 0.18,
-            "Anakart": 0.11,
-            "RAM": 0.08,
-            "Ekran Kartı": 0.35,
-            "SSD": 0.08,
-            "Güç Kaynağı": 0.08,
-            "Kasa": 0.07,
-            "Soğutucu": 0.05
-        }
-
-        yeni_parcalar = {}
-
-        for ad, oran in oranlar.items():
-            limit = int(max_butce * oran)
-            adaylar = pc_parcalari_getir(ad, 0, limit)
-
-            if adaylar.empty:
-                continue
-
-            if ad == "Anakart":
-                if "Soket" in adaylar.columns and soket != "Farketmez":
-                    adaylar = adaylar[adaylar["Soket"].astype(str) == soket]
-
-                if "RAM_Tipi" in adaylar.columns and ram_tipi != "Farketmez":
-                    adaylar = adaylar[adaylar["RAM_Tipi"].astype(str) == ram_tipi]
-
-            if ad == "RAM":
-                if "RAM_Tipi" in adaylar.columns and ram_tipi != "Farketmez":
-                    adaylar = adaylar[adaylar["RAM_Tipi"].astype(str) == ram_tipi]
-
-            if ad == "Güç Kaynağı":
-                if "Watt" in adaylar.columns:
-                    adaylar = adaylar[sayisal_filtre_degeri(adaylar["Watt"]) >= min_psu]
-
-            secim = pc_random_sec(adaylar, seed + rnd.randint(10, 500))
-
-            if secim is not None:
-                yeni_parcalar[ad] = secim
-
-        yeni_toplam = sum(int(row.get("Fiyat_TL", 0)) for row in yeni_parcalar.values())
-
-        if yeni_toplam > 0:
-            temiz_parcalar = yeni_parcalar
-            toplam = yeni_toplam
-
-    return {
-        "basarili": toplam <= max_butce and len(temiz_parcalar) >= 6,
-        "mesaj": "Bu bütçeye uygun alternatif sistem oluşturuldu." if toplam <= max_butce else "Bütçeyi biraz aşan en yakın sistem oluşturuldu.",
-        "parcalar": temiz_parcalar,
-        "toplam_fiyat": toplam,
-        "butce": max_butce,
-        "soket": soket,
-        "ram_tipi": ram_tipi
-    }
-
-
-
-def pc_sistem_fiyat_hedefi_getir(min_butce, max_butce, sistem_no):
-    try:
-        min_butce = int(min_butce)
-        max_butce = int(max_butce)
-    except Exception:
-        min_butce = 0
-        max_butce = 0
-
-    if max_butce < min_butce:
-        min_butce, max_butce = max_butce, min_butce
-
-    oranlar = [0.02, 0.25, 0.50, 0.75, 0.98]
-    oran = oranlar[max(0, min(4, sistem_no - 1))]
-    return int(min_butce + ((max_butce - min_butce) * oran))
-
-
-def pc_parca_havuzu_hazirla(alt_kategori, fiyat_limit, kullanim="", soket="Farketmez", ram_tipi="Farketmez", min_psu=0):
-    adaylar = pc_parcalari_getir(alt_kategori, 0, fiyat_limit)
-
-    if adaylar.empty:
-        return adaylar
-
-    if kullanim and "Kullanim_Amaci" in adaylar.columns and alt_kategori in ["İşlemci", "Ekran Kartı"]:
-        filtreli = adaylar[
-            adaylar["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
-        ]
-        if not filtreli.empty:
-            adaylar = filtreli
-
-    if soket != "Farketmez" and "Soket" in adaylar.columns:
-        if alt_kategori == "Soğutucu":
-            uygun = adaylar[adaylar["Soket"].astype(str).str.contains(soket, na=False)]
-        else:
-            uygun = adaylar[adaylar["Soket"].astype(str) == soket]
-        if not uygun.empty:
-            adaylar = uygun
-
-    if ram_tipi != "Farketmez" and "RAM_Tipi" in adaylar.columns:
-        uygun = adaylar[adaylar["RAM_Tipi"].astype(str) == ram_tipi]
-        if not uygun.empty:
-            adaylar = uygun
-
-    if alt_kategori == "Güç Kaynağı" and min_psu > 0 and "Watt" in adaylar.columns:
-        uygun = adaylar[sayisal_filtre_degeri(adaylar["Watt"]) >= min_psu]
-        if not uygun.empty:
-            adaylar = uygun
-
-    return adaylar
-
-
-def pc_hedefe_yakin_sec(adaylar, hedef_fiyat, seed, sistem_no):
+def pc_aday_sec(adaylar, hedef_fiyat, seed):
     if adaylar is None or adaylar.empty:
         return None
 
     sonuc = adaylar.copy()
-    sonuc["_fiyat_farki"] = (pd.to_numeric(sonuc["Fiyat_TL"], errors="coerce").fillna(0) - hedef_fiyat).abs()
+    sonuc["Fiyat_TL"] = pd.to_numeric(sonuc["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+    sonuc = sonuc[sonuc["Fiyat_TL"] > 0]
 
-    if sistem_no == 1:
-        sonuc = sonuc.sort_values(by=["Fiyat_TL", "Puan"], ascending=[True, False])
-        havuz = sonuc.head(10)
-    elif sistem_no == 5:
-        sonuc = sonuc.sort_values(by=["Fiyat_TL", "Puan"], ascending=[False, False])
-        havuz = sonuc.head(10)
-    else:
-        sonuc = sonuc.sort_values(by=["_fiyat_farki", "Puan"], ascending=[True, False])
-        havuz = sonuc.head(15)
+    if sonuc.empty:
+        return None
 
-    if havuz.empty:
+    sonuc = sonuc.assign(_fark=(sonuc["Fiyat_TL"] - hedef_fiyat).abs())
+    sonuc = sonuc.sort_values(by=["_fark", "Puan"], ascending=[True, False]) if "Puan" in sonuc.columns else sonuc.sort_values(by="_fark")
+
+    havuz = sonuc.head(8)
+    rnd = random.Random(seed)
+    secilen_index = rnd.choice(list(havuz.index))
+
+    return havuz.loc[secilen_index].drop(labels=["_fark"], errors="ignore")
+
+
+def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed):
+    if pc_df.empty:
         return None
 
     rnd = random.Random(seed)
-    secilen_index = rnd.choice(list(havuz.index))
-    secilen = havuz.loc[secilen_index]
-
-    if "_fiyat_farki" in secilen.index:
-        secilen = secilen.drop(labels=["_fiyat_farki"])
-
-    return secilen
-
-
-def uyumlu_pc_sistem_topla_aralikli(min_butce, max_butce, kullanim, seed, sistem_no):
-    if pc_df.empty:
-        return {
-            "basarili": False,
-            "mesaj": "pc_parts_dataset.csv bulunamadı.",
-            "parcalar": {},
-            "toplam_fiyat": 0,
-            "min_butce": min_butce,
-            "butce": max_butce,
-            "sistem_no": sistem_no
-        }
-
-    if max_butce < min_butce:
-        min_butce, max_butce = max_butce, min_butce
-
-    hedef_toplam = pc_sistem_fiyat_hedefi_getir(min_butce, max_butce, sistem_no)
 
     oranlar = {
         "İşlemci": 0.18,
-        "Anakart": 0.11,
-        "RAM": 0.08,
+        "Anakart": 0.12,
+        "RAM": 0.10,
         "Ekran Kartı": 0.35,
         "SSD": 0.08,
-        "Güç Kaynağı": 0.08,
-        "Kasa": 0.07,
+        "Güç Kaynağı": 0.07,
+        "Kasa": 0.05,
         "Soğutucu": 0.05
     }
 
     parcalar = {}
 
-    cpu_hedef = max(1000, int(hedef_toplam * oranlar["İşlemci"]))
-    islemci_havuzu = pc_parca_havuzu_hazirla("İşlemci", max_butce, kullanim=kullanim)
-    islemci = pc_hedefe_yakin_sec(islemci_havuzu, cpu_hedef, seed + 11, sistem_no)
+    cpu_hedef = int(hedef_fiyat * oranlar["İşlemci"] * rnd.uniform(0.75, 1.25))
+    islemciler = pc_parcalari_getir("İşlemci", 0, max_butce)
+
+    if kullanim and not islemciler.empty and "Kullanim_Amaci" in islemciler.columns:
+        filtre = islemciler[
+            islemciler["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
+        ]
+        if not filtre.empty:
+            islemciler = filtre
+
+    islemci = pc_aday_sec(islemciler, cpu_hedef, seed + 10)
 
     if islemci is None:
-        return {
-            "basarili": False,
-            "mesaj": "Uygun işlemci bulunamadı.",
-            "parcalar": {},
-            "toplam_fiyat": 0,
-            "min_butce": min_butce,
-            "butce": max_butce,
-            "sistem_no": sistem_no
-        }
+        return None
 
-    soket = str(islemci.get("Soket", "Farketmez"))
-    ram_tipi = str(islemci.get("RAM_Tipi", "Farketmez"))
     parcalar["İşlemci"] = islemci
+    soket = str(islemci.get("Soket", ""))
+    ram_tipi = str(islemci.get("RAM_Tipi", ""))
 
-    gpu_watt = 0
+    gpu_hedef = int(hedef_fiyat * oranlar["Ekran Kartı"] * rnd.uniform(0.75, 1.25))
+    ekran_kartlari = pc_parcalari_getir("Ekran Kartı", 0, max_butce)
 
-    for parca_adi in ["Anakart", "RAM", "Ekran Kartı", "SSD", "Güç Kaynağı", "Kasa", "Soğutucu"]:
-        hedef = max(500, int(hedef_toplam * oranlar[parca_adi]))
-        min_psu = 500
+    if kullanim and not ekran_kartlari.empty and "Kullanim_Amaci" in ekran_kartlari.columns:
+        filtre = ekran_kartlari[
+            ekran_kartlari["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
+        ]
+        if not filtre.empty:
+            ekran_kartlari = filtre
 
-        if parca_adi == "Güç Kaynağı":
-            ekran_karti = parcalar.get("Ekran Kartı")
-            if ekran_karti is not None:
-                gpu_watt = sayi_cek(ekran_karti.get("Watt", 0))
-            min_psu = max(500, gpu_watt + 250) if gpu_watt > 0 else 500
+    ekran_karti = pc_aday_sec(ekran_kartlari, gpu_hedef, seed + 20)
 
-        havuz = pc_parca_havuzu_hazirla(
-            parca_adi,
-            max_butce,
-            kullanim=kullanim,
-            soket=soket if parca_adi in ["Anakart", "Soğutucu"] else "Farketmez",
-            ram_tipi=ram_tipi if parca_adi in ["Anakart", "RAM"] else "Farketmez",
-            min_psu=min_psu
-        )
+    if ekran_karti is None:
+        return None
 
-        secim = pc_hedefe_yakin_sec(havuz, hedef, seed + sistem_no * 100 + len(parcalar), sistem_no)
-        if secim is not None:
-            parcalar[parca_adi] = secim
+    parcalar["Ekran Kartı"] = ekran_karti
+
+    anakart_hedef = int(hedef_fiyat * oranlar["Anakart"] * rnd.uniform(0.75, 1.25))
+    anakartlar = pc_parcalari_getir("Anakart", 0, max_butce)
+
+    if not anakartlar.empty and "Soket" in anakartlar.columns and soket:
+        filtre = anakartlar[anakartlar["Soket"].astype(str) == soket]
+        if not filtre.empty:
+            anakartlar = filtre
+
+    if not anakartlar.empty and "RAM_Tipi" in anakartlar.columns and ram_tipi:
+        filtre = anakartlar[anakartlar["RAM_Tipi"].astype(str) == ram_tipi]
+        if not filtre.empty:
+            anakartlar = filtre
+
+    anakart = pc_aday_sec(anakartlar, anakart_hedef, seed + 30)
+
+    if anakart is None:
+        return None
+
+    parcalar["Anakart"] = anakart
+
+    ram_hedef = int(hedef_fiyat * oranlar["RAM"] * rnd.uniform(0.75, 1.25))
+    ramler = pc_parcalari_getir("RAM", 0, max_butce)
+
+    if not ramler.empty and "RAM_Tipi" in ramler.columns and ram_tipi:
+        filtre = ramler[ramler["RAM_Tipi"].astype(str) == ram_tipi]
+        if not filtre.empty:
+            ramler = filtre
+
+    ram = pc_aday_sec(ramler, ram_hedef, seed + 40)
+
+    if ram is None:
+        return None
+
+    parcalar["RAM"] = ram
+
+    ssd_hedef = int(hedef_fiyat * oranlar["SSD"] * rnd.uniform(0.75, 1.25))
+    ssd = pc_aday_sec(pc_parcalari_getir("SSD", 0, max_butce), ssd_hedef, seed + 50)
+
+    if ssd is None:
+        return None
+
+    parcalar["SSD"] = ssd
+
+    psu_hedef = int(hedef_fiyat * oranlar["Güç Kaynağı"] * rnd.uniform(0.75, 1.25))
+    psular = pc_parcalari_getir("Güç Kaynağı", 0, max_butce)
+    min_psu = 500
+    gpu_watt = sayi_cek(ekran_karti.get("Watt", 0))
+
+    if gpu_watt > 0:
+        min_psu = max(500, gpu_watt + 250)
+
+    if not psular.empty and "Watt" in psular.columns:
+        psular = psular[sayisal_filtre_degeri(psular["Watt"]) >= min_psu]
+
+    psu = pc_aday_sec(psular, psu_hedef, seed + 60)
+
+    if psu is None:
+        return None
+
+    parcalar["Güç Kaynağı"] = psu
+
+    kasa_hedef = int(hedef_fiyat * oranlar["Kasa"] * rnd.uniform(0.75, 1.25))
+    kasa = pc_aday_sec(pc_parcalari_getir("Kasa", 0, max_butce), kasa_hedef, seed + 70)
+
+    if kasa is None:
+        return None
+
+    parcalar["Kasa"] = kasa
+
+    sogutucu_hedef = int(hedef_fiyat * oranlar["Soğutucu"] * rnd.uniform(0.75, 1.25))
+    sogutucular = pc_parcalari_getir("Soğutucu", 0, max_butce)
+
+    if not sogutucular.empty and "Soket" in sogutucular.columns and soket:
+        filtre = sogutucular[sogutucular["Soket"].astype(str).str.contains(soket, na=False)]
+        if not filtre.empty:
+            sogutucular = filtre
+
+    sogutucu = pc_aday_sec(sogutucular, sogutucu_hedef, seed + 80)
+
+    if sogutucu is None:
+        return None
+
+    parcalar["Soğutucu"] = sogutucu
 
     toplam = sum(int(row.get("Fiyat_TL", 0)) for row in parcalar.values())
 
-    if toplam > max_butce:
-        for tekrar in range(60):
-            en_pahali_ad = None
-            en_pahali_fiyat = 0
+    if toplam < min_butce or toplam > max_butce:
+        return None
 
-            for ad, row in parcalar.items():
-                fiyat = int(row.get("Fiyat_TL", 0))
-                if fiyat > en_pahali_fiyat and ad != "İşlemci":
-                    en_pahali_fiyat = fiyat
-                    en_pahali_ad = ad
-
-            if en_pahali_ad is None:
-                break
-
-            kalan_limit = max(1000, en_pahali_fiyat - (toplam - max_butce) - 500)
-            havuz = pc_parca_havuzu_hazirla(
-                en_pahali_ad,
-                kalan_limit,
-                kullanim=kullanim,
-                soket=soket if en_pahali_ad in ["Anakart", "Soğutucu"] else "Farketmez",
-                ram_tipi=ram_tipi if en_pahali_ad in ["Anakart", "RAM"] else "Farketmez",
-                min_psu=500
-            )
-
-            if havuz.empty:
-                break
-
-            yeni_secim = pc_hedefe_yakin_sec(havuz, kalan_limit, seed + tekrar + 500, 1)
-            if yeni_secim is None:
-                break
-
-            parcalar[en_pahali_ad] = yeni_secim
-            toplam = sum(int(row.get("Fiyat_TL", 0)) for row in parcalar.values())
-
-            if toplam <= max_butce:
-                break
+    imza = "|".join([
+        str(row.get("Marka", "")) + " " + str(row.get("Model", ""))
+        for row in parcalar.values()
+    ])
 
     return {
-        "basarili": toplam <= max_butce and len(parcalar) >= 6,
-        "mesaj": "Belirtilen bütçe aralığında sistem oluşturuldu." if min_butce <= toplam <= max_butce else "Bütçe aralığına en yakın sistem oluşturuldu.",
+        "basarili": True,
+        "mesaj": "Bütçe aralığına uygun sistem oluşturuldu.",
         "parcalar": parcalar,
         "toplam_fiyat": toplam,
         "min_butce": min_butce,
+        "max_butce": max_butce,
         "butce": max_butce,
-        "hedef_fiyat": hedef_toplam,
-        "sistem_no": sistem_no,
+        "hedef_fiyat": hedef_fiyat,
         "soket": soket,
-        "ram_tipi": ram_tipi
+        "ram_tipi": ram_tipi,
+        "imza": imza
     }
 
 
-def besli_pc_sistemleri_olustur(min_butce, max_butce, kullanim, seed):
-    sistemler = []
+def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
+    if pc_df.empty:
+        return []
 
-    for sistem_no in range(1, 6):
-        sistem = uyumlu_pc_sistem_topla_aralikli(
-            min_butce=min_butce,
-            max_butce=max_butce,
-            kullanim=kullanim,
-            seed=seed + (sistem_no * 1000),
-            sistem_no=sistem_no
+    hedefler = [
+        min_butce,
+        int(min_butce + ((max_butce - min_butce) * 0.25)),
+        int(min_butce + ((max_butce - min_butce) * 0.50)),
+        int(min_butce + ((max_butce - min_butce) * 0.75)),
+        max_butce
+    ]
+
+    adaylar = []
+    gorulen_imzalar = set()
+
+    for hedef_index, hedef in enumerate(hedefler):
+        for deneme in range(250):
+            sistem = tek_pc_sistem_adayi_olustur(
+                min_butce=min_butce,
+                max_butce=max_butce,
+                hedef_fiyat=hedef,
+                kullanim=kullanim,
+                seed=seed + (hedef_index * 10000) + deneme
+            )
+
+            if sistem is None:
+                continue
+
+            imza = sistem.get("imza", "")
+            if imza in gorulen_imzalar:
+                continue
+
+            gorulen_imzalar.add(imza)
+            sistem["hedef_index"] = hedef_index
+            sistem["hedef_farki"] = abs(int(sistem["toplam_fiyat"]) - int(hedef))
+            adaylar.append(sistem)
+
+    secilenler = []
+    kullanilan_imzalar = set()
+
+    for hedef_index, hedef in enumerate(hedefler):
+        uygunlar = [
+            s for s in adaylar
+            if s.get("imza") not in kullanilan_imzalar
+        ]
+
+        if not uygunlar:
+            continue
+
+        uygunlar = sorted(
+            uygunlar,
+            key=lambda x: abs(int(x["toplam_fiyat"]) - int(hedef))
         )
-        sistemler.append(sistem)
 
-    sistemler = sorted(sistemler, key=lambda x: x.get("toplam_fiyat", 0))
+        secilen = uygunlar[0]
+        secilen["isim"] = f"Sistem {hedef_index + 1}"
+        secilenler.append(secilen)
+        kullanilan_imzalar.add(secilen.get("imza"))
 
-    for i, sistem in enumerate(sistemler, start=1):
-        sistem["sistem_no"] = i
+    secilenler = sorted(secilenler, key=lambda x: int(x["toplam_fiyat"]))
 
-    return sistemler
+    for i, sistem in enumerate(secilenler[:5]):
+        sistem["isim"] = f"Sistem {i + 1}"
+
+    return secilenler[:5]
+
+
+def uyumlu_pc_sistem_topla(max_butce, kullanim, seed):
+    sistemler = besli_pc_sistem_olustur(0, max_butce, kullanim, seed)
+    if sistemler:
+        return sistemler[0]
+    return {
+        "basarili": False,
+        "mesaj": "Bu bütçeye uygun sistem oluşturulamadı.",
+        "parcalar": {},
+        "toplam_fiyat": 0,
+        "butce": max_butce
+    }
+
 
 def ev_esyasi_oner(
     ana_kategori,
@@ -1307,20 +1170,18 @@ with col_chat:
                 if chat_kategori == "Toplama Bilgisayar":
                     st.session_state.aktif_mod = "pc_build"
                     st.session_state.sonuc = None
-                    st.session_state.pc_builds = besli_pc_sistemleri_olustur(
-                        min_butce=chat_min_butce,
+                    st.session_state.pc_build = uyumlu_pc_sistem_topla(
                         max_butce=chat_max_butce,
                         kullanim=chat_kullanim,
                         seed=st.session_state.pc_random_seed
                     )
-                    st.session_state.aktif_sistem_index = 0
-                    st.session_state.pc_build = st.session_state.pc_builds[0] if st.session_state.pc_builds else None
 
                     bot_mesaji = f"{llm_cevap}\n\nAnladığım kriterler: Toplama Bilgisayar, bütçe: {chat_min_butce}-{chat_max_butce} TL."
 
                 elif chat_kategori == "Elektronik Ev Eşyaları":
                     st.session_state.aktif_mod = "ev_esyalari"
                     st.session_state.pc_build = None
+                    st.session_state.pc_builds = []
                     st.session_state.sonuc = ev_esyasi_oner(
                         ana_kategori="Tümü",
                         alt_kategori="Tümü",
@@ -1338,6 +1199,7 @@ with col_chat:
                 else:
                     st.session_state.aktif_mod = "chatbot"
                     st.session_state.pc_build = None
+                    st.session_state.pc_builds = []
                     st.session_state.sonuc = urun_oner(
                         chat_kategori,
                         chat_min_butce,
@@ -1795,19 +1657,20 @@ if kategori == "Toplama Bilgisayar":
 
             st.session_state.aktif_mod = "pc_parca"
             st.session_state.pc_build = None
+            st.session_state.pc_builds = []
             st.rerun()
 
     else:
         if st.sidebar.button("🖥️ Sistem Topla", key="build_pc_button"):
             st.session_state.aktif_mod = "pc_build"
-            st.session_state.pc_builds = besli_pc_sistemleri_olustur(
+            st.session_state.pc_build = None
+            st.session_state.pc_builds = besli_pc_sistem_olustur(
                 min_butce=min_butce,
                 max_butce=max_butce,
                 kullanim=kullanim,
                 seed=st.session_state.pc_random_seed
             )
-            st.session_state.aktif_sistem_index = 0
-            st.session_state.pc_build = st.session_state.pc_builds[0] if st.session_state.pc_builds else None
+            st.session_state.selected_pc_build_index = 0
             st.session_state.sonuc = None
             st.rerun()
 
@@ -1951,51 +1814,49 @@ st.markdown("---")
 if st.session_state.aktif_mod == "pc_build":
     st.subheader("🖥️ Bütçeye Göre 5 Farklı Uyumlu Toplama Bilgisayar Sistemi")
 
-    sistemler = st.session_state.pc_builds
+    builds = st.session_state.get("pc_builds", [])
 
-    if not sistemler:
-        st.info("Toplama bilgisayar önerisi için bütçe aralığı girip sistem toplayabilirsin.")
+    if not builds:
+        st.warning("Bu bütçe aralığında uygun sistem bulunamadı. Bütçe aralığını biraz genişletip tekrar deneyebilirsin.")
 
     else:
         st.info(
             "Aşağıda aynı bütçe aralığına göre 5 farklı sistem oluşturuldu. "
-            "Sistem 1 aralıktaki en uygun fiyatlı seçeneğe, Sistem 5 ise en yüksek fiyatlı seçeneğe yakın olacak şekilde sıralanır."
+            "Sistem 1 aralıktaki en uygun fiyatlı seçeneğe, Sistem 5 ise en yüksek fiyatlı seçeneğe yakın sıralanır."
         )
 
-        buton_kolonlari = st.columns(5)
+        buton_kolonlari = st.columns(len(builds))
 
-        for i, sistem in enumerate(sistemler):
-            fiyat = fiyat_formatla(sistem.get("toplam_fiyat", 0))
+        for i, build_item in enumerate(builds):
             with buton_kolonlari[i]:
-                if st.button(f"Sistem {i + 1}\n{fiyat}", key=f"pc_system_tab_{i}"):
-                    st.session_state.aktif_sistem_index = i
-                    st.session_state.pc_build = sistemler[i]
+                if st.button(
+                    f"{build_item.get('isim', 'Sistem')} {fiyat_formatla(build_item.get('toplam_fiyat', 0))}",
+                    key=f"select_pc_build_{i}"
+                ):
+                    st.session_state.selected_pc_build_index = i
                     st.rerun()
 
-        aktif_index = max(0, min(st.session_state.aktif_sistem_index, len(sistemler) - 1))
-        build = sistemler[aktif_index]
-        st.session_state.pc_build = build
+        secili_index = st.session_state.get("selected_pc_build_index", 0)
 
-        st.markdown(f"### Seçili Sistem: Sistem {aktif_index + 1}")
+        if secili_index >= len(builds):
+            secili_index = 0
+            st.session_state.selected_pc_build_index = 0
 
-        if build.get("basarili", False):
-            st.success(
-                f"Toplam sistem fiyatı: {fiyat_formatla(build['toplam_fiyat'])} "
-                f"/ Bütçe aralığı: {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build['butce'])}"
-            )
-        else:
-            st.warning(build.get("mesaj", "Bu bütçeye uygun tam sistem oluşturulamadı. En yakın sistem gösteriliyor."))
-            st.info(
-                f"Toplam sistem fiyatı: {fiyat_formatla(build.get('toplam_fiyat', 0))} "
-                f"/ Bütçe aralığı: {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build.get('butce', max_butce))}"
-            )
+        build = builds[secili_index]
+
+        st.markdown(f"## Seçili Sistem: {build.get('isim', f'Sistem {secili_index + 1}')}")
+
+        st.success(
+            f"Toplam sistem fiyatı: {fiyat_formatla(build.get('toplam_fiyat', 0))} "
+            f"/ Bütçe aralığı: {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build.get('max_butce', max_butce))}"
+        )
 
         col_a, col_b = st.columns([1, 1])
 
         with col_a:
             sistem_adi = st.text_input(
                 "Bu sistemi kaydetmek için isim ver",
-                value=f"Benim Toplama Bilgisayarım - Sistem {aktif_index + 1}",
+                value=f"Benim Toplama Bilgisayarım - {build.get('isim', f'Sistem {secili_index + 1}')}",
                 key="save_build_name"
             )
 
@@ -2015,19 +1876,20 @@ if st.session_state.aktif_mod == "pc_build":
         with col_b:
             if st.button("🔄 5 Sistemi Değiştir", key="change_build_button"):
                 st.session_state.pc_random_seed += 1
-                st.session_state.pc_builds = besli_pc_sistemleri_olustur(
+                st.session_state.pc_build = None
+                st.session_state.pc_builds = besli_pc_sistem_olustur(
                     min_butce=min_butce,
                     max_butce=max_butce,
                     kullanim=kullanim,
                     seed=st.session_state.pc_random_seed
                 )
-                st.session_state.aktif_sistem_index = 0
-                st.session_state.pc_build = st.session_state.pc_builds[0] if st.session_state.pc_builds else None
+                st.session_state.selected_pc_build_index = 0
                 st.rerun()
 
         for parca_adi, row in build.get("parcalar", {}).items():
             st.markdown(f"## {parca_adi}")
             pc_parca_karti(row)
+
 
 elif st.session_state.aktif_mod == "pc_parca":
     st.subheader("🧩 Seçimlere Göre Önerilen Toplama Bilgisayar Parçaları")
