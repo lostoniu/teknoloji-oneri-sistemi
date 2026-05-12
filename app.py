@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import pandas as pd
 import streamlit as st
 import psycopg2
@@ -133,14 +134,6 @@ div[data-testid="stAlert"] {
     font-weight: bold;
 }
 
-.chat-box {
-    background-color: #111827;
-    border: 2px solid #9700bd;
-    border-radius: 16px;
-    padding: 15px;
-    margin-top: 10px;
-}
-
 hr {
     border: 1px solid #9700bd;
 }
@@ -210,10 +203,8 @@ def favorileri_getir(user_id):
         )
 
         rows = cur.fetchall()
-
         cur.close()
         conn.close()
-
         return rows
 
     except Exception:
@@ -265,10 +256,8 @@ def kayitli_sistemleri_getir(user_id):
         )
 
         rows = cur.fetchall()
-
         cur.close()
         conn.close()
-
         return rows
 
     except Exception:
@@ -302,14 +291,11 @@ if "max_butce" not in st.session_state:
 if "min_ram" not in st.session_state:
     st.session_state.min_ram = 0
 
-if "chat_siralama" not in st.session_state:
-    st.session_state.chat_siralama = "Akıllı Sıralama"
-
-if "llm_durum" not in st.session_state:
-    st.session_state.llm_durum = ""
-
 if "mesajlar" not in st.session_state:
     st.session_state.mesajlar = []
+
+if "pc_random_seed" not in st.session_state:
+    st.session_state.pc_random_seed = 1
 
 
 @st.cache_data
@@ -329,7 +315,26 @@ def ev_esyalari_yukle():
     return df
 
 
+@st.cache_data
+def pc_dataset_yukle():
+    dosya = "pc_parts_dataset.csv"
+
+    if not os.path.exists(dosya):
+        return pd.DataFrame()
+
+    df = pd.read_csv(dosya)
+
+    if "Fiyat_TL" in df.columns:
+        df["Fiyat_TL"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+
+    if "Puan" in df.columns:
+        df["Puan"] = pd.to_numeric(df["Puan"], errors="coerce").fillna(0)
+
+    return df
+
+
 ev_df = ev_esyalari_yukle()
+pc_df = pc_dataset_yukle()
 
 
 def ev_ana_kategorileri_getir():
@@ -342,6 +347,306 @@ def ev_alt_kategorileri_getir():
     if ev_df.empty:
         return ["Dataset bulunamadı"]
     return sorted(ev_df["Alt_Kategori"].dropna().unique())
+
+
+def fiyat_formatla(deger):
+    try:
+        return f"{int(float(deger)):,}".replace(",", ".") + " TL"
+    except Exception:
+        return str(deger)
+
+
+def veri_getir(row, kolon):
+    if kolon in row.index and str(row[kolon]) != "nan":
+        return row[kolon]
+    return "Yok"
+
+
+def sayisal_filtre_degeri(seri):
+    return seri.astype(str).str.extract(r"(\d+)")[0].fillna(0).astype(int)
+
+
+def sayi_cek(deger):
+    try:
+        if pd.isna(deger):
+            return 0
+        bulunan = pd.Series([str(deger)]).str.extract(r"(\d+)")[0].iloc[0]
+        if pd.isna(bulunan):
+            return 0
+        return int(bulunan)
+    except Exception:
+        return 0
+
+
+def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon=None, ram_kolon=None):
+    if df is None or df.empty:
+        return df
+
+    sonuc = df.copy()
+
+    if siralama == "En Düşük Fiyat":
+        if fiyat_kolon and fiyat_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=fiyat_kolon, ascending=True)
+
+    elif siralama == "En Yüksek Fiyat":
+        if fiyat_kolon and fiyat_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=fiyat_kolon, ascending=False)
+
+    elif siralama == "Teknik Puan":
+        if puan_kolon and puan_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
+
+    elif siralama == "Yorum Sayısı":
+        if yorum_kolon and yorum_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=yorum_kolon, ascending=False)
+
+    elif siralama == "Bellek / RAM":
+        if ram_kolon and ram_kolon in sonuc.columns:
+            ramlar = sonuc[ram_kolon].astype(str).str.extract(r"(\d+)")[0]
+            ramlar = pd.to_numeric(ramlar, errors="coerce").fillna(0).astype(int)
+            sonuc = sonuc.assign(_ram_sort=ramlar).sort_values(by="_ram_sort", ascending=False).drop(columns=["_ram_sort"])
+
+    elif siralama == "Akıllı Sıralama":
+        if puan_kolon and puan_kolon in sonuc.columns and fiyat_kolon and fiyat_kolon in sonuc.columns:
+            fiyat = pd.to_numeric(sonuc[fiyat_kolon], errors="coerce").fillna(0)
+            puan = pd.to_numeric(sonuc[puan_kolon], errors="coerce").fillna(0)
+            sonuc = sonuc.assign(_akilli=(puan * 1000) - (fiyat / 1000))
+            sonuc = sonuc.sort_values(by="_akilli", ascending=False).drop(columns=["_akilli"])
+        elif puan_kolon and puan_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
+
+    elif siralama == "Popülerlik":
+        if yorum_kolon and yorum_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=yorum_kolon, ascending=False)
+        elif puan_kolon and puan_kolon in sonuc.columns:
+            sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
+
+    return sonuc
+
+
+def pc_parcalari_getir(alt_kategori, min_butce=0, max_butce=250000):
+    if pc_df.empty:
+        return pd.DataFrame()
+
+    sonuc = pc_df[
+        (pc_df["Alt_Kategori"].astype(str) == alt_kategori) &
+        (pc_df["Fiyat_TL"] >= min_butce) &
+        (pc_df["Fiyat_TL"] <= max_butce)
+    ].copy()
+
+    return sonuc
+
+
+def pc_parca_filtrele(alt_kategori, min_butce, max_butce, soket, ram_tipi, min_vram, min_kapasite, min_watt, rgb, siralama):
+    sonuc = pc_parcalari_getir(alt_kategori, min_butce, max_butce)
+
+    if sonuc.empty:
+        return sonuc
+
+    if soket != "Farketmez" and "Soket" in sonuc.columns:
+        sonuc = sonuc[sonuc["Soket"].astype(str).str.upper() == soket.upper()]
+
+    if ram_tipi != "Farketmez" and "RAM_Tipi" in sonuc.columns:
+        sonuc = sonuc[sonuc["RAM_Tipi"].astype(str).str.upper() == ram_tipi.upper()]
+
+    if min_vram != "Farketmez" and "VRAM" in sonuc.columns:
+        sonuc = sonuc[sayisal_filtre_degeri(sonuc["VRAM"]) >= int(min_vram)]
+
+    if min_kapasite != "Farketmez" and "Kapasite" in sonuc.columns:
+        sonuc = sonuc[sayisal_filtre_degeri(sonuc["Kapasite"]) >= int(min_kapasite)]
+
+    if min_watt != "Farketmez" and "Watt" in sonuc.columns:
+        sonuc = sonuc[sayisal_filtre_degeri(sonuc["Watt"]) >= int(min_watt)]
+
+    if rgb != "Farketmez" and "RGB" in sonuc.columns:
+        sonuc = sonuc[sonuc["RGB"].astype(str).str.lower() == rgb.lower()]
+
+    sonuc = siralama_uygula(
+        sonuc,
+        siralama,
+        fiyat_kolon="Fiyat_TL",
+        puan_kolon="Puan",
+        yorum_kolon="Yorum_Sayisi"
+    )
+
+    return sonuc.head(50)
+
+
+def pc_random_sec(df, seed):
+    if df is None or df.empty:
+        return None
+
+    df = df.copy()
+
+    if "Puan" in df.columns:
+        df = df.sort_values(by="Puan", ascending=False)
+
+    havuz = df.head(20)
+
+    if havuz.empty:
+        return None
+
+    rnd = random.Random(seed)
+    secilen_index = rnd.choice(list(havuz.index))
+
+    return havuz.loc[secilen_index]
+
+
+def uyumlu_pc_sistem_topla(max_butce, kullanim, seed):
+    if pc_df.empty:
+        return {
+            "basarili": False,
+            "mesaj": "pc_parts_dataset.csv bulunamadı.",
+            "parcalar": {},
+            "toplam_fiyat": 0,
+            "butce": max_butce
+        }
+
+    rnd = random.Random(seed)
+
+    islemciler = pc_parcalari_getir("İşlemci", 0, max_butce)
+    if kullanim:
+        kullanim_filtre = islemciler[
+            islemciler["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
+        ]
+        if not kullanim_filtre.empty:
+            islemciler = kullanim_filtre
+
+    islemci = pc_random_sec(islemciler, seed + 1)
+
+    if islemci is None:
+        return {
+            "basarili": False,
+            "mesaj": "Uygun işlemci bulunamadı.",
+            "parcalar": {},
+            "toplam_fiyat": 0,
+            "butce": max_butce
+        }
+
+    soket = str(islemci.get("Soket", "Farketmez"))
+    ram_tipi = str(islemci.get("RAM_Tipi", "Farketmez"))
+
+    anakartlar = pc_parcalari_getir("Anakart", 0, max_butce)
+    if "Soket" in anakartlar.columns and soket != "Farketmez":
+        anakartlar = anakartlar[anakartlar["Soket"].astype(str) == soket]
+    if "RAM_Tipi" in anakartlar.columns and ram_tipi != "Farketmez":
+        anakartlar = anakartlar[anakartlar["RAM_Tipi"].astype(str) == ram_tipi]
+    anakart = pc_random_sec(anakartlar, seed + 2)
+
+    ramler = pc_parcalari_getir("RAM", 0, max_butce)
+    if "RAM_Tipi" in ramler.columns and ram_tipi != "Farketmez":
+        ramler = ramler[ramler["RAM_Tipi"].astype(str) == ram_tipi]
+    ram = pc_random_sec(ramler, seed + 3)
+
+    ekran_kartlari = pc_parcalari_getir("Ekran Kartı", 0, max_butce)
+    if kullanim:
+        kullanim_gpu = ekran_kartlari[
+            ekran_kartlari["Kullanim_Amaci"].astype(str).str.lower().str.contains(kullanim.lower(), na=False)
+        ]
+        if not kullanim_gpu.empty:
+            ekran_kartlari = kullanim_gpu
+    ekran_karti = pc_random_sec(ekran_kartlari, seed + 4)
+
+    ssdlər = pc_parcalari_getir("SSD", 0, max_butce)
+    ssd = pc_random_sec(ssdlər, seed + 5)
+
+    psular = pc_parcalari_getir("Güç Kaynağı", 0, max_butce)
+    min_psu = 500
+
+    if ekran_karti is not None:
+        gpu_watt = sayi_cek(ekran_karti.get("Watt", 0))
+        if gpu_watt > 0:
+            min_psu = max(500, gpu_watt + 250)
+
+    if "Watt" in psular.columns:
+        psular = psular[sayisal_filtre_degeri(psular["Watt"]) >= min_psu]
+
+    psu = pc_random_sec(psular, seed + 6)
+
+    kasalar = pc_parcalari_getir("Kasa", 0, max_butce)
+    kasa = pc_random_sec(kasalar, seed + 7)
+
+    sogutucular = pc_parcalari_getir("Soğutucu", 0, max_butce)
+    if "Soket" in sogutucular.columns and soket != "Farketmez":
+        uygun_sogutucu = sogutucular[
+            sogutucular["Soket"].astype(str).str.contains(soket, na=False)
+        ]
+        if not uygun_sogutucu.empty:
+            sogutucular = uygun_sogutucu
+    sogutucu = pc_random_sec(sogutucular, seed + 8)
+
+    parcalar = {
+        "İşlemci": islemci,
+        "Anakart": anakart,
+        "RAM": ram,
+        "Ekran Kartı": ekran_karti,
+        "SSD": ssd,
+        "Güç Kaynağı": psu,
+        "Kasa": kasa,
+        "Soğutucu": sogutucu
+    }
+
+    temiz_parcalar = {}
+    toplam = 0
+
+    for ad, row in parcalar.items():
+        if row is not None:
+            temiz_parcalar[ad] = row
+            toplam += int(row.get("Fiyat_TL", 0))
+
+    if toplam > max_butce:
+        # Bütçeyi aşarsa daha ucuz parçalardan tekrar seçmeye çalışır.
+        oranlar = {
+            "İşlemci": 0.18,
+            "Anakart": 0.11,
+            "RAM": 0.08,
+            "Ekran Kartı": 0.35,
+            "SSD": 0.08,
+            "Güç Kaynağı": 0.08,
+            "Kasa": 0.07,
+            "Soğutucu": 0.05
+        }
+
+        yeni_parcalar = {}
+
+        for ad, oran in oranlar.items():
+            limit = int(max_butce * oran)
+            adaylar = pc_parcalari_getir(ad, 0, limit)
+
+            if ad == "Anakart":
+                if "Soket" in adaylar.columns and soket != "Farketmez":
+                    adaylar = adaylar[adaylar["Soket"].astype(str) == soket]
+                if "RAM_Tipi" in adaylar.columns and ram_tipi != "Farketmez":
+                    adaylar = adaylar[adaylar["RAM_Tipi"].astype(str) == ram_tipi]
+
+            if ad == "RAM":
+                if "RAM_Tipi" in adaylar.columns and ram_tipi != "Farketmez":
+                    adaylar = adaylar[adaylar["RAM_Tipi"].astype(str) == ram_tipi]
+
+            if ad == "Güç Kaynağı":
+                if "Watt" in adaylar.columns:
+                    adaylar = adaylar[sayisal_filtre_degeri(adaylar["Watt"]) >= min_psu]
+
+            secim = pc_random_sec(adaylar, seed + rnd.randint(10, 500))
+
+            if secim is not None:
+                yeni_parcalar[ad] = secim
+
+        yeni_toplam = sum(int(row.get("Fiyat_TL", 0)) for row in yeni_parcalar.values())
+
+        if yeni_toplam > 0:
+            temiz_parcalar = yeni_parcalar
+            toplam = yeni_toplam
+
+    return {
+        "basarili": toplam <= max_butce and len(temiz_parcalar) >= 6,
+        "mesaj": "Bu bütçeye uygun alternatif sistem oluşturuldu." if toplam <= max_butce else "Bütçeyi biraz aşan en yakın sistem oluşturuldu.",
+        "parcalar": temiz_parcalar,
+        "toplam_fiyat": toplam,
+        "butce": max_butce,
+        "soket": soket,
+        "ram_tipi": ram_tipi
+    }
 
 
 def ev_esyasi_oner(
@@ -392,97 +697,17 @@ def ev_esyasi_oner(
     if kaynak_site != "Farketmez":
         sonuc = sonuc[sonuc["Kaynak_Site"].astype(str) == kaynak_site]
 
-    if min_watt != "Farketmez":
-        wattlar = sonuc["Ozellikler"].astype(str).str.extract(r"(\d+)\s*W")[0]
-        wattlar = pd.to_numeric(wattlar, errors="coerce").fillna(0).astype(int)
-        sonuc = sonuc[wattlar >= int(min_watt)]
-
-    if min_emis != "Farketmez":
-        emisler = sonuc["Ozellikler"].astype(str).str.extract(r"(\d+)\s*Pa")[0]
-        emisler = pd.to_numeric(emisler, errors="coerce").fillna(0).astype(int)
-        sonuc = sonuc[emisler >= int(min_emis)]
-
-    if min_hazne != "Farketmez":
-        hazneler = sonuc["Ozellikler"].astype(str).str.extract(r"(\d+)\s*L")[0]
-        hazneler = pd.to_numeric(hazneler, errors="coerce").fillna(0).astype(int)
-        sonuc = sonuc[hazneler >= int(min_hazne)]
-
-    if wifi != "Farketmez":
-        if wifi == "Var":
-            sonuc = sonuc[
-                sonuc["Ozellikler"].astype(str).str.lower().str.contains("wi-fi|wifi", na=False)
-            ]
-        else:
-            sonuc = sonuc[
-                ~sonuc["Ozellikler"].astype(str).str.lower().str.contains("wi-fi|wifi", na=False)
-            ]
-
-    if rgb != "Farketmez":
-        if rgb == "Var":
-            sonuc = sonuc[
-                sonuc["Ozellikler"].astype(str).str.lower().str.contains("rgb|ışık|isik", na=False)
-            ]
-        else:
-            sonuc = sonuc[
-                ~sonuc["Ozellikler"].astype(str).str.lower().str.contains("rgb|ışık|isik", na=False)
-            ]
-
-    if min_garanti != "Farketmez":
-        sonuc = sonuc[sonuc["Garanti_Ay"] >= int(min_garanti)]
-
-    if stok != "Farketmez":
-        sonuc = sonuc[sonuc["Stok_Durumu"].astype(str) == stok]
-
     sonuc = sonuc.drop_duplicates(subset=["Marka", "Model"], keep="first")
-    sonuc = siralama_uygula(sonuc, siralama, fiyat_kolon="Fiyat_TL", puan_kolon="Puan")
+
+    sonuc = siralama_uygula(
+        sonuc,
+        siralama,
+        fiyat_kolon="Fiyat_TL",
+        puan_kolon="Puan",
+        yorum_kolon="Yorum_Sayisi"
+    )
 
     return sonuc.head(50)
-
-
-def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon=None, ram_kolon=None):
-    if df is None or df.empty:
-        return df
-
-    sonuc = df.copy()
-
-    if siralama == "En Düşük Fiyat":
-        if fiyat_kolon and fiyat_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=fiyat_kolon, ascending=True)
-
-    elif siralama == "En Yüksek Fiyat":
-        if fiyat_kolon and fiyat_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=fiyat_kolon, ascending=False)
-
-    elif siralama == "Teknik Puan":
-        if puan_kolon and puan_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
-
-    elif siralama == "Yorum Sayısı":
-        if yorum_kolon and yorum_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=yorum_kolon, ascending=False)
-
-    elif siralama == "Bellek / RAM":
-        if ram_kolon and ram_kolon in sonuc.columns:
-            ramlar = sonuc[ram_kolon].astype(str).str.extract(r"(\d+)")[0]
-            ramlar = pd.to_numeric(ramlar, errors="coerce").fillna(0).astype(int)
-            sonuc = sonuc.assign(_ram_sort=ramlar).sort_values(by="_ram_sort", ascending=False).drop(columns=["_ram_sort"])
-
-    elif siralama == "Akıllı Sıralama":
-        if puan_kolon and puan_kolon in sonuc.columns and fiyat_kolon and fiyat_kolon in sonuc.columns:
-            fiyat = pd.to_numeric(sonuc[fiyat_kolon], errors="coerce").fillna(0)
-            puan = pd.to_numeric(sonuc[puan_kolon], errors="coerce").fillna(0)
-            sonuc = sonuc.assign(_akilli=(puan * 1000) - (fiyat / 1000))
-            sonuc = sonuc.sort_values(by="_akilli", ascending=False).drop(columns=["_akilli"])
-        elif puan_kolon and puan_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
-
-    elif siralama == "Popülerlik":
-        if yorum_kolon and yorum_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=yorum_kolon, ascending=False)
-        elif puan_kolon and puan_kolon in sonuc.columns:
-            sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
-
-    return sonuc
 
 
 def auth_screen():
@@ -644,7 +869,6 @@ with col_title:
 
 with col_chat:
     with st.popover("💬 Chatbot"):
-        st.markdown('<div class="chat-box">', unsafe_allow_html=True)
         st.subheader("Ürün Asistanı")
 
         chatbot_siralama = st.selectbox(
@@ -702,7 +926,6 @@ with col_chat:
                 if gelen_llm_sonuc is not None:
                     llm_sonuc = gelen_llm_sonuc
                     urun_istegi_var = bool(llm_sonuc.get("urun_istegi_var", True))
-                    st.session_state.llm_durum = "✅ LLM kullanıldı"
                 else:
                     st.session_state.llm_durum = "⚠️ LLM analiz çalışmadı, kural tabanlı sistem kullanıldı"
 
@@ -720,19 +943,13 @@ with col_chat:
                     chat_kategori = "Toplama Bilgisayar"
 
             if urun_istegi_var:
-                st.session_state.chat_siralama = chatbot_siralama
-                st.session_state.kategori = chat_kategori
-                st.session_state.min_butce = chat_min_butce
-                st.session_state.max_butce = chat_max_butce
-                st.session_state.min_ram = chat_ram
-
                 if chat_kategori == "Toplama Bilgisayar":
                     st.session_state.aktif_mod = "pc_build"
                     st.session_state.sonuc = None
-                    st.session_state.pc_build = pc_sistem_topla(
+                    st.session_state.pc_build = uyumlu_pc_sistem_topla(
                         max_butce=chat_max_butce,
                         kullanim=chat_kullanim,
-                        min_butce=chat_min_butce
+                        seed=st.session_state.pc_random_seed
                     )
                     bot_mesaji = f"{llm_cevap}\n\nAnladığım kriterler: Toplama Bilgisayar, bütçe: {chat_min_butce}-{chat_max_butce} TL."
 
@@ -773,7 +990,6 @@ with col_chat:
                     )
 
                     bot_mesaji = f"{llm_cevap}\n\nAnladığım kriterler: {chat_kategori}, {chat_min_butce}-{chat_max_butce} TL."
-
             else:
                 bot_mesaji = llm_cevap
 
@@ -789,8 +1005,6 @@ with col_chat:
             st.session_state.sonuc = None
             st.session_state.pc_build = None
             st.rerun()
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
 
 st.write(
@@ -822,7 +1036,7 @@ with st.sidebar.expander("💾 Kaydedilen Sistemlerim", expanded=False):
         st.write("Henüz kayıtlı sistem yok.")
     else:
         for build_name, total_price in sistemler:
-            st.write(f"🖥️ {build_name} - {fiyat_formatla(total_price) if 'fiyat_formatla' in globals() else total_price}")
+            st.write(f"🖥️ {build_name} - {fiyat_formatla(total_price)}")
 
 
 st.sidebar.markdown("---")
@@ -888,22 +1102,13 @@ kullanim = st.sidebar.selectbox(
 min_ram = 0
 
 pc_mod = None
-pc_alt_kategori = None
-pc_ozellik_tipi = None
-pc_ozellik_degeri = None
+pc_secili_sonuc = None
 
 ev_ana_kategori = None
 ev_alt_kategori = None
 ev_min_puan = 0.0
 ev_enerji = "Farketmez"
 ev_site = "Farketmez"
-ev_min_watt = "Farketmez"
-ev_min_emis = "Farketmez"
-ev_min_hazne = "Farketmez"
-ev_wifi = "Farketmez"
-ev_rgb = "Farketmez"
-ev_garanti = "Farketmez"
-ev_stok = "Farketmez"
 
 
 if kategori == "Toplama Bilgisayar":
@@ -912,39 +1117,123 @@ if kategori == "Toplama Bilgisayar":
     pc_mod = st.sidebar.radio(
         "Ne yapmak istiyorsun?",
         [
-            "Alt kategoriye göre parça göster",
+            "Parçaları tek tek incele",
             "Bütçeye göre uyumlu sistem topla"
-        ]
+        ],
+        key="pc_mod_radio"
     )
 
-    alt_kategoriler = pc_alt_kategorileri_getir()
+    if pc_mod == "Parçaları tek tek incele":
+        st.sidebar.info("Aşağıdaki başlıkları açarak istediğin parçayı filtreleyebilirsin.")
 
-    if pc_mod == "Alt kategoriye göre parça göster":
-        pc_alt_kategori = st.sidebar.selectbox("Alt Kategori", alt_kategoriler)
+        pc_parca_ayarlari = {}
 
-        if pc_alt_kategori in ["RAM", "Anakart"]:
-            pc_ozellik_tipi = "RAM_Tipi"
-            pc_ozellik_degeri = st.sidebar.selectbox("RAM Tipi", ["Farketmez", "DDR4", "DDR5"])
+        with st.sidebar.expander("İşlemci"):
+            soket_cpu = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="cpu_soket")
+            if st.button("İşlemcileri Göster", key="show_cpu"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "İşlemci", min_butce, max_butce, soket_cpu, "Farketmez", "Farketmez", "Farketmez", "Farketmez", "Farketmez", siralama
+                )
 
-        elif pc_alt_kategori in ["İşlemci", "Soğutucu"]:
-            pc_ozellik_tipi = "Soket"
-            pc_ozellik_degeri = st.sidebar.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"])
+        with st.sidebar.expander("Anakart"):
+            soket_mb = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="mb_soket")
+            ramtip_mb = st.selectbox("RAM Tipi", ["Farketmez", "DDR4", "DDR5"], key="mb_ramtip")
+            if st.button("Anakartları Göster", key="show_mb"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Anakart", min_butce, max_butce, soket_mb, ramtip_mb, "Farketmez", "Farketmez", "Farketmez", "Farketmez", siralama
+                )
 
-        elif pc_alt_kategori == "Ekran Kartı":
-            pc_ozellik_tipi = "VRAM"
-            pc_ozellik_degeri = st.sidebar.selectbox("Minimum VRAM", ["Farketmez", "4", "6", "8", "12", "16"])
+        with st.sidebar.expander("RAM"):
+            ramtip_ram = st.selectbox("RAM Tipi", ["Farketmez", "DDR4", "DDR5"], key="ram_ramtip")
+            rgb_ram = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="ram_rgb")
+            if st.button("RAM'leri Göster", key="show_ram"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "RAM", min_butce, max_butce, "Farketmez", ramtip_ram, "Farketmez", "Farketmez", "Farketmez", rgb_ram, siralama
+                )
 
-        elif pc_alt_kategori in ["SSD", "HDD"]:
-            pc_ozellik_tipi = "Kapasite"
-            pc_ozellik_degeri = st.sidebar.selectbox("Minimum Kapasite", ["Farketmez", "500", "1000", "2000", "4000"])
+        with st.sidebar.expander("Ekran Kartı"):
+            min_vram_gpu = st.selectbox("Minimum VRAM", ["Farketmez", "4", "6", "8", "12", "16"], key="gpu_vram")
+            if st.button("Ekran Kartlarını Göster", key="show_gpu"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Ekran Kartı", min_butce, max_butce, "Farketmez", "Farketmez", min_vram_gpu, "Farketmez", "Farketmez", "Farketmez", siralama
+                )
 
-        elif pc_alt_kategori == "Güç Kaynağı":
-            pc_ozellik_tipi = "Watt"
-            pc_ozellik_degeri = st.sidebar.selectbox("Minimum Watt", ["Farketmez", "500", "600", "650", "750", "850", "1000"])
+        with st.sidebar.expander("SSD"):
+            min_kapasite_ssd = st.selectbox("Minimum Kapasite", ["Farketmez", "500", "1000", "2000", "4000"], key="ssd_capacity")
+            if st.button("SSD'leri Göster", key="show_ssd"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "SSD", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", min_kapasite_ssd, "Farketmez", "Farketmez", siralama
+                )
 
-        elif pc_alt_kategori in ["Kasa", "Klavye", "Mouse", "Monitör"]:
-            pc_ozellik_tipi = "RGB"
-            pc_ozellik_degeri = st.sidebar.selectbox("RGB", ["Farketmez", "Var", "Yok"])
+        with st.sidebar.expander("HDD"):
+            min_kapasite_hdd = st.selectbox("Minimum Kapasite", ["Farketmez", "500", "1000", "2000", "4000"], key="hdd_capacity")
+            if st.button("HDD'leri Göster", key="show_hdd"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "HDD", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", min_kapasite_hdd, "Farketmez", "Farketmez", siralama
+                )
+
+        with st.sidebar.expander("Güç Kaynağı"):
+            min_watt_psu = st.selectbox("Minimum Watt", ["Farketmez", "500", "600", "650", "750", "850", "1000"], key="psu_watt")
+            if st.button("Güç Kaynaklarını Göster", key="show_psu"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Güç Kaynağı", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", "Farketmez", min_watt_psu, "Farketmez", siralama
+                )
+
+        with st.sidebar.expander("Kasa"):
+            rgb_kasa = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="case_rgb")
+            if st.button("Kasaları Göster", key="show_case"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Kasa", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", "Farketmez", "Farketmez", rgb_kasa, siralama
+                )
+
+        with st.sidebar.expander("Soğutucu"):
+            soket_cooler = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="cooler_soket")
+            rgb_cooler = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="cooler_rgb")
+            if st.button("Soğutucuları Göster", key="show_cooler"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Soğutucu", min_butce, max_butce, soket_cooler, "Farketmez", "Farketmez", "Farketmez", "Farketmez", rgb_cooler, siralama
+                )
+
+        with st.sidebar.expander("Monitör"):
+            if st.button("Monitörleri Göster", key="show_monitor"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Monitör", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", "Farketmez", "Farketmez", "Farketmez", siralama
+                )
+
+        with st.sidebar.expander("Klavye"):
+            rgb_keyboard = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="keyboard_rgb")
+            if st.button("Klavyeleri Göster", key="show_keyboard"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Klavye", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", "Farketmez", "Farketmez", rgb_keyboard, siralama
+                )
+
+        with st.sidebar.expander("Mouse"):
+            rgb_mouse = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="mouse_rgb")
+            if st.button("Mouse'ları Göster", key="show_mouse"):
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.sonuc = pc_parca_filtrele(
+                    "Mouse", min_butce, max_butce, "Farketmez", "Farketmez", "Farketmez", "Farketmez", "Farketmez", rgb_mouse, siralama
+                )
+
+    else:
+        if st.sidebar.button("🖥️ Sistem Topla", key="build_pc_button"):
+            st.session_state.aktif_mod = "pc_build"
+            st.session_state.pc_build = uyumlu_pc_sistem_topla(
+                max_butce=max_butce,
+                kullanim=kullanim,
+                seed=st.session_state.pc_random_seed
+            )
 
 
 elif kategori == "Elektronik Ev Eşyaları":
@@ -980,41 +1269,6 @@ elif kategori == "Elektronik Ev Eşyaları":
         ["Farketmez", "Hepsiburada", "Trendyol", "Teknosa", "MediaMarkt", "Vatan Bilgisayar", "Amazon Türkiye", "n11"]
     )
 
-    ev_min_watt = st.sidebar.selectbox(
-        "Minimum Watt",
-        ["Farketmez", "500", "800", "1000", "1200", "1500", "1800", "2000", "2200", "2500", "3000"]
-    )
-
-    ev_min_emis = st.sidebar.selectbox(
-        "Minimum Emiş Gücü / Pa",
-        ["Farketmez", "1000", "2000", "3000", "4000", "5000", "6000", "7000"]
-    )
-
-    ev_min_hazne = st.sidebar.selectbox(
-        "Minimum Hazne / Litre",
-        ["Farketmez", "1", "2", "3", "4", "5", "6", "7", "8"]
-    )
-
-    ev_wifi = st.sidebar.selectbox(
-        "Wi-Fi",
-        ["Farketmez", "Var", "Yok"]
-    )
-
-    ev_rgb = st.sidebar.selectbox(
-        "RGB / Işık",
-        ["Farketmez", "Var", "Yok"]
-    )
-
-    ev_garanti = st.sidebar.selectbox(
-        "Minimum Garanti",
-        ["Farketmez", "12", "24", "36"]
-    )
-
-    ev_stok = st.sidebar.selectbox(
-        "Stok Durumu",
-        ["Farketmez", "Stokta var", "Az stok", "Kampanyalı", "Hızlı teslimat"]
-    )
-
 
 else:
     min_ram = st.sidebar.selectbox(
@@ -1022,23 +1276,6 @@ else:
         [0, 2, 4, 6, 8, 12, 16, 24, 32, 64],
         index=3
     )
-
-
-def veri_getir(row, kolon):
-    if kolon in row.index and str(row[kolon]) != "nan":
-        return row[kolon]
-    return "Yok"
-
-
-def fiyat_formatla(deger):
-    try:
-        return f"{int(float(deger)):,}".replace(",", ".") + " TL"
-    except Exception:
-        return str(deger)
-
-
-def sayisal_filtre_degeri(seri):
-    return seri.astype(str).str.extract(r"(\d+)")[0].fillna(0).astype(int)
 
 
 def pc_parca_karti(row):
@@ -1090,97 +1327,50 @@ def ev_karti(row):
 
 st.sidebar.markdown("---")
 
-if st.sidebar.button("Öneri Getir", key="oneri_getir_button"):
-    st.session_state.pc_build = None
-    st.session_state.sonuc = None
+if kategori != "Toplama Bilgisayar":
+    if st.sidebar.button("Öneri Getir", key="oneri_getir_button"):
+        st.session_state.pc_build = None
+        st.session_state.sonuc = None
 
-    if kategori == "Toplama Bilgisayar":
-        if pc_mod == "Alt kategoriye göre parça göster":
-            st.session_state.aktif_mod = "pc_parca"
-
-            sonuc = pc_parca_oner(
-                alt_kategori=pc_alt_kategori,
+        if kategori == "Elektronik Ev Eşyaları":
+            st.session_state.aktif_mod = "ev_esyalari"
+            st.session_state.sonuc = ev_esyasi_oner(
+                ana_kategori=ev_ana_kategori,
+                alt_kategori=ev_alt_kategori,
                 min_butce=min_butce,
                 max_butce=max_butce,
                 siralama=siralama,
-                kullanim=kullanim
+                kullanim=kullanim,
+                min_puan=ev_min_puan,
+                enerji_sinifi=ev_enerji,
+                kaynak_site=ev_site
             )
 
-            if pc_ozellik_degeri and pc_ozellik_degeri != "Farketmez":
-                if pc_ozellik_tipi in ["VRAM", "Kapasite", "Watt"]:
-                    sonuc = sonuc[
-                        sayisal_filtre_degeri(sonuc[pc_ozellik_tipi]) >= int(pc_ozellik_degeri)
-                    ]
-                elif pc_ozellik_tipi in ["RAM_Tipi", "Soket", "RGB"]:
-                    sonuc = sonuc[
-                        sonuc[pc_ozellik_tipi].astype(str).str.lower()
-                        == pc_ozellik_degeri.lower()
-                    ]
+        else:
+            st.session_state.aktif_mod = "panel"
+            sonuc = urun_oner(
+                kategori,
+                min_butce,
+                max_butce,
+                min_ram,
+                siralama,
+                kullanim
+            )
 
             sonuc = siralama_uygula(
                 sonuc,
                 siralama,
-                fiyat_kolon="Fiyat_TL",
-                puan_kolon="Puan",
-                yorum_kolon="Yorum_Sayisi"
+                fiyat_kolon="FIYAT_SAYI",
+                puan_kolon="ONERI_PUANI",
+                ram_kolon="RAM"
             )
 
             st.session_state.sonuc = sonuc
 
-        else:
-            st.session_state.aktif_mod = "pc_build"
-            st.session_state.pc_build = pc_sistem_topla(
-                max_butce=max_butce,
-                kullanim=kullanim,
-                min_butce=min_butce
-            )
-
-    elif kategori == "Elektronik Ev Eşyaları":
-        st.session_state.aktif_mod = "ev_esyalari"
-        st.session_state.sonuc = ev_esyasi_oner(
-            ana_kategori=ev_ana_kategori,
-            alt_kategori=ev_alt_kategori,
-            min_butce=min_butce,
-            max_butce=max_butce,
-            siralama=siralama,
-            kullanim=kullanim,
-            min_puan=ev_min_puan,
-            enerji_sinifi=ev_enerji,
-            kaynak_site=ev_site,
-            min_watt=ev_min_watt,
-            min_emis=ev_min_emis,
-            min_hazne=ev_min_hazne,
-            wifi=ev_wifi,
-            rgb=ev_rgb,
-            min_garanti=ev_garanti,
-            stok=ev_stok
-        )
-
-    else:
-        st.session_state.aktif_mod = "panel"
-        sonuc = urun_oner(
-            kategori,
-            min_butce,
-            max_butce,
-            min_ram,
-            siralama,
-            kullanim
-        )
-
-        sonuc = siralama_uygula(
-            sonuc,
-            siralama,
-            fiyat_kolon="FIYAT_SAYI",
-            puan_kolon="ONERI_PUANI",
-            ram_kolon="RAM"
-        )
-
-        st.session_state.sonuc = sonuc
-
-    st.session_state.kategori = kategori
-    st.session_state.min_butce = min_butce
-    st.session_state.max_butce = max_butce
-    st.session_state.min_ram = min_ram
+        st.session_state.kategori = kategori
+        st.session_state.min_butce = min_butce
+        st.session_state.max_butce = max_butce
+        st.session_state.min_ram = min_ram
 
 
 st.markdown("---")
@@ -1192,17 +1382,31 @@ if st.session_state.aktif_mod == "pc_build":
     build = st.session_state.pc_build
 
     if build is None:
-        st.info("Toplama bilgisayar önerisi için bütçe girip öneri alabilirsin.")
+        st.info("Toplama bilgisayar önerisi için bütçe girip sistem toplayabilirsin.")
 
-    elif not build.get("basarili", False):
-        st.warning(build.get("mesaj", "Bu bütçeye uygun uyumlu sistem oluşturulamadı."))
+    else:
+        if build.get("basarili", False):
+            st.success(
+                f"Toplam sistem fiyatı: {fiyat_formatla(build['toplam_fiyat'])} "
+                f"/ Bütçe: {fiyat_formatla(build['butce'])}"
+            )
+        else:
+            st.warning(build.get("mesaj", "Bu bütçeye uygun tam sistem oluşturulamadı. En yakın sistem gösteriliyor."))
+            st.info(
+                f"Toplam sistem fiyatı: {fiyat_formatla(build.get('toplam_fiyat', 0))} "
+                f"/ Bütçe: {fiyat_formatla(build.get('butce', max_butce))}"
+            )
 
-        if "parcalar" in build:
-            st.info("Bütçeyi aşan en yakın sistem parçaları aşağıda gösteriliyor.")
+        col_a, col_b = st.columns([1, 1])
 
-            sistem_adi = st.text_input("Bu sistemi kaydetmek için isim ver", value="Bütçeyi aşan sistem", key="save_build_name_fail")
+        with col_a:
+            sistem_adi = st.text_input(
+                "Bu sistemi kaydetmek için isim ver",
+                value="Benim Toplama Bilgisayarım",
+                key="save_build_name"
+            )
 
-            if st.button("💾 Bu Sistemi Kaydet", key="save_build_fail_button"):
+            if st.button("💾 Bu Sistemi Kaydet", key="save_build_button"):
                 success, message = sistemi_kaydet(
                     st.session_state.user["id"],
                     sistem_adi,
@@ -1215,37 +1419,19 @@ if st.session_state.aktif_mod == "pc_build":
                 else:
                     st.error(message)
 
-            for parca_adi, row in build["parcalar"].items():
-                st.markdown(f"## {parca_adi}")
-                pc_parca_karti(row)
+        with col_b:
+            if st.button("🔄 Sistemi Değiştir", key="change_build_button"):
+                st.session_state.pc_random_seed += 1
+                st.session_state.pc_build = uyumlu_pc_sistem_topla(
+                    max_butce=max_butce,
+                    kullanim=kullanim,
+                    seed=st.session_state.pc_random_seed
+                )
+                st.rerun()
 
-    else:
-        st.success(
-            f"Toplam sistem fiyatı: {fiyat_formatla(build['toplam_fiyat'])} "
-            f"/ Bütçe: {fiyat_formatla(build['butce'])}"
-        )
-
-        st.info(pc_sistem_aciklama_uret(build))
-
-        sistem_adi = st.text_input("Bu sistemi kaydetmek için isim ver", value="Benim Toplama Bilgisayarım", key="save_build_name_success")
-
-        if st.button("💾 Bu Sistemi Kaydet", key="save_build_success_button"):
-            success, message = sistemi_kaydet(
-                st.session_state.user["id"],
-                sistem_adi,
-                build,
-                build.get("toplam_fiyat", 0)
-            )
-
-            if success:
-                st.success(message)
-            else:
-                st.error(message)
-
-        for parca_adi, row in build["parcalar"].items():
+        for parca_adi, row in build.get("parcalar", {}).items():
             st.markdown(f"## {parca_adi}")
             pc_parca_karti(row)
-
 
 elif st.session_state.aktif_mod == "pc_parca":
     st.subheader("🧩 Toplama Bilgisayar Parçaları")
@@ -1253,7 +1439,7 @@ elif st.session_state.aktif_mod == "pc_parca":
     sonuc = st.session_state.sonuc
 
     if sonuc is None:
-        st.info("Soldan alt kategori seçip parça listeleyebilirsin.")
+        st.info("Soldan işlemci, anakart, RAM gibi başlıkları açıp parça listeleyebilirsin.")
 
     elif sonuc.empty:
         st.warning("Bu kriterlere uygun parça bulunamadı.")
@@ -1277,14 +1463,13 @@ elif st.session_state.aktif_mod == "pc_parca":
                 else:
                     st.error(message)
 
-
 elif st.session_state.aktif_mod == "ev_esyalari":
     st.subheader("🏠 Elektronik Ev Eşyaları")
 
     sonuc = st.session_state.sonuc
 
     if ev_df.empty:
-        st.error("elektronik_ev_esyalari_dataset.csv bulunamadı. Dosyayı app.py ile aynı klasöre koymalısın.")
+        st.error("elektronik_ev_esyalari_dataset.csv bulunamadı.")
 
     elif sonuc is None:
         st.info("Soldan elektronik ev eşyası filtrelerini seçip öneri alabilirsin.")
@@ -1310,7 +1495,6 @@ elif st.session_state.aktif_mod == "ev_esyalari":
                     st.success(message)
                 else:
                     st.error(message)
-
 
 else:
     st.subheader("🔎 Önerilen Ürünler")
