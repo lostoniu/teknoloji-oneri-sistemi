@@ -55,6 +55,9 @@ def register_user(username, email, password):
         conn = get_connection()
         cur = conn.cursor()
 
+        username = str(username).strip()
+        email = str(email).strip()
+
         cur.execute(
             "SELECT id FROM users WHERE username = %s OR email = %s",
             (username, email)
@@ -147,21 +150,20 @@ def verify_user(email, code):
         return False, f"Doğrulama hatası: {e}"
 
 
-def login_user(username, email, password):
+def login_user(login_input, password):
     try:
         conn = get_connection()
         cur = conn.cursor()
 
-        username = str(username).strip()
-        email = str(email).strip()
+        login_input = str(login_input).strip()
 
         cur.execute(
             """
             SELECT id, username, email, password_hash, is_verified
             FROM users
-            WHERE username = %s AND email = %s
+            WHERE username = %s OR email = %s
             """,
-            (username, email)
+            (login_input, login_input)
         )
 
         user = cur.fetchone()
@@ -169,7 +171,7 @@ def login_user(username, email, password):
         if not user:
             cur.close()
             conn.close()
-            return False, "Kullanıcı adı veya e-posta yanlış.", None
+            return False, "Kullanıcı adı / e-posta veya şifre yanlış.", None
 
         user_id = user[0]
         db_username = user[1]
@@ -190,7 +192,7 @@ def login_user(username, email, password):
         if not password_ok:
             cur.close()
             conn.close()
-            return False, "Şifre yanlış.", None
+            return False, "Kullanıcı adı / e-posta veya şifre yanlış.", None
 
         cur.close()
         conn.close()
@@ -280,7 +282,7 @@ def sifreyi_guncelle(email, code, new_password):
         if girilen_kod != db_kod:
             cur.close()
             conn.close()
-            return False, f"Kod yanlış. DB kodu: {db_kod} / Girilen kod: {girilen_kod}"
+            return False, "Kod yanlış."
 
         new_hash = bcrypt.hashpw(
             new_password.encode("utf-8"),

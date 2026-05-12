@@ -321,15 +321,22 @@ def auth_screen():
     with tab1:
         st.subheader("Giriş Yap")
 
-        username = st.text_input("Kullanıcı adı", key="login_username")
-        email = st.text_input("E-posta", key="login_email")
-        password = st.text_input("Şifre", type="password", key="login_password")
+        login_input = st.text_input(
+            "Kullanıcı adı / E-posta",
+            key="login_input"
+        )
+
+        password = st.text_input(
+            "Şifre",
+            type="password",
+            key="login_password"
+        )
 
         if st.button("Giriş Yap"):
-            if username.strip() == "" or email.strip() == "" or password.strip() == "":
-                st.error("Kullanıcı adı, e-posta ve şifre boş bırakılamaz.")
+            if login_input.strip() == "" or password.strip() == "":
+                st.error("Kullanıcı adı/e-posta ve şifre boş bırakılamaz.")
             else:
-                success, message, user = login_user(username, email, password)
+                success, message, user = login_user(login_input, password)
 
                 if success:
                     st.session_state.logged_in = True
@@ -434,7 +441,6 @@ def auth_screen():
                     st.success(message)
                 else:
                     st.error(message)
-
 
 st.sidebar.markdown("### 🧪 Test Modu")
 
