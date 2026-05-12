@@ -447,6 +447,9 @@ def teknoloji_dataset_yukle():
     if "Fiyat (TL)" in df.columns:
         df["Fiyat (TL)"] = pd.to_numeric(df["Fiyat (TL)"], errors="coerce").fillna(0).astype(int)
 
+    if "Fiyat_TL" in df.columns:
+        df["Fiyat_TL"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+
     return df
 
 
@@ -616,8 +619,8 @@ def fiyat_karsilastirma_html(kaynak_turu, row):
     urun_adi = urun_adi_olustur(row)
     return f"""
 <div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
-    <div>Fiyatlar anlık değişebildiği için karttaki fiyat tahminidir. En güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
+    <div class=\"price-compare-title\">Güncel Fiyat Kontrolü</div>
+    <div>Bu ürünün güncel fiyatını aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', urun_adi)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', urun_adi)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
@@ -631,8 +634,8 @@ def hazir_urun_guvenilir_link_html(row):
     model = str(veri_getir(row, "Model"))
     return f"""
 <div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
-    <div>CSV fiyatı sabit kalabileceği için burada fiyat göstermiyoruz. En güncel fiyatı güvenilir sitelerde kontrol et.</div>
+    <div class=\"price-compare-title\">Güncel Fiyat Kontrolü</div>
+    <div>Bu ürünün güncel fiyatını güvenilir sitelerde kontrol edebilirsin.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', model)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', model)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
@@ -1526,7 +1529,7 @@ def pc_parca_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
@@ -1552,7 +1555,7 @@ def ev_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🏠 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
@@ -2710,7 +2713,7 @@ else:
                 st.markdown(f"""
 <div class="product-card">
 <div class="product-title">📦 {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Tahmini {veri_getir(row, 'FIYAT_SAYI')} TL</span>
+<span class="badge-orange">💰 {veri_getir(row, 'FIYAT_SAYI')} TL</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'ONERI_PUANI')}</span>
 <br><br>
