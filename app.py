@@ -216,6 +216,15 @@ hr {
     border-radius: 16px;
     overflow: hidden;
 }
+.price-compare-box { background: rgba(17, 24, 39, 0.06); border: 1px solid rgba(17, 24, 39, 0.12); border-radius: 14px; padding: 12px; margin-top: 14px; }
+.price-compare-title { color: #111827 !important; font-weight: 900; margin-bottom: 8px; }
+.price-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(17, 24, 39, 0.16); }
+.price-row:last-child { border-bottom: none; }
+.price-site { color: #111827 !important; font-weight: 800; }
+.price-value { color: #4c1d95 !important; font-weight: 900; }
+.price-link { display: inline-block; margin-top: 10px; background: #10b981; color: white !important; text-decoration: none; padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 13px; }
+.price-link-secondary { display: inline-block; margin: 6px 6px 0 0; background: #111827; color: white !important; text-decoration: none; padding: 7px 10px; border-radius: 999px; font-weight: 800; font-size: 12px; }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -425,8 +434,25 @@ def pc_dataset_yukle():
     return df
 
 
+
+@st.cache_data
+def teknoloji_dataset_yukle():
+    dosya = "teknoloji_urunleri_dataset.csv"
+
+    if not os.path.exists(dosya):
+        return pd.DataFrame()
+
+    df = pd.read_csv(dosya)
+
+    if "Fiyat (TL)" in df.columns:
+        df["Fiyat (TL)"] = pd.to_numeric(df["Fiyat (TL)"], errors="coerce").fillna(0).astype(int)
+
+    return df
+
+
 ev_df = ev_esyalari_yukle()
 pc_df = pc_dataset_yukle()
+tech_df = teknoloji_dataset_yukle()
 
 
 def fiyat_formatla(deger):
@@ -476,125 +502,320 @@ def ev_alt_kategorileri_getir():
     return sorted(ev_df["Alt_Kategori"].dropna().unique())
 
 
-def marka_listesi_getir(df, kategori_kolon=None, kategori_deger=None, ikinci_kolon=None, ikinci_deger=None):
-    if df is None or df.empty or "Marka" not in df.columns:
-        return ["Farketmez"]
 
-    sonuc = df.copy()
+GUVENILIR_SITE_LINKLERI = {
+    "Amazon Türkiye": "https://www.amazon.com.tr/s?k={q}",
+    "Amazon": "https://www.amazon.com.tr/s?k={q}",
+    "Hepsiburada": "https://www.hepsiburada.com/ara?q={q}",
+    "Trendyol": "https://www.trendyol.com/sr?q={q}",
+    "Teknosa": "https://www.teknosa.com/arama/?s={q}",
+    "MediaMarkt": "https://www.mediamarkt.com.tr/tr/search.html?query={q}",
+    "Vatan Bilgisayar": "https://www.vatanbilgisayar.com/arama/{q}/",
+    "Vatan": "https://www.vatanbilgisayar.com/arama/{q}/",
+    "n11": "https://www.n11.com/arama?q={q}",
+    "İtopya": "https://www.itopya.com/arama/?search={q}",
+    "Itopya": "https://www.itopya.com/arama/?search={q}",
+    "İncehesap": "https://www.incehesap.com/arama/?q={q}",
+    "Incehesap": "https://www.incehesap.com/arama/?q={q}",
+    "Sinerji": "https://www.sinerji.gen.tr/arama?q={q}",
+    "GamingGenTR": "https://www.gaming.gen.tr/?s={q}&post_type=product",
+    "Akakçe": "https://www.akakce.com/arama/?q={q}",
+    "Akakce": "https://www.akakce.com/arama/?q={q}",
+    "Epey": "https://www.epey.com/arama/?q={q}",
+}
 
-    if kategori_kolon and kategori_deger and kategori_deger not in [None, "Tümü", "Farketmez"]:
-        if kategori_kolon in sonuc.columns:
-            sonuc = sonuc[sonuc[kategori_kolon].astype(str) == str(kategori_deger)]
-
-    if ikinci_kolon and ikinci_deger and ikinci_deger not in [None, "Tümü", "Farketmez"]:
-        if ikinci_kolon in sonuc.columns:
-            sonuc = sonuc[sonuc[ikinci_kolon].astype(str) == str(ikinci_deger)]
-
-    markalar = sorted(sonuc["Marka"].dropna().astype(str).unique())
-    temiz_markalar = []
-
-    for marka in markalar:
-        if marka.strip() != "" and marka.lower() != "nan":
-            temiz_markalar.append(marka)
-
-    return ["Farketmez"] + temiz_markalar
+GUVENILIR_SITE_ADLARI = list(GUVENILIR_SITE_LINKLERI.keys())
 
 
-def fiyat_karsilastirma_html(df, row, site_kolon, fiyat_kolon="Fiyat_TL", max_satir=5):
-    if df is None or df.empty or "Model" not in df.columns or fiyat_kolon not in df.columns:
-        return ""
-
-    model = str(veri_getir(row, "Model"))
-    marka = str(veri_getir(row, "Marka"))
-
-    if model in ["", "Yok", "nan"]:
-        return ""
-
-    ayni_urunler = df[df["Model"].astype(str) == model].copy()
-
-    if ayni_urunler.empty and "Marka" in df.columns:
-        ayni_urunler = df[
-            (df["Marka"].astype(str) == marka) &
-            (df["Model"].astype(str).str.contains(model[:20], na=False, regex=False))
-        ].copy()
-
-    if ayni_urunler.empty:
-        return ""
-
-    ayni_urunler[fiyat_kolon] = pd.to_numeric(ayni_urunler[fiyat_kolon], errors="coerce").fillna(0).astype(int)
-    ayni_urunler = ayni_urunler[ayni_urunler[fiyat_kolon] > 0]
-    ayni_urunler = ayni_urunler.sort_values(by=fiyat_kolon, ascending=True)
-
-    if ayni_urunler.empty:
-        return ""
-
-    satirlar = []
-    for _, item in ayni_urunler.head(max_satir).iterrows():
-        site = item.get(site_kolon, "Bilinmeyen Site") if site_kolon in item.index else "Bilinmeyen Site"
-        fiyat = fiyat_formatla(item.get(fiyat_kolon, 0))
-        satirlar.append(f"<li><b>{site}</b>: {fiyat}</li>")
-
-    baslik = "Fiyat Kaynağı" if len(satirlar) <= 1 else "Fiyat Karşılaştırması"
-
+def html_escape(deger):
     return (
-        '<br>'
-        '<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px; margin-top:12px; color:#111827 !important;">'
-        f'<b>🛒 {baslik}</b>'
-        '<ul style="margin-top:8px; margin-bottom:0; padding-left:20px; color:#111827 !important;">'
-        + ''.join(satirlar) +
-        '</ul></div>'
+        str(deger)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
     )
 
 
-def modelden_marka_tahmin(model):
-    if pd.isna(model):
-        return "Bilinmiyor"
+def site_guvenilir_mi(site_adi):
+    site = str(site_adi).strip().lower()
+    if site in ["", "nan", "none", "yok"]:
+        return False
+    for guvenilir in GUVENILIR_SITE_ADLARI:
+        guvenilir_lower = guvenilir.lower()
+        if site == guvenilir_lower or guvenilir_lower in site or site in guvenilir_lower:
+            return True
+    return False
 
-    metin = str(model).strip()
-    if metin == "":
-        return "Bilinmiyor"
 
-    bilinen_markalar = [
-        "Apple", "Samsung", "Xiaomi", "Huawei", "Honor", "Oppo", "Vivo", "Realme", "OnePlus",
-        "Lenovo", "HP", "Dell", "Asus", "Acer", "MSI", "Monster", "Casper",
-        "Sony", "JBL", "Anker", "Logitech", "Razer", "SteelSeries", "Sennheiser", "Philips"
-    ]
+def site_adi_duzelt(site_adi):
+    site = str(site_adi).strip()
+    for guvenilir in GUVENILIR_SITE_ADLARI:
+        guvenilir_lower = guvenilir.lower()
+        site_lower = site.lower()
+        if site_lower == guvenilir_lower or guvenilir_lower in site_lower or site_lower in guvenilir_lower:
+            return guvenilir
+    return site
 
-    metin_lower = metin.lower()
-    for marka in bilinen_markalar:
-        if marka.lower() in metin_lower:
+
+def guvenilir_site_arama_linki(site_adi, urun_adi):
+    from urllib.parse import quote_plus
+    site = site_adi_duzelt(site_adi)
+    q = quote_plus(str(urun_adi))
+    kalip = GUVENILIR_SITE_LINKLERI.get(site)
+    if kalip:
+        return kalip.format(q=q)
+    return "https://www.google.com/search?q=" + q
+
+
+def urun_adi_olustur(row):
+    marka = veri_getir(row, "Marka")
+    model = veri_getir(row, "Model")
+    if marka != "Yok" and model != "Yok":
+        return f"{marka} {model}"
+    if model != "Yok":
+        return str(model)
+    return str(row.get("Model", "Ürün"))
+
+
+def ayni_urun_kaynaklari(kaynak_turu, row):
+    if kaynak_turu == "ev":
+        df = ev_df.copy()
+        site_kolon = "Kaynak_Site"
+        fiyat_kolon = "Fiyat_TL"
+        marka = str(veri_getir(row, "Marka"))
+        model = str(veri_getir(row, "Model"))
+        if df.empty or site_kolon not in df.columns:
+            return pd.DataFrame()
+        adaylar = df[(df["Marka"].astype(str) == marka) & (df["Model"].astype(str) == model)].copy()
+    elif kaynak_turu == "pc":
+        df = pc_df.copy()
+        site_kolon = "Kaynak"
+        fiyat_kolon = "Fiyat_TL"
+        marka = str(veri_getir(row, "Marka"))
+        model = str(veri_getir(row, "Model"))
+        if df.empty or site_kolon not in df.columns:
+            return pd.DataFrame()
+        adaylar = df[(df["Marka"].astype(str) == marka) & (df["Model"].astype(str) == model)].copy()
+    else:
+        return pd.DataFrame()
+    if adaylar.empty:
+        return adaylar
+    adaylar = adaylar[adaylar[site_kolon].apply(site_guvenilir_mi)].copy()
+    if adaylar.empty:
+        return adaylar
+    adaylar[fiyat_kolon] = pd.to_numeric(adaylar[fiyat_kolon], errors="coerce").fillna(0).astype(int)
+    adaylar = adaylar[adaylar[fiyat_kolon] > 0]
+    adaylar = adaylar.sort_values(by=fiyat_kolon, ascending=True)
+    adaylar = adaylar.drop_duplicates(subset=[site_kolon], keep="first")
+    adaylar = adaylar.rename(columns={site_kolon: "Site", fiyat_kolon: "Fiyat"})
+    return adaylar[["Site", "Fiyat"]].head(5)
+
+
+def fiyat_karsilastirma_html(kaynak_turu, row):
+    urun_adi = urun_adi_olustur(row)
+    kaynaklar = ayni_urun_kaynaklari(kaynak_turu, row)
+    if kaynaklar is None or kaynaklar.empty:
+        return f"""
+<div class=\"price-compare-box\">
+    <div class=\"price-compare-title\">Güvenilir Site Kontrolü</div>
+    <div>Bu ürün için CSV içinde farklı güvenilir site fiyatı bulunamadı.</div>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', urun_adi)}\" target=\"_blank\">Akakçe'de ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', urun_adi)}\" target=\"_blank\">Hepsiburada'da ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
+</div>
+"""
+    en_ucuz = kaynaklar.iloc[0]
+    satirlar = ""
+    for _, item in kaynaklar.iterrows():
+        site = site_adi_duzelt(item["Site"])
+        fiyat = fiyat_formatla(item["Fiyat"])
+        satirlar += f"""
+        <div class=\"price-row\">
+            <span class=\"price-site\">{html_escape(site)}</span>
+            <span class=\"price-value\">{html_escape(fiyat)}</span>
+        </div>
+        """
+    en_ucuz_site = site_adi_duzelt(en_ucuz["Site"])
+    en_ucuz_fiyat = fiyat_formatla(en_ucuz["Fiyat"])
+    link = guvenilir_site_arama_linki(en_ucuz_site, urun_adi)
+    return f"""
+<div class=\"price-compare-box\">
+    <div class=\"price-compare-title\">En Uygun Güvenilir Fiyat</div>
+    <div><b>{html_escape(en_ucuz_site)}</b> üzerinde yaklaşık <b>{html_escape(en_ucuz_fiyat)}</b></div>
+    {satirlar}
+    <a class=\"price-link\" href=\"{link}\" target=\"_blank\">{html_escape(en_ucuz_site)} sitesinde ara</a>
+</div>
+"""
+
+
+def hazir_urun_guvenilir_link_html(row):
+    model = str(veri_getir(row, "Model"))
+    fiyat = veri_getir(row, "FIYAT_SAYI")
+    return f"""
+<div class=\"price-compare-box\">
+    <div class=\"price-compare-title\">Güvenilir Sitelerde Kontrol Et</div>
+    <div>CSV fiyatı: <b>{html_escape(fiyat_formatla(fiyat))}</b></div>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', model)}\" target=\"_blank\">Akakçe'de ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', model)}\" target=\"_blank\">Hepsiburada'da ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Teknosa', model)}\" target=\"_blank\">Teknosa'da ara</a>
+</div>
+"""
+
+
+MARKA_KELIMELERI = [
+    "Apple", "Samsung", "Xiaomi", "Huawei", "Honor", "OnePlus", "Oppo", "Vivo", "Realme",
+    "Lenovo", "HP", "Dell", "Asus", "Acer", "MSI", "Monster", "Casper", "Huawei",
+    "Sony", "JBL", "Anker", "Sennheiser", "Beats", "Logitech", "Philips", "TCL",
+    "Garmin", "Amazfit", "Fitbit"
+]
+
+
+def modelden_marka_bul(model):
+    metin = str(model).lower()
+
+    for marka in MARKA_KELIMELERI:
+        if marka.lower() in metin:
             return marka
 
-    return metin.split()[0]
+    ilk_kelime = str(model).strip().split(" ")[0] if str(model).strip() else "Bilinmiyor"
+    return ilk_kelime
 
 
-def normal_urun_marka_listesi(kategori):
-    try:
-        dosya = "teknoloji_urunleri_dataset.csv"
-        if not os.path.exists(dosya):
-            return ["Farketmez"]
-
-        df = pd.read_csv(dosya, usecols=["Kategori", "Model"])
-        df = df[df["Kategori"].astype(str) == str(kategori)]
-
-        if df.empty:
-            return ["Farketmez"]
-
-        markalar = sorted(df["Model"].apply(modelden_marka_tahmin).dropna().astype(str).unique())
-        markalar = [m for m in markalar if m and m != "Bilinmiyor" and m.lower() != "nan"]
-
-        return ["Farketmez"] + markalar
-
-    except Exception:
+def hazir_urun_markalari_getir(kategori):
+    if tech_df.empty or "Kategori" not in tech_df.columns or "Model" not in tech_df.columns:
         return ["Farketmez"]
 
+    df = tech_df[tech_df["Kategori"].astype(str) == str(kategori)].copy()
 
-def normal_urun_marka_filtrele(df, marka):
-    if df is None or df.empty or marka == "Farketmez" or "Model" not in df.columns:
+    if df.empty:
+        return ["Farketmez"]
+
+    markalar = sorted(df["Model"].apply(modelden_marka_bul).dropna().astype(str).unique())
+
+    return ["Farketmez"] + markalar
+
+
+def secenekleri_getir(df, kategori, kolon):
+    if df.empty or "Kategori" not in df.columns or kolon not in df.columns:
+        return ["Farketmez"]
+
+    sonuc = df[df["Kategori"].astype(str) == str(kategori)][kolon]
+    secenekler = sorted([str(x) for x in sonuc.dropna().unique() if str(x).strip() != ""])
+
+    return ["Farketmez"] + secenekler
+
+
+def kapasite_gb_cek(deger):
+    metin = str(deger).lower().replace(",", ".")
+
+    bulunan = pd.Series([metin]).str.extract(r"(\d+(?:\.\d+)?)")[0].iloc[0]
+
+    if pd.isna(bulunan):
+        return 0
+
+    sayi = float(bulunan)
+
+    if "tb" in metin:
+        sayi *= 1000
+
+    return int(sayi)
+
+
+def evet_hayir_filtrele(df, kolon, secim):
+    if secim == "Farketmez" or kolon not in df.columns:
+        return df
+
+    if secim == "Evet":
+        return df[df[kolon].astype(str).str.lower().str.contains("evet|var|ip|atm|5atm|su", na=False)]
+
+    return df[~df[kolon].astype(str).str.lower().str.contains("evet|var|ip|atm|5atm|su", na=False)]
+
+
+def hazir_urun_detay_filtrele(df, kategori, filtreler):
+    if df is None or df.empty:
         return df
 
     sonuc = df.copy()
-    sonuc = sonuc[sonuc["Model"].apply(modelden_marka_tahmin).astype(str) == str(marka)]
+
+    marka = filtreler.get("marka", "Farketmez")
+    if marka != "Farketmez" and "Model" in sonuc.columns:
+        sonuc = sonuc[sonuc["Model"].apply(modelden_marka_bul).astype(str) == str(marka)]
+
+    if kategori == "Telefon":
+        min_depolama = filtreler.get("min_depolama", "Farketmez")
+        if min_depolama != "Farketmez" and "Depolama" in sonuc.columns:
+            sonuc = sonuc[sonuc["Depolama"].apply(kapasite_gb_cek) >= int(min_depolama)]
+
+        min_kamera = filtreler.get("min_kamera", "Farketmez")
+        if min_kamera != "Farketmez" and "Kamera (MP)" in sonuc.columns:
+            sonuc = sonuc[sonuc["Kamera (MP)"].apply(sayi_cek) >= int(min_kamera)]
+
+        min_batarya = filtreler.get("min_batarya", "Farketmez")
+        if min_batarya != "Farketmez" and "Batarya (mAh)" in sonuc.columns:
+            sonuc = sonuc[pd.to_numeric(sonuc["Batarya (mAh)"], errors="coerce").fillna(0) >= int(min_batarya)]
+
+        sonuc = evet_hayir_filtrele(sonuc, "5G", filtreler.get("bes_g", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "NFC", filtreler.get("nfc", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Su Geçirmezlik", filtreler.get("su", "Farketmez"))
+
+    elif kategori == "Bilgisayar":
+        min_depolama = filtreler.get("min_depolama", "Farketmez")
+        if min_depolama != "Farketmez" and "Depolama" in sonuc.columns:
+            sonuc = sonuc[sonuc["Depolama"].apply(kapasite_gb_cek) >= int(min_depolama)]
+
+        gpu_tercihi = filtreler.get("gpu_tercihi", "Farketmez")
+        if gpu_tercihi != "Farketmez" and "GPU" in sonuc.columns:
+            sonuc = sonuc[sonuc["GPU"].astype(str).str.lower().str.contains(gpu_tercihi.lower(), na=False)]
+
+        isletim = filtreler.get("isletim", "Farketmez")
+        if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşletim Sistemi"].astype(str) == isletim]
+
+    elif kategori == "Tablet":
+        min_depolama = filtreler.get("min_depolama", "Farketmez")
+        if min_depolama != "Farketmez" and "Depolama" in sonuc.columns:
+            sonuc = sonuc[sonuc["Depolama"].apply(kapasite_gb_cek) >= int(min_depolama)]
+
+        min_batarya = filtreler.get("min_batarya", "Farketmez")
+        if min_batarya != "Farketmez" and "Batarya (mAh)" in sonuc.columns:
+            sonuc = sonuc[pd.to_numeric(sonuc["Batarya (mAh)"], errors="coerce").fillna(0) >= int(min_batarya)]
+
+        isletim = filtreler.get("isletim", "Farketmez")
+        if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşletim Sistemi"].astype(str) == isletim]
+
+        sonuc = evet_hayir_filtrele(sonuc, "Su Geçirmezlik", filtreler.get("su", "Farketmez"))
+
+    elif kategori == "Kulaklık":
+        kulaklik_tipi = filtreler.get("kulaklik_tipi", "Farketmez")
+        if kulaklik_tipi != "Farketmez" and "Kulaklık Tipi" in sonuc.columns:
+            sonuc = sonuc[sonuc["Kulaklık Tipi"].astype(str) == kulaklik_tipi]
+
+        baglanti = filtreler.get("baglanti", "Farketmez")
+        if baglanti != "Farketmez" and "Bağlantı Türü" in sonuc.columns:
+            sonuc = sonuc[sonuc["Bağlantı Türü"].astype(str) == baglanti]
+
+        sonuc = evet_hayir_filtrele(sonuc, "Gürültü Engelleme", filtreler.get("gurultu", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Mikrofon", filtreler.get("mikrofon", "Farketmez"))
+
+        min_pil = filtreler.get("min_pil", "Farketmez")
+        if min_pil != "Farketmez" and "Pil Ömrü" in sonuc.columns:
+            sonuc = sonuc[sonuc["Pil Ömrü"].apply(sayi_cek) >= int(min_pil)]
+
+    elif kategori == "Akıllı Saat / Bileklik":
+        sonuc = evet_hayir_filtrele(sonuc, "GPS", filtreler.get("gps", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Su Geçirmezlik", filtreler.get("su", "Farketmez"))
+
+        min_pil_gun = filtreler.get("min_pil_gun", "Farketmez")
+        if min_pil_gun != "Farketmez" and "Pil Ömrü (gün)" in sonuc.columns:
+            sonuc = sonuc[pd.to_numeric(sonuc["Pil Ömrü (gün)"], errors="coerce").fillna(0) >= int(min_pil_gun)]
+
+        isletim = filtreler.get("isletim", "Farketmez")
+        if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşletim Sistemi"].astype(str) == isletim]
+
     return sonuc
 
 
@@ -671,16 +892,12 @@ def pc_parca_filtrele(
     min_kapasite,
     min_watt,
     rgb,
-    marka,
     siralama
 ):
     sonuc = pc_parcalari_getir(alt_kategori, min_butce, max_butce)
 
     if sonuc.empty:
         return sonuc
-
-    if marka != "Farketmez" and "Marka" in sonuc.columns:
-        sonuc = sonuc[sonuc["Marka"].astype(str) == str(marka)]
 
     if soket != "Farketmez" and "Soket" in sonuc.columns:
         sonuc = sonuc[sonuc["Soket"].astype(str).str.upper() == soket.upper()]
@@ -1106,8 +1323,7 @@ def ev_esyasi_oner(
     wifi="Farketmez",
     rgb="Farketmez",
     min_garanti="Farketmez",
-    stok="Farketmez",
-    marka="Farketmez"
+    stok="Farketmez"
 ):
     if ev_df.empty:
         return pd.DataFrame()
@@ -1122,9 +1338,6 @@ def ev_esyasi_oner(
 
     if alt_kategori != "Tümü":
         sonuc = sonuc[sonuc["Alt_Kategori"].astype(str) == alt_kategori]
-
-    if marka != "Farketmez" and "Marka" in sonuc.columns:
-        sonuc = sonuc[sonuc["Marka"].astype(str) == str(marka)]
 
     if kullanim:
         sonuc = sonuc[
@@ -1333,8 +1546,6 @@ def auth_screen():
 
 
 def pc_parca_karti(row):
-    fiyat_karsilastirma = fiyat_karsilastirma_html(pc_df, row, "Kaynak")
-
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
@@ -1344,7 +1555,6 @@ def pc_parca_karti(row):
 <br><br>
 📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
 🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
-🏷️ <b>Marka:</b> {veri_getir(row, 'Marka')}<br>
 🔌 <b>Soket:</b> {veri_getir(row, 'Soket')}<br>
 🧠 <b>RAM Tipi:</b> {veri_getir(row, 'RAM_Tipi')}<br>
 ⚡ <b>Watt:</b> {veri_getir(row, 'Watt')}<br>
@@ -1356,14 +1566,12 @@ def pc_parca_karti(row):
 🖥️ <b>Çözünürlük:</b> {veri_getir(row, 'Cozunurluk')}<br>
 🎮 <b>VRAM:</b> {veri_getir(row, 'VRAM')}<br>
 📚 <b>Kaynak:</b> {veri_getir(row, 'Kaynak')}
-{fiyat_karsilastirma}
+{fiyat_karsilastirma_html('pc', row)}
 </div>
 """, unsafe_allow_html=True)
 
 
 def ev_karti(row):
-    fiyat_karsilastirma = fiyat_karsilastirma_html(ev_df, row, "Kaynak_Site")
-
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🏠 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
@@ -1372,7 +1580,6 @@ def ev_karti(row):
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
 📂 <b>Ana Kategori:</b> {veri_getir(row, 'Ana_Kategori')}<br>
-🏷️ <b>Marka:</b> {veri_getir(row, 'Marka')}<br>
 🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
 📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
 ⚙️ <b>Özellikler:</b> {veri_getir(row, 'Ozellikler')}<br>
@@ -1382,7 +1589,7 @@ def ev_karti(row):
 💬 <b>Yorum Sayısı:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
 📦 <b>Stok:</b> {veri_getir(row, 'Stok_Durumu')}<br>
 🛒 <b>Kaynak Site:</b> {veri_getir(row, 'Kaynak_Site')}
-{fiyat_karsilastirma}
+{fiyat_karsilastirma_html('ev', row)}
 </div>
 """, unsafe_allow_html=True)
 
@@ -1509,8 +1716,7 @@ with col_chat:
                         kullanim="",
                         min_puan=0,
                         enerji_sinifi="Farketmez",
-                        kaynak_site="Farketmez",
-                        marka="Farketmez"
+                        kaynak_site="Farketmez"
                     )
 
                     bot_mesaji = f"{llm_cevap}\n\nAnladığım kriterler: Elektronik Ev Eşyaları, bütçe: {chat_min_butce}-{chat_max_butce} TL."
@@ -1616,40 +1822,56 @@ butce_araligi = st.sidebar.slider(
 min_butce = butce_araligi[0]
 max_butce = butce_araligi[1]
 
+siralama_secenekleri = [
+    "Akıllı Sıralama",
+    "Popülerlik",
+    "Teknik Puan",
+    "En Düşük Fiyat",
+    "En Yüksek Fiyat",
+    "Yorum Sayısı"
+]
+
+if kategori in ["Bilgisayar", "Toplama Bilgisayar"]:
+    siralama_secenekleri.append("Bellek / RAM")
+
 siralama = st.sidebar.selectbox(
     "Listeyi Sırala",
-    [
-        "Akıllı Sıralama",
-        "Popülerlik",
-        "Teknik Puan",
-        "En Düşük Fiyat",
-        "En Yüksek Fiyat",
-        "Yorum Sayısı",
-        "Bellek / RAM"
-    ]
+    siralama_secenekleri
 )
+
+kullanim_secimleri = {
+    "Telefon": ["", "Günlük Kullanım", "Oyun", "Kamera / Fotoğraf", "Video İçerik Üretimi", "Sosyal Medya", "Uzun Pil", "İş"],
+    "Bilgisayar": ["", "Oyun", "Yazılım", "Ofis", "Okul", "Tasarım", "Video Edit", "Günlük Kullanım"],
+    "Tablet": ["", "Okul", "Not Alma", "Çizim", "Film / Dizi", "Günlük Kullanım", "İş"],
+    "Kulaklık": ["", "Müzik", "Oyun", "Spor", "Gürültü Engelleme", "Toplantı", "Günlük Kullanım"],
+    "Akıllı Saat / Bileklik": ["", "Spor", "Sağlık Takibi", "Günlük Kullanım", "Bildirim", "Uzun Pil"],
+    "Toplama Bilgisayar": ["", "Oyun", "Yazılım", "Tasarım", "Video Edit", "Ofis"],
+    "Elektronik Ev Eşyaları": ["", "Ev Temizliği", "Pratik Yemek", "Akıllı Ev", "Alerji", "Hava Kalitesi", "Güvenlik", "Günlük Kullanım"]
+}
 
 kullanim = st.sidebar.selectbox(
     "Kullanım Amacı",
-    [
-        "",
-        "Oyun",
-        "Okul",
-        "Ofis",
-        "Yazılım",
-        "Tasarım",
-        "Video Edit",
-        "Günlük",
-        "Ev Temizliği",
-        "Pratik Yemek",
-        "Akıllı Ev",
-        "Alerji",
-        "Hava Kalitesi",
-        "Güvenlik"
-    ]
+    kullanim_secimleri.get(kategori, [""])
 )
 
 min_ram = 0
+
+hazir_marka = "Farketmez"
+hazir_min_depolama = "Farketmez"
+hazir_min_kamera = "Farketmez"
+hazir_min_batarya = "Farketmez"
+hazir_5g = "Farketmez"
+hazir_nfc = "Farketmez"
+hazir_su = "Farketmez"
+hazir_gpu = "Farketmez"
+hazir_isletim = "Farketmez"
+hazir_kulaklik_tipi = "Farketmez"
+hazir_baglanti = "Farketmez"
+hazir_gurultu = "Farketmez"
+hazir_mikrofon = "Farketmez"
+hazir_min_pil = "Farketmez"
+hazir_gps = "Farketmez"
+hazir_min_pil_gun = "Farketmez"
 
 ev_ana_kategori = None
 ev_alt_kategori = None
@@ -1663,8 +1885,6 @@ ev_wifi = "Farketmez"
 ev_rgb = "Farketmez"
 ev_garanti = "Farketmez"
 ev_stok = "Farketmez"
-ev_marka = "Farketmez"
-normal_marka = "Farketmez"
 
 
 if kategori == "Toplama Bilgisayar":
@@ -1683,12 +1903,6 @@ if kategori == "Toplama Bilgisayar":
         st.sidebar.info("Parça başlıklarını aç, seçimlerini yap, en alttaki butonla sonuçları getir.")
 
         with st.sidebar.expander("İşlemci"):
-            marka_cpu = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "İşlemci"),
-                key="cpu_marka"
-            )
-
             soket_cpu = st.selectbox(
                 "Soket",
                 ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"],
@@ -1696,12 +1910,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Anakart"):
-            marka_mb = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Anakart"),
-                key="mb_marka"
-            )
-
             soket_mb = st.selectbox(
                 "Soket",
                 ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"],
@@ -1715,12 +1923,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("RAM"):
-            marka_ram = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "RAM"),
-                key="ram_marka"
-            )
-
             ramtip_ram = st.selectbox(
                 "RAM Tipi",
                 ["Farketmez", "DDR4", "DDR5"],
@@ -1734,12 +1936,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Ekran Kartı"):
-            marka_gpu = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Ekran Kartı"),
-                key="gpu_marka"
-            )
-
             min_vram_gpu = st.selectbox(
                 "Minimum VRAM",
                 ["Farketmez", "4", "6", "8", "12", "16"],
@@ -1747,12 +1943,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("SSD"):
-            marka_ssd = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "SSD"),
-                key="ssd_marka"
-            )
-
             min_kapasite_ssd = st.selectbox(
                 "Minimum Kapasite",
                 ["Farketmez", "500", "1000", "2000", "4000"],
@@ -1760,12 +1950,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("HDD"):
-            marka_hdd = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "HDD"),
-                key="hdd_marka"
-            )
-
             min_kapasite_hdd = st.selectbox(
                 "Minimum Kapasite",
                 ["Farketmez", "500", "1000", "2000", "4000"],
@@ -1773,12 +1957,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Güç Kaynağı"):
-            marka_psu = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Güç Kaynağı"),
-                key="psu_marka"
-            )
-
             min_watt_psu = st.selectbox(
                 "Minimum Watt",
                 ["Farketmez", "500", "600", "650", "750", "850", "1000"],
@@ -1786,12 +1964,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Kasa"):
-            marka_kasa = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Kasa"),
-                key="case_marka"
-            )
-
             rgb_kasa = st.selectbox(
                 "RGB",
                 ["Farketmez", "Var", "Yok"],
@@ -1799,12 +1971,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Soğutucu"):
-            marka_cooler = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Soğutucu"),
-                key="cooler_marka"
-            )
-
             soket_cooler = st.selectbox(
                 "Soket",
                 ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"],
@@ -1818,12 +1984,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Monitör"):
-            marka_monitor = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Monitör"),
-                key="monitor_marka"
-            )
-
             monitor_rgb = st.selectbox(
                 "RGB",
                 ["Farketmez", "Var", "Yok"],
@@ -1831,12 +1991,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Klavye"):
-            marka_keyboard = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Klavye"),
-                key="keyboard_marka"
-            )
-
             rgb_keyboard = st.selectbox(
                 "RGB",
                 ["Farketmez", "Var", "Yok"],
@@ -1844,12 +1998,6 @@ if kategori == "Toplama Bilgisayar":
             )
 
         with st.sidebar.expander("Mouse"):
-            marka_mouse = st.selectbox(
-                "Marka",
-                marka_listesi_getir(pc_df, "Alt_Kategori", "Mouse"),
-                key="mouse_marka"
-            )
-
             rgb_mouse = st.selectbox(
                 "RGB",
                 ["Farketmez", "Var", "Yok"],
@@ -1872,18 +2020,6 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     "Farketmez",
-                    marka_cpu,
-                    marka_mb,
-                    marka_ram,
-                    marka_gpu,
-                    marka_ssd,
-                    marka_hdd,
-                    marka_psu,
-                    marka_kasa,
-                    marka_cooler,
-                    marka_monitor,
-                    marka_keyboard,
-                    marka_mouse,
                     siralama
                 )
             )
@@ -2095,11 +2231,6 @@ elif kategori == "Elektronik Ev Eşyaları":
 
     ev_alt_kategori = st.sidebar.selectbox("Alt Kategori", alt_kategoriler)
 
-    ev_marka = st.sidebar.selectbox(
-        "Marka",
-        marka_listesi_getir(ev_df, "Ana_Kategori", ev_ana_kategori, "Alt_Kategori", ev_alt_kategori)
-    )
-
     ev_min_puan = st.sidebar.slider(
         "Minimum Puan",
         min_value=0.0,
@@ -2154,17 +2285,140 @@ elif kategori == "Elektronik Ev Eşyaları":
     )
 
 
-else:
-    normal_marka = st.sidebar.selectbox(
+elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulaklık", "Akıllı Saat / Bileklik"]:
+    st.sidebar.markdown("### 🔎 Kategoriye Özel Filtreler")
+
+    hazir_marka = st.sidebar.selectbox(
         "Marka",
-        normal_urun_marka_listesi(kategori)
+        hazir_urun_markalari_getir(kategori),
+        key=f"hazir_marka_{kategori}"
     )
 
-    min_ram = st.sidebar.selectbox(
-        "Minimum RAM",
-        [0, 2, 4, 6, 8, 12, 16, 24, 32, 64],
-        index=3
-    )
+    if kategori == "Telefon":
+        hazir_min_depolama = st.sidebar.selectbox(
+            "Minimum Depolama",
+            ["Farketmez", "64", "128", "256", "512", "1000"],
+            key="telefon_depolama"
+        )
+        hazir_min_kamera = st.sidebar.selectbox(
+            "Minimum Kamera / MP",
+            ["Farketmez", "12", "24", "48", "64", "108", "200"],
+            key="telefon_kamera"
+        )
+        hazir_min_batarya = st.sidebar.selectbox(
+            "Minimum Batarya / mAh",
+            ["Farketmez", "3000", "4000", "4500", "5000", "5500", "6000"],
+            key="telefon_batarya"
+        )
+        hazir_5g = st.sidebar.selectbox(
+            "5G",
+            ["Farketmez", "Evet", "Hayır"],
+            key="telefon_5g"
+        )
+        hazir_nfc = st.sidebar.selectbox(
+            "NFC",
+            ["Farketmez", "Evet", "Hayır"],
+            key="telefon_nfc"
+        )
+        hazir_su = st.sidebar.selectbox(
+            "Su Geçirmezlik",
+            ["Farketmez", "Evet", "Hayır"],
+            key="telefon_su"
+        )
+
+    elif kategori == "Bilgisayar":
+        min_ram = st.sidebar.selectbox(
+            "Minimum RAM",
+            [0, 4, 8, 12, 16, 24, 32, 64],
+            index=2,
+            key="bilgisayar_ram"
+        )
+        hazir_min_depolama = st.sidebar.selectbox(
+            "Minimum Depolama",
+            ["Farketmez", "256", "512", "1000", "2000"],
+            key="bilgisayar_depolama"
+        )
+        hazir_gpu = st.sidebar.selectbox(
+            "GPU Tercihi",
+            ["Farketmez", "RTX", "GTX", "Radeon", "Intel", "Apple", "Paylaşımlı"],
+            key="bilgisayar_gpu"
+        )
+        hazir_isletim = st.sidebar.selectbox(
+            "İşletim Sistemi",
+            secenekleri_getir(tech_df, kategori, "İşletim Sistemi"),
+            key="bilgisayar_isletim"
+        )
+
+    elif kategori == "Tablet":
+        hazir_min_depolama = st.sidebar.selectbox(
+            "Minimum Depolama",
+            ["Farketmez", "64", "128", "256", "512", "1000"],
+            key="tablet_depolama"
+        )
+        hazir_min_batarya = st.sidebar.selectbox(
+            "Minimum Batarya / mAh",
+            ["Farketmez", "4000", "6000", "8000", "10000"],
+            key="tablet_batarya"
+        )
+        hazir_isletim = st.sidebar.selectbox(
+            "İşletim Sistemi",
+            secenekleri_getir(tech_df, kategori, "İşletim Sistemi"),
+            key="tablet_isletim"
+        )
+        hazir_su = st.sidebar.selectbox(
+            "Su Geçirmezlik",
+            ["Farketmez", "Evet", "Hayır"],
+            key="tablet_su"
+        )
+
+    elif kategori == "Kulaklık":
+        hazir_kulaklik_tipi = st.sidebar.selectbox(
+            "Kulaklık Tipi",
+            secenekleri_getir(tech_df, kategori, "Kulaklık Tipi"),
+            key="kulaklik_tipi"
+        )
+        hazir_baglanti = st.sidebar.selectbox(
+            "Bağlantı Türü",
+            secenekleri_getir(tech_df, kategori, "Bağlantı Türü"),
+            key="kulaklik_baglanti"
+        )
+        hazir_gurultu = st.sidebar.selectbox(
+            "Gürültü Engelleme",
+            ["Farketmez", "Evet", "Hayır"],
+            key="kulaklik_gurultu"
+        )
+        hazir_mikrofon = st.sidebar.selectbox(
+            "Mikrofon",
+            ["Farketmez", "Evet", "Hayır"],
+            key="kulaklik_mikrofon"
+        )
+        hazir_min_pil = st.sidebar.selectbox(
+            "Minimum Pil Ömrü / saat",
+            ["Farketmez", "5", "10", "20", "30", "40", "50"],
+            key="kulaklik_pil"
+        )
+
+    elif kategori == "Akıllı Saat / Bileklik":
+        hazir_gps = st.sidebar.selectbox(
+            "GPS",
+            ["Farketmez", "Evet", "Hayır"],
+            key="saat_gps"
+        )
+        hazir_su = st.sidebar.selectbox(
+            "Su Geçirmezlik",
+            ["Farketmez", "Evet", "Hayır"],
+            key="saat_su"
+        )
+        hazir_min_pil_gun = st.sidebar.selectbox(
+            "Minimum Pil Ömrü / gün",
+            ["Farketmez", "1", "3", "5", "7", "10", "14"],
+            key="saat_pil"
+        )
+        hazir_isletim = st.sidebar.selectbox(
+            "İşletim Sistemi",
+            secenekleri_getir(tech_df, kategori, "İşletim Sistemi"),
+            key="saat_isletim"
+        )
 
 
 st.sidebar.markdown("---")
@@ -2192,8 +2446,7 @@ if kategori != "Toplama Bilgisayar":
                 wifi=ev_wifi,
                 rgb=ev_rgb,
                 min_garanti=ev_garanti,
-                stok=ev_stok,
-                marka=ev_marka
+                stok=ev_stok
             )
 
         else:
@@ -2207,7 +2460,26 @@ if kategori != "Toplama Bilgisayar":
                 kullanim
             )
 
-            sonuc = normal_urun_marka_filtrele(sonuc, normal_marka)
+            hazir_filtreler = {
+                "marka": hazir_marka,
+                "min_depolama": hazir_min_depolama,
+                "min_kamera": hazir_min_kamera,
+                "min_batarya": hazir_min_batarya,
+                "bes_g": hazir_5g,
+                "nfc": hazir_nfc,
+                "su": hazir_su,
+                "gpu_tercihi": hazir_gpu,
+                "isletim": hazir_isletim,
+                "kulaklik_tipi": hazir_kulaklik_tipi,
+                "baglanti": hazir_baglanti,
+                "gurultu": hazir_gurultu,
+                "mikrofon": hazir_mikrofon,
+                "min_pil": hazir_min_pil,
+                "gps": hazir_gps,
+                "min_pil_gun": hazir_min_pil_gun
+            }
+
+            sonuc = hazir_urun_detay_filtrele(sonuc, kategori, hazir_filtreler)
 
             sonuc = siralama_uygula(
                 sonuc,
@@ -2461,7 +2733,6 @@ else:
                 st.markdown(f"""
 <div class="product-card">
 <div class="product-title">📦 {veri_getir(row, 'Model')}</div><br>
-<span class="badge-blue">🏷️ Marka: {modelden_marka_tahmin(veri_getir(row, 'Model'))}</span><br><br>
 <span class="badge-orange">💰 {veri_getir(row, 'FIYAT_SAYI')} TL</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'ONERI_PUANI')}</span>
@@ -2473,7 +2744,7 @@ else:
 💾 <b>Depolama:</b> {veri_getir(row, 'Depolama')}<br>
 🎮 <b>GPU:</b> {veri_getir(row, 'GPU')}<br>
 🖥️ <b>Ekran:</b> {veri_getir(row, 'Ekran')}<br>
-🛒 <b>Fiyat Karşılaştırması:</b> Bu hazır ürün datasetinde site/link kolonu olmadığı için sadece tahmini marka filtresi uygulanır.<br>
+{hazir_urun_guvenilir_link_html(row)}
 </div>
 """, unsafe_allow_html=True)
 
