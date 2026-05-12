@@ -1529,7 +1529,7 @@ def pc_parca_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
