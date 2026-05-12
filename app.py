@@ -23,11 +23,12 @@ from auth import (
 
 
 st.set_page_config(
-    st.warning("YENİ APP.PY ÇALIŞIYOR - TEST 12 MAYIS")
+    
     page_title="Akıllı Teknoloji Ürünleri Öneri Sistemi",
     page_icon="🤖",
     layout="wide"
 )
+st.warning("YENİ APP.PY ÇALIŞIYOR - TEST 12 MAYIS")
 
 
 st.markdown("""
