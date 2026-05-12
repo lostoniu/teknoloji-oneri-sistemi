@@ -31,18 +31,26 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
 .stApp {
-    background-color: #0f172a;
-    color: white;
+    background: linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%);
+    color: #ffffff;
 }
 
 section[data-testid="stSidebar"] {
-    background-color: #111827;
-    border-right: 3px solid #9700bd;
+    background: rgba(15, 23, 42, 0.96);
+    border-right: 1px solid rgba(139, 92, 246, 0.45);
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.22);
 }
 
 h1, h2, h3, h4 {
     color: #ffffff !important;
+    letter-spacing: -0.02em;
 }
 
 p, label, span, div {
@@ -50,88 +58,164 @@ p, label, span, div {
 }
 
 .stButton button {
-    background-color: #ee8713;
+    background: linear-gradient(135deg, #f59e0b 0%, #ee8713 100%);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    padding: 0.6rem 1rem;
+    border-radius: 14px;
+    font-weight: 800;
+    padding: 0.65rem 1rem;
+    transition: all 0.22s ease;
+    box-shadow: 0 10px 22px rgba(238, 135, 19, 0.18);
 }
 
 .stButton button:hover {
-    background-color: #ff9f2d;
+    background: linear-gradient(135deg, #ffb347 0%, #f97316 100%);
     color: white;
-    border: 1px solid #57a4fb;
+    transform: translateY(-2px);
+    border: 1px solid rgba(87, 164, 251, 0.7);
 }
 
-[data-baseweb="select"] > div {
-    background-color: #111827 !important;
+[data-baseweb="select"] > div,
+.stTextInput input,
+.stNumberInput input {
+    background-color: rgba(17, 24, 39, 0.94) !important;
     color: white !important;
-    border-radius: 10px !important;
-    border: 1px solid #57a4fb !important;
-}
-
-.stTextInput input {
-    background-color: #111827 !important;
-    color: white !important;
-    border-radius: 10px;
-    border: 1px solid #57a4fb;
+    border-radius: 12px !important;
+    border: 1px solid rgba(87, 164, 251, 0.75) !important;
 }
 
 .stChatInput textarea {
-    background-color: #111827 !important;
+    background-color: rgba(17, 24, 39, 0.96) !important;
     color: white !important;
+    border-radius: 14px !important;
 }
 
 div[data-testid="stAlert"] {
-    background-color: #1e293b;
-    border-left: 6px solid #ee8713;
-    border-radius: 12px;
+    background-color: rgba(30, 41, 59, 0.95);
+    border-left: 6px solid #f59e0b;
+    border-radius: 14px;
 }
 
 .product-card {
-    background-color: #111827;
-    border: 2px solid #57a4fb;
-    border-radius: 14px;
-    padding: 18px;
+    background: #f8f5f0;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    border-radius: 20px;
+    padding: 20px;
     margin-bottom: 18px;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+    transition: all 0.24s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 45px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(87, 164, 251, 0.25);
+}
+
+.product-card, .product-card div, .product-card p, .product-card b {
+    color: #111827 !important;
 }
 
 .product-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+    color: #111827 !important;
 }
 
 .badge-blue {
     background-color: #57a4fb;
-    color: #0f172a;
-    padding: 5px 10px;
+    color: #0f172a !important;
+    padding: 6px 11px;
     border-radius: 999px;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 800;
 }
 
 .badge-purple {
-    background-color: #9700bd;
-    color: white;
-    padding: 5px 10px;
+    background-color: #8b5cf6;
+    color: white !important;
+    padding: 6px 11px;
     border-radius: 999px;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 800;
 }
 
 .badge-orange {
     background-color: #ee8713;
-    color: white;
-    padding: 5px 10px;
+    color: white !important;
+    padding: 6px 11px;
     border-radius: 999px;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 800;
+}
+
+.system-card {
+    background: rgba(248, 245, 240, 0.98);
+    border: 1px solid rgba(139, 92, 246, 0.38);
+    border-radius: 22px;
+    padding: 18px;
+    min-height: 138px;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.20);
+    transition: all 0.22s ease;
+}
+
+.system-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 46px rgba(0, 0, 0, 0.26), 0 0 0 1px rgba(87, 164, 251, 0.25);
+}
+
+.system-card, .system-card div, .system-card span, .system-card b {
+    color: #111827 !important;
+}
+
+.system-title {
+    font-size: 19px;
+    font-weight: 900;
+    color: #111827 !important;
+}
+
+.system-price {
+    font-size: 22px;
+    font-weight: 900;
+    color: #4c1d95 !important;
+    margin-top: 6px;
+}
+
+.system-chip {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    color: white !important;
+}
+
+.chip-1 { background: #10b981; }
+.chip-2 { background: #57a4fb; color: #0f172a !important; }
+.chip-3 { background: #8b5cf6; }
+.chip-4 { background: #f59e0b; }
+.chip-5 { background: #ef4444; }
+
+.summary-box {
+    background: rgba(248, 245, 240, 0.98);
+    border: 1px solid rgba(87, 164, 251, 0.35);
+    border-radius: 22px;
+    padding: 20px;
+    margin: 16px 0 20px 0;
+    box-shadow: 0 18px 38px rgba(0,0,0,0.18);
+}
+
+.summary-box, .summary-box div, .summary-box b {
+    color: #111827 !important;
 }
 
 hr {
-    border: 1px solid #9700bd;
+    border: 1px solid rgba(139, 92, 246, 0.45);
+}
+
+[data-testid="stDataFrame"] {
+    border-radius: 16px;
+    overflow: hidden;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -522,6 +606,7 @@ def pc_random_sec(df, seed):
     return havuz.loc[secilen_index]
 
 
+
 def pc_aday_sec(adaylar, hedef_fiyat, seed):
     if adaylar is None or adaylar.empty:
         return None
@@ -534,21 +619,55 @@ def pc_aday_sec(adaylar, hedef_fiyat, seed):
         return None
 
     sonuc = sonuc.assign(_fark=(sonuc["Fiyat_TL"] - hedef_fiyat).abs())
-    sonuc = sonuc.sort_values(by=["_fark", "Puan"], ascending=[True, False]) if "Puan" in sonuc.columns else sonuc.sort_values(by="_fark")
+    if "Puan" in sonuc.columns:
+        sonuc = sonuc.sort_values(by=["_fark", "Puan"], ascending=[True, False])
+    else:
+        sonuc = sonuc.sort_values(by="_fark")
 
-    havuz = sonuc.head(8)
+    havuz = sonuc.head(10)
     rnd = random.Random(seed)
     secilen_index = rnd.choice(list(havuz.index))
 
     return havuz.loc[secilen_index].drop(labels=["_fark"], errors="ignore")
 
 
-
-def pc_havuz_hazirla(alt_kategori, max_butce, kullanim="", soket=None, ram_tipi=None, min_psu=0):
-    df = pc_parcalari_getir(alt_kategori, 0, max_butce)
-
+# HIZLI SİSTEM ÜRETİCİ
+# Eski yavaş kodun yerine tek seferde havuz hazırlayıp 5 sistemi hızlı üretir.
+def fiyat_hedefine_yakin_satir(df, hedef, varyasyon=0):
     if df is None or df.empty:
+        return None
+
+    aday = df.copy()
+    aday["Fiyat_TL"] = pd.to_numeric(aday["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+    aday = aday[aday["Fiyat_TL"] > 0]
+
+    if aday.empty:
+        return None
+
+    aday = aday.assign(_fark=(aday["Fiyat_TL"] - int(hedef)).abs())
+
+    if "Puan" in aday.columns:
+        aday = aday.sort_values(by=["_fark", "Puan"], ascending=[True, False])
+    else:
+        aday = aday.sort_values(by=["_fark", "Fiyat_TL"], ascending=[True, True])
+
+    siralar = list(aday.index)
+    secilecek_sira = min(abs(int(varyasyon)), len(siralar) - 1)
+    return aday.loc[siralar[secilecek_sira]].drop(labels=["_fark"], errors="ignore")
+
+
+def pc_havuzu_fast(alt_kategori, max_butce, kullanim=""):
+    if pc_df.empty:
         return pd.DataFrame()
+
+    df = pc_df[
+        (pc_df["Alt_Kategori"].astype(str) == alt_kategori) &
+        (pc_df["Fiyat_TL"] > 0) &
+        (pc_df["Fiyat_TL"] <= max_butce)
+    ].copy()
+
+    if df.empty:
+        return df
 
     if alt_kategori in ["İşlemci", "Ekran Kartı"] and kullanim and "Kullanim_Amaci" in df.columns:
         filtre = df[
@@ -560,47 +679,122 @@ def pc_havuz_hazirla(alt_kategori, max_butce, kullanim="", soket=None, ram_tipi=
         if not filtre.empty:
             df = filtre
 
-    if alt_kategori in ["Anakart", "Soğutucu"] and soket and "Soket" in df.columns:
-        if alt_kategori == "Soğutucu":
-            filtre = df[df["Soket"].astype(str).str.contains(str(soket), na=False)]
-        else:
-            filtre = df[df["Soket"].astype(str) == str(soket)]
-        if not filtre.empty:
-            df = filtre
-
-    if alt_kategori in ["Anakart", "RAM"] and ram_tipi and "RAM_Tipi" in df.columns:
-        filtre = df[df["RAM_Tipi"].astype(str) == str(ram_tipi)]
-        if not filtre.empty:
-            df = filtre
-
-    if alt_kategori == "Güç Kaynağı" and min_psu > 0 and "Watt" in df.columns:
-        filtre = df[sayisal_filtre_degeri(df["Watt"]) >= int(min_psu)]
-        if not filtre.empty:
-            df = filtre
-
     df = df.drop_duplicates(subset=["Marka", "Model"], keep="first")
-    df = df.sort_values(by="Fiyat_TL", ascending=True)
+    df = df.sort_values(by="Fiyat_TL", ascending=True).reset_index(drop=True)
     return df
 
 
-def fiyat_hedefine_en_yakin_sec(df, hedef, seed):
+def uyumlu_havuz_filtrele(df, kategori, soket=None, ram_tipi=None, min_psu=0):
     if df is None or df.empty:
-        return None
+        return pd.DataFrame()
 
-    aday = df.copy()
-    aday["_fark"] = (pd.to_numeric(aday["Fiyat_TL"], errors="coerce").fillna(0) - int(hedef)).abs()
-    aday = aday.sort_values(by=["_fark", "Fiyat_TL"], ascending=[True, True])
-    havuz = aday.head(8)
+    sonuc = df.copy()
 
-    rnd = random.Random(seed)
-    secilen_index = rnd.choice(list(havuz.index))
-    return aday.loc[secilen_index].drop(labels=["_fark"], errors="ignore")
+    if kategori == "Anakart":
+        if soket and "Soket" in sonuc.columns:
+            filtre = sonuc[sonuc["Soket"].astype(str) == str(soket)]
+            if not filtre.empty:
+                sonuc = filtre
+
+        if ram_tipi and "RAM_Tipi" in sonuc.columns:
+            filtre = sonuc[sonuc["RAM_Tipi"].astype(str) == str(ram_tipi)]
+            if not filtre.empty:
+                sonuc = filtre
+
+    if kategori == "RAM":
+        if ram_tipi and "RAM_Tipi" in sonuc.columns:
+            filtre = sonuc[sonuc["RAM_Tipi"].astype(str) == str(ram_tipi)]
+            if not filtre.empty:
+                sonuc = filtre
+
+    if kategori == "Güç Kaynağı":
+        if min_psu > 0 and "Watt" in sonuc.columns:
+            filtre = sonuc[sayisal_filtre_degeri(sonuc["Watt"]) >= int(min_psu)]
+            if not filtre.empty:
+                sonuc = filtre
+
+    if kategori == "Soğutucu":
+        if soket and "Soket" in sonuc.columns:
+            filtre = sonuc[sonuc["Soket"].astype(str).str.contains(str(soket), na=False)]
+            if not filtre.empty:
+                sonuc = filtre
+
+    return sonuc.sort_values(by="Fiyat_TL", ascending=True).reset_index(drop=True)
 
 
-def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed):
-    if pc_df.empty:
-        return None
+def sistem_toplam_fiyat(parcalar):
+    return sum(int(row.get("Fiyat_TL", 0)) for row in parcalar.values())
 
+
+def sistem_imza(parcalar):
+    return "|".join([
+        str(row.get("Marka", "")) + " " + str(row.get("Model", ""))
+        for row in parcalar.values()
+    ])
+
+
+def sistemi_butceye_yaklastir(parcalar, havuzlar, min_butce, max_butce, hedef_fiyat):
+    # En fazla 10 ucuz/pahalı değişim yapar. Sonsuz döngü yok, hızlı çalışır.
+    for _ in range(10):
+        toplam = sistem_toplam_fiyat(parcalar)
+
+        if min_butce <= toplam <= max_butce:
+            return parcalar
+
+        degisimler = []
+
+        for kategori, mevcut in parcalar.items():
+            mevcut_fiyat = int(mevcut.get("Fiyat_TL", 0))
+            havuz = havuzlar.get(kategori, pd.DataFrame())
+
+            if havuz is None or havuz.empty:
+                continue
+
+            if toplam < min_butce:
+                adaylar = havuz[havuz["Fiyat_TL"] > mevcut_fiyat].copy()
+                if adaylar.empty:
+                    continue
+
+                adaylar = adaylar.assign(
+                    _yeni_toplam=toplam - mevcut_fiyat + adaylar["Fiyat_TL"]
+                )
+                adaylar = adaylar[adaylar["_yeni_toplam"] <= max_butce]
+
+                if adaylar.empty:
+                    continue
+
+                adaylar = adaylar.assign(_fark=(adaylar["_yeni_toplam"] - hedef_fiyat).abs())
+                aday = adaylar.sort_values(by="_fark").iloc[0]
+                degisimler.append((abs(int(aday["_yeni_toplam"]) - hedef_fiyat), kategori, aday.drop(labels=["_yeni_toplam", "_fark"], errors="ignore")))
+
+            else:
+                adaylar = havuz[havuz["Fiyat_TL"] < mevcut_fiyat].copy()
+                if adaylar.empty:
+                    continue
+
+                adaylar = adaylar.assign(
+                    _yeni_toplam=toplam - mevcut_fiyat + adaylar["Fiyat_TL"]
+                )
+                adaylar = adaylar[adaylar["_yeni_toplam"] >= min_butce]
+
+                if adaylar.empty:
+                    continue
+
+                adaylar = adaylar.assign(_fark=(adaylar["_yeni_toplam"] - hedef_fiyat).abs())
+                aday = adaylar.sort_values(by="_fark").iloc[0]
+                degisimler.append((abs(int(aday["_yeni_toplam"]) - hedef_fiyat), kategori, aday.drop(labels=["_yeni_toplam", "_fark"], errors="ignore")))
+
+        if not degisimler:
+            return parcalar
+
+        degisimler = sorted(degisimler, key=lambda x: x[0])
+        _, kategori, yeni_parca = degisimler[0]
+        parcalar[kategori] = yeni_parca
+
+    return parcalar
+
+
+def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, ana_havuzlar, varyasyon):
     oranlar = {
         "İşlemci": 0.18,
         "Ekran Kartı": 0.35,
@@ -614,8 +808,11 @@ def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, see
 
     parcalar = {}
 
-    islemciler = pc_havuz_hazirla("İşlemci", max_butce, kullanim)
-    islemci = fiyat_hedefine_en_yakin_sec(islemciler, hedef_fiyat * oranlar["İşlemci"], seed + 1)
+    islemci = fiyat_hedefine_yakin_satir(
+        ana_havuzlar.get("İşlemci", pd.DataFrame()),
+        hedef_fiyat * oranlar["İşlemci"],
+        varyasyon
+    )
     if islemci is None:
         return None
 
@@ -623,8 +820,11 @@ def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, see
     soket = str(islemci.get("Soket", ""))
     ram_tipi = str(islemci.get("RAM_Tipi", ""))
 
-    ekran_kartlari = pc_havuz_hazirla("Ekran Kartı", max_butce, kullanim)
-    ekran_karti = fiyat_hedefine_en_yakin_sec(ekran_kartlari, hedef_fiyat * oranlar["Ekran Kartı"], seed + 2)
+    ekran_karti = fiyat_hedefine_yakin_satir(
+        ana_havuzlar.get("Ekran Kartı", pd.DataFrame()),
+        hedef_fiyat * oranlar["Ekran Kartı"],
+        varyasyon
+    )
     if ekran_karti is None:
         return None
 
@@ -633,29 +833,24 @@ def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, see
     gpu_watt = sayi_cek(ekran_karti.get("Watt", 0))
     min_psu = max(500, gpu_watt + 250) if gpu_watt > 0 else 500
 
-    kategori_sirasi = [
-        "Anakart",
-        "RAM",
-        "SSD",
-        "Güç Kaynağı",
-        "Kasa",
-        "Soğutucu"
-    ]
+    uyumlu_havuzlar = {
+        "İşlemci": ana_havuzlar.get("İşlemci", pd.DataFrame()),
+        "Ekran Kartı": ana_havuzlar.get("Ekran Kartı", pd.DataFrame()),
+    }
 
-    for sira, kategori in enumerate(kategori_sirasi):
-        havuz = pc_havuz_hazirla(
+    for kategori in ["Anakart", "RAM", "SSD", "Güç Kaynağı", "Kasa", "Soğutucu"]:
+        uyumlu_havuzlar[kategori] = uyumlu_havuz_filtrele(
+            ana_havuzlar.get(kategori, pd.DataFrame()),
             kategori,
-            max_butce,
-            kullanim,
             soket=soket,
             ram_tipi=ram_tipi,
             min_psu=min_psu
         )
 
-        secilen = fiyat_hedefine_en_yakin_sec(
-            havuz,
+        secilen = fiyat_hedefine_yakin_satir(
+            uyumlu_havuzlar[kategori],
             hedef_fiyat * oranlar[kategori],
-            seed + 10 + sira
+            varyasyon
         )
 
         if secilen is None:
@@ -663,82 +858,18 @@ def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, see
 
         parcalar[kategori] = secilen
 
-    toplam = sum(int(row.get("Fiyat_TL", 0)) for row in parcalar.values())
+    parcalar = sistemi_butceye_yaklastir(
+        parcalar=parcalar,
+        havuzlar=uyumlu_havuzlar,
+        min_butce=min_butce,
+        max_butce=max_butce,
+        hedef_fiyat=hedef_fiyat
+    )
 
-    # Sistem min altındaysa pahalı parça yükselt, max üstündeyse ucuz parça düşür.
-    for tur in range(12):
-        toplam = sum(int(row.get("Fiyat_TL", 0)) for row in parcalar.values())
-
-        if min_butce <= toplam <= max_butce:
-            break
-
-        if toplam < min_butce:
-            kalan = min_butce - toplam
-            yukseltilebilirler = []
-
-            for kategori, mevcut in parcalar.items():
-                mevcut_fiyat = int(mevcut.get("Fiyat_TL", 0))
-                havuz = pc_havuz_hazirla(
-                    kategori,
-                    max_butce,
-                    kullanim,
-                    soket=soket,
-                    ram_tipi=ram_tipi,
-                    min_psu=min_psu
-                )
-                havuz = havuz[
-                    (havuz["Fiyat_TL"] > mevcut_fiyat) &
-                    (havuz["Fiyat_TL"] <= mevcut_fiyat + kalan + 8000)
-                ]
-
-                if not havuz.empty:
-                    havuz = havuz.sort_values(by="Fiyat_TL", ascending=False)
-                    yukseltilebilirler.append((kategori, havuz.iloc[0]))
-
-            if not yukseltilebilirler:
-                break
-
-            kategori, yeni_parca = yukseltilebilirler[seed % len(yukseltilebilirler)]
-            parcalar[kategori] = yeni_parca
-
-        elif toplam > max_butce:
-            fazla = toplam - max_butce
-            dusurulebilirler = []
-
-            for kategori, mevcut in parcalar.items():
-                mevcut_fiyat = int(mevcut.get("Fiyat_TL", 0))
-                havuz = pc_havuz_hazirla(
-                    kategori,
-                    max_butce,
-                    kullanim,
-                    soket=soket,
-                    ram_tipi=ram_tipi,
-                    min_psu=min_psu
-                )
-                havuz = havuz[
-                    (havuz["Fiyat_TL"] < mevcut_fiyat) &
-                    (havuz["Fiyat_TL"] >= max(0, mevcut_fiyat - fazla - 8000))
-                ]
-
-                if not havuz.empty:
-                    havuz = havuz.sort_values(by="Fiyat_TL", ascending=True)
-                    dusurulebilirler.append((kategori, havuz.iloc[0]))
-
-            if not dusurulebilirler:
-                break
-
-            kategori, yeni_parca = dusurulebilirler[seed % len(dusurulebilirler)]
-            parcalar[kategori] = yeni_parca
-
-    toplam = sum(int(row.get("Fiyat_TL", 0)) for row in parcalar.values())
+    toplam = sistem_toplam_fiyat(parcalar)
 
     if toplam < min_butce or toplam > max_butce:
         return None
-
-    imza = "|".join([
-        str(row.get("Marka", "")) + " " + str(row.get("Model", ""))
-        for row in parcalar.values()
-    ])
 
     return {
         "basarili": True,
@@ -749,15 +880,30 @@ def tek_pc_sistem_adayi_olustur(min_butce, max_butce, hedef_fiyat, kullanim, see
         "max_butce": max_butce,
         "butce": max_butce,
         "hedef_fiyat": hedef_fiyat,
-        "soket": soket,
-        "ram_tipi": ram_tipi,
-        "imza": imza
+        "imza": sistem_imza(parcalar)
     }
 
 
 def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
     if pc_df.empty:
         return []
+
+    kategoriler = [
+        "İşlemci",
+        "Ekran Kartı",
+        "Anakart",
+        "RAM",
+        "SSD",
+        "Güç Kaynağı",
+        "Kasa",
+        "Soğutucu"
+    ]
+
+    # En büyük hız kazancı burada: CSV her sistem için tekrar tekrar filtrelenmez.
+    ana_havuzlar = {
+        kategori: pc_havuzu_fast(kategori, max_butce, kullanim)
+        for kategori in kategoriler
+    }
 
     hedefler = [
         int(min_butce),
@@ -771,35 +917,32 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
     imzalar = set()
 
     for i, hedef in enumerate(hedefler):
-        en_iyi = None
-        en_iyi_fark = None
+        secilen = None
 
-        # 250 deneme sayfayı kilitliyordu. 25 hızlı ve yeterli.
-        for deneme in range(25):
-            sistem = tek_pc_sistem_adayi_olustur(
+        # 100-200 deneme yok. En fazla 6 varyasyon, hızlı.
+        for varyasyon in range(6):
+            sistem = tek_sistem_fast_olustur(
                 min_butce=min_butce,
                 max_butce=max_butce,
                 hedef_fiyat=hedef,
                 kullanim=kullanim,
-                seed=seed + (i * 1000) + deneme
+                seed=seed,
+                ana_havuzlar=ana_havuzlar,
+                varyasyon=(i * 2) + varyasyon
             )
 
             if sistem is None:
                 continue
 
-            if sistem.get("imza") in imzalar:
+            if sistem["imza"] in imzalar:
                 continue
 
-            fark = abs(int(sistem["toplam_fiyat"]) - hedef)
+            secilen = sistem
+            break
 
-            if en_iyi is None or fark < en_iyi_fark:
-                en_iyi = sistem
-                en_iyi_fark = fark
-
-        if en_iyi is not None:
-            en_iyi["isim"] = f"Sistem {i + 1}"
-            sistemler.append(en_iyi)
-            imzalar.add(en_iyi.get("imza"))
+        if secilen is not None:
+            sistemler.append(secilen)
+            imzalar.add(secilen["imza"])
 
     sistemler = sorted(sistemler, key=lambda x: int(x["toplam_fiyat"]))
 
@@ -807,6 +950,7 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
         sistem["isim"] = f"Sistem {i + 1}"
 
     return sistemler[:5]
+
 
 def uyumlu_pc_sistem_topla(max_butce, kullanim, seed):
     sistemler = besli_pc_sistem_olustur(0, max_butce, kullanim, seed)
@@ -1848,28 +1992,59 @@ if kategori != "Toplama Bilgisayar":
 st.markdown("---")
 
 
-if st.session_state.aktif_mod == "pc_build":
+pc_build_ekrani_acik = (
+    st.session_state.aktif_mod == "pc_build"
+    or (
+        kategori == "Toplama Bilgisayar"
+        and "pc_mod" in locals()
+        and pc_mod == "Bütçeye göre uyumlu sistem topla"
+    )
+)
+
+if pc_build_ekrani_acik:
     st.subheader("🖥️ Bütçeye Göre 5 Farklı Uyumlu Toplama Bilgisayar Sistemi")
 
     builds = st.session_state.get("pc_builds", [])
 
     if not builds:
-        st.warning("Bu bütçe aralığında uygun sistem bulunamadı. Bütçe aralığını biraz genişletip tekrar deneyebilirsin.")
+        if st.session_state.aktif_mod == "pc_build":
+            st.warning("Bu bütçe aralığında uygun sistem bulunamadı. Bütçe aralığını biraz genişletip tekrar deneyebilirsin.")
+        else:
+            st.info("Soldaki 🖥️ Sistem Topla butonuna basınca 5 sistem burada görünecek.")
 
     else:
-        st.info(
-            "Aşağıda aynı bütçe aralığına göre 5 farklı sistem oluşturuldu. "
-            "Sistem 1 aralıktaki en uygun fiyatlı seçeneğe, Sistem 5 ise en yüksek fiyatlı seçeneğe yakın sıralanır."
+        st.markdown(
+            """
+<div class="summary-box">
+<b>Nasıl okunmalı?</b><br>
+Sistem 1 daha ekonomik tarafa, Sistem 5 ise seçtiğin bütçe aralığının üst performans tarafına yakındır. 
+Ekran kalabalığı olmaması için önce sadece özet kartlar gösterilir; seçtiğin sistemin detayları altta açılır.
+</div>
+""",
+            unsafe_allow_html=True
         )
 
-        buton_kolonlari = st.columns(len(builds))
+        etiketler = ["Ekonomik", "Fiyat/Performans", "Dengeli", "Performans", "Maksimum"]
+        kart_kolonlari = st.columns(len(builds))
 
         for i, build_item in enumerate(builds):
-            with buton_kolonlari[i]:
-                if st.button(
-                    f"{build_item.get('isim', 'Sistem')} {fiyat_formatla(build_item.get('toplam_fiyat', 0))}",
-                    key=f"select_pc_build_{i}"
-                ):
+            with kart_kolonlari[i]:
+                secili_mi = st.session_state.get("selected_pc_build_index", 0) == i
+                secili_yazi = "✓ Seçili" if secili_mi else "İncele"
+                sistem_ismi = build_item.get("isim", f"Sistem {i + 1}")
+                sistem_fiyati = fiyat_formatla(build_item.get("toplam_fiyat", 0))
+                sistem_etiketi = etiketler[i] if i < len(etiketler) else "Alternatif"
+                st.markdown(
+                    f"""
+<div class="system-card">
+    <div class="system-title">{sistem_ismi}</div>
+    <div class="system-price">{sistem_fiyati}</div>
+    <span class="system-chip chip-{min(i + 1, 5)}">{sistem_etiketi}</span>
+</div>
+""",
+                    unsafe_allow_html=True
+                )
+                if st.button(secili_yazi, key=f"select_pc_build_{i}"):
                     st.session_state.selected_pc_build_index = i
                     st.rerun()
 
@@ -1880,20 +2055,42 @@ if st.session_state.aktif_mod == "pc_build":
             st.session_state.selected_pc_build_index = 0
 
         build = builds[secili_index]
+        toplam_fiyat = build.get("toplam_fiyat", 0)
+        kalan = build.get("max_butce", max_butce) - toplam_fiyat
+        secili_sistem_adi = build.get("isim", f"Sistem {secili_index + 1}")
 
-        st.markdown(f"## Seçili Sistem: {build.get('isim', f'Sistem {secili_index + 1}')}")
+        st.markdown(f"## Seçili Sistem: {secili_sistem_adi}")
 
-        st.success(
-            f"Toplam sistem fiyatı: {fiyat_formatla(build.get('toplam_fiyat', 0))} "
-            f"/ Bütçe aralığı: {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build.get('max_butce', max_butce))}"
+        st.markdown(
+            f"""
+<div class="summary-box">
+<b>Toplam Fiyat:</b> {fiyat_formatla(toplam_fiyat)}<br>
+<b>Bütçe Aralığı:</b> {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build.get('max_butce', max_butce))}<br>
+<b>Bütçede Kalan:</b> {fiyat_formatla(max(kalan, 0))}<br>
+<b>Parça Sayısı:</b> {len(build.get('parcalar', {}))}
+</div>
+""",
+            unsafe_allow_html=True
         )
+
+        parca_satirlari = []
+        for parca_adi, row in build.get("parcalar", {}).items():
+            parca_satirlari.append({
+                "Parça": parca_adi,
+                "Marka": veri_getir(row, "Marka"),
+                "Model": veri_getir(row, "Model"),
+                "Fiyat": fiyat_formatla(veri_getir(row, "Fiyat_TL")),
+            })
+
+        if parca_satirlari:
+            st.dataframe(pd.DataFrame(parca_satirlari), use_container_width=True, hide_index=True)
 
         col_a, col_b = st.columns([1, 1])
 
         with col_a:
             sistem_adi = st.text_input(
                 "Bu sistemi kaydetmek için isim ver",
-                value=f"Benim Toplama Bilgisayarım - {build.get('isim', f'Sistem {secili_index + 1}')}",
+                value=f"Benim Toplama Bilgisayarım - {secili_sistem_adi}",
                 key="save_build_name"
             )
 
@@ -1911,7 +2108,7 @@ if st.session_state.aktif_mod == "pc_build":
                     st.error(message)
 
         with col_b:
-            if st.button("🔄 5 Sistemi Değiştir", key="change_build_button"):
+            if st.button("🔄 Alternatifleri Yenile", key="change_build_button"):
                 st.session_state.pc_random_seed += 1
                 st.session_state.pc_build = None
                 st.session_state.pc_builds = besli_pc_sistem_olustur(
@@ -1923,9 +2120,11 @@ if st.session_state.aktif_mod == "pc_build":
                 st.session_state.selected_pc_build_index = 0
                 st.rerun()
 
+        st.markdown("### Parça Detayları")
         for parca_adi, row in build.get("parcalar", {}).items():
-            st.markdown(f"## {parca_adi}")
-            pc_parca_karti(row)
+            detay_baslik = f"{parca_adi} - {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')} / {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}"
+            with st.expander(detay_baslik):
+                pc_parca_karti(row)
 
 
 elif st.session_state.aktif_mod == "pc_parca":
