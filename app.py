@@ -614,48 +614,25 @@ def ayni_urun_kaynaklari(kaynak_turu, row):
 
 def fiyat_karsilastirma_html(kaynak_turu, row):
     urun_adi = urun_adi_olustur(row)
-    kaynaklar = ayni_urun_kaynaklari(kaynak_turu, row)
-    if kaynaklar is None or kaynaklar.empty:
-        return f"""
+    return f"""
 <div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">Güvenilir Site Kontrolü</div>
-    <div>Bu ürün için CSV içinde farklı güvenilir site fiyatı bulunamadı.</div>
+    <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
+    <div>Fiyatlar anlık değişebildiği için karttaki fiyat tahminidir. En güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', urun_adi)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', urun_adi)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
-</div>
-"""
-    en_ucuz = kaynaklar.iloc[0]
-    satirlar = ""
-    for _, item in kaynaklar.iterrows():
-        site = site_adi_duzelt(item["Site"])
-        fiyat = fiyat_formatla(item["Fiyat"])
-        satirlar += f"""
-        <div class=\"price-row\">
-            <span class=\"price-site\">{html_escape(site)}</span>
-            <span class=\"price-value\">{html_escape(fiyat)}</span>
-        </div>
-        """
-    en_ucuz_site = site_adi_duzelt(en_ucuz["Site"])
-    en_ucuz_fiyat = fiyat_formatla(en_ucuz["Fiyat"])
-    link = guvenilir_site_arama_linki(en_ucuz_site, urun_adi)
-    return f"""
-<div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">En Uygun Güvenilir Fiyat</div>
-    <div><b>{html_escape(en_ucuz_site)}</b> üzerinde yaklaşık <b>{html_escape(en_ucuz_fiyat)}</b></div>
-    {satirlar}
-    <a class=\"price-link\" href=\"{link}\" target=\"_blank\">{html_escape(en_ucuz_site)} sitesinde ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Teknosa', urun_adi)}\" target=\"_blank\">Teknosa'da ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Vatan Bilgisayar', urun_adi)}\" target=\"_blank\">Vatan'da ara</a>
 </div>
 """
 
 
 def hazir_urun_guvenilir_link_html(row):
     model = str(veri_getir(row, "Model"))
-    fiyat = veri_getir(row, "FIYAT_SAYI")
     return f"""
 <div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">Güvenilir Sitelerde Kontrol Et</div>
-    <div>CSV fiyatı: <b>{html_escape(fiyat_formatla(fiyat))}</b></div>
+    <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
+    <div>CSV fiyatı sabit kalabileceği için burada fiyat göstermiyoruz. En güncel fiyatı güvenilir sitelerde kontrol et.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', model)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', model)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
@@ -1549,7 +1526,7 @@ def pc_parca_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
@@ -1575,7 +1552,7 @@ def ev_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🏠 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
@@ -2733,7 +2710,7 @@ else:
                 st.markdown(f"""
 <div class="product-card">
 <div class="product-title">📦 {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 {veri_getir(row, 'FIYAT_SAYI')} TL</span>
+<span class="badge-orange">💰 Tahmini {veri_getir(row, 'FIYAT_SAYI')} TL</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'ONERI_PUANI')}</span>
 <br><br>
