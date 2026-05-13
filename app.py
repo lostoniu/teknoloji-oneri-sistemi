@@ -526,6 +526,21 @@ def marka_listesi_getir(df, kategori_kolon=None, kategori_deger=None, ana_kolon=
     return ["Farketmez"] + markalar
 
 
+
+
+def temizle_yazi(x):
+    x = str(x).strip().lower()
+    x = x.replace("ı", "i")
+    x = x.replace("İ", "i")
+    x = x.replace("i̇", "i")
+    x = x.replace("ğ", "g")
+    x = x.replace("ü", "u")
+    x = x.replace("ş", "s")
+    x = x.replace("ö", "o")
+    x = x.replace("ç", "c")
+    return x
+
+
 def ev_alt_kategori_tipi(alt_kategori):
     """Elektronik ev eşyasında saçma filtre çıkmasın diye alt kategori tipini belirler."""
     a = temizle_yazi(str(alt_kategori))
