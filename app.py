@@ -455,6 +455,48 @@ pc_df = pc_dataset_yukle()
 tech_df = teknoloji_dataset_yukle()
 
 
+
+def kart_puani_getir(row):
+    for kolon in ["Topluluk_Puani", "TOPLULUK_PUANI", "ONERI_PUANI", "Puan"]:
+        try:
+            if kolon in row.index and str(row[kolon]) != "nan":
+                puan = float(row[kolon])
+
+                # Eski 5/10 ölçekli puan gelirse 100'lük sisteme çevir
+                if puan <= 10:
+                    puan = puan * 10
+
+                puan = int(round(puan))
+
+                if puan > 0:
+                    return f"{puan}/100"
+        except Exception:
+            pass
+
+    return "Belirtilmedi"
+
+
+def kart_populerlik_getir(row):
+    if "Populerlik" in row.index and str(row["Populerlik"]) != "nan":
+        return row["Populerlik"]
+
+    try:
+        puan = kart_puani_getir(row)
+        if "/" in str(puan):
+            sayi = int(str(puan).split("/")[0])
+            if sayi >= 85:
+                return "Çok Yüksek"
+            if sayi >= 70:
+                return "Yüksek"
+            if sayi >= 55:
+                return "Orta"
+            return "Düşük"
+    except Exception:
+        pass
+
+    return "Belirtilmedi"
+
+
 def fiyat_formatla(deger):
     try:
         return f"{int(float(deger)):,}".replace(",", ".") + " TL"
@@ -689,7 +731,7 @@ def fiyat_karsilastirma_html(kaynak_turu, row):
     return f"""
 <div class=\"price-compare-box\">
     <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
-    <div>Fiyatlar anlık değişebildiği için karttaki fiyat tahminidir. En güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
+    <div>Gösterilen tutar ortalama piyasa fiyatıdır. Satıcıya, kampanyaya ve stok durumuna göre fiyat değişebilir; en güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', urun_adi)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', urun_adi)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
@@ -704,7 +746,7 @@ def hazir_urun_guvenilir_link_html(row):
     return f"""
 <div class=\"price-compare-box\">
     <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
-    <div>CSV fiyatı sabit kalabileceği için burada fiyat göstermiyoruz. En güncel fiyatı güvenilir sitelerde kontrol et.</div>
+    <div>Gösterilen tutar ortalama piyasa fiyatıdır. Satıcıya, kampanyaya ve stok durumuna göre fiyat değişebilir; en güncel fiyatı güvenilir sitelerde kontrol edebilirsin.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', model)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', model)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
@@ -1367,7 +1409,7 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
         "Soğutucu"
     ]
 
-    # En büyük hız kazancı burada: CSV her sistem için tekrar tekrar filtrelenmez.
+    # En büyük hız kazancı burada: Veri seti her sistem için tekrar tekrar filtrelenmez.
     ana_havuzlar = {
         kategori: pc_havuzu_fast(kategori, max_butce, kullanim)
         for kategori in kategoriler
@@ -1679,9 +1721,9 @@ def pc_parca_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
-<span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
+<span class="badge-purple">⭐ Puan: {kart_puani_getir(row)}</span>
 <br><br>
 📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
 🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
@@ -1690,6 +1732,7 @@ def pc_parca_karti(row):
 ⚡ <b>Watt:</b> {veri_getir(row, 'Watt')}<br>
 💾 <b>Kapasite:</b> {veri_getir(row, 'Kapasite')}<br>
 🔗 <b>Uyumluluk:</b> {veri_getir(row, 'Uyumluluk')}<br>
+🔥 <b>Popülerlik:</b> {kart_populerlik_getir(row)}<br>
 💬 <b>Yorum Sayısı:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
 🌈 <b>RGB:</b> {veri_getir(row, 'RGB')}<br>
 📏 <b>Boyut:</b> {veri_getir(row, 'Boyut')}<br>
@@ -1705,9 +1748,9 @@ def ev_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🏠 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
-<span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
+<span class="badge-purple">⭐ Puan: {kart_puani_getir(row)}</span>
 <br><br>
 📂 <b>Ana Kategori:</b> {veri_getir(row, 'Ana_Kategori')}<br>
 🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
@@ -1716,6 +1759,7 @@ def ev_karti(row):
 🔋 <b>Enerji Sınıfı:</b> {veri_getir(row, 'Enerji_Sinifi')}<br>
 🎨 <b>Renk:</b> {veri_getir(row, 'Renk')}<br>
 🛡️ <b>Garanti:</b> {veri_getir(row, 'Garanti_Ay')} ay<br>
+🔥 <b>Popülerlik:</b> {kart_populerlik_getir(row)}<br>
 💬 <b>Yorum Sayısı:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
 📦 <b>Stok:</b> {veri_getir(row, 'Stok_Durumu')}<br>
 🛒 <b>Kaynak Site:</b> {veri_getir(row, 'Kaynak_Site')}
@@ -2765,9 +2809,9 @@ else:
                 st.markdown(f"""
 <div class="product-card">
 <div class="product-title">📦 {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Tahmini {veri_getir(row, 'FIYAT_SAYI')} TL</span>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'FIYAT_SAYI'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Kategori')}</span>
-<span class="badge-purple">⭐ {veri_getir(row, 'ONERI_PUANI')}</span>
+<span class="badge-purple">⭐ Puan: {kart_puani_getir(row)}</span>
 <br><br>
 🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanım Amacı')}<br>
 📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
