@@ -502,6 +502,55 @@ def ev_alt_kategorileri_getir():
     return sorted(ev_df["Alt_Kategori"].dropna().unique())
 
 
+def marka_listesi_getir(df, kategori_kolon=None, kategori_deger=None, ana_kolon=None, ana_deger=None):
+    """Verilen dataframe içinden güvenli şekilde marka listesi üretir."""
+    if df is None or df.empty or "Marka" not in df.columns:
+        return ["Farketmez"]
+
+    sonuc = df.copy()
+
+    if ana_kolon and ana_deger and ana_deger not in ["Tümü", "Farketmez", None]:
+        if ana_kolon in sonuc.columns:
+            sonuc = sonuc[sonuc[ana_kolon].astype(str) == str(ana_deger)]
+
+    if kategori_kolon and kategori_deger and kategori_deger not in ["Tümü", "Farketmez", None]:
+        if kategori_kolon in sonuc.columns:
+            sonuc = sonuc[sonuc[kategori_kolon].astype(str) == str(kategori_deger)]
+
+    markalar = sorted([
+        str(x).strip()
+        for x in sonuc["Marka"].dropna().unique()
+        if str(x).strip() not in ["", "nan", "None"]
+    ])
+
+    return ["Farketmez"] + markalar
+
+
+def ev_alt_kategori_tipi(alt_kategori):
+    """Elektronik ev eşyasında saçma filtre çıkmasın diye alt kategori tipini belirler."""
+    a = temizle_yazi(str(alt_kategori))
+
+    if any(k in a for k in ["supurge", "robot", "dikey", "süpürge"]):
+        return "supurge"
+
+    if any(k in a for k in ["airfryer", "fritoz", "fritöz", "pisirme", "firin", "fırın"]):
+        return "pisirme"
+
+    if any(k in a for k in ["kahve", "espresso", "cay", "çay", "kettle"]):
+        return "icecek"
+
+    if any(k in a for k in ["klima", "hava", "vantilator", "vantilatör", "isitici", "ısıtıcı", "kombi"]):
+        return "hava_iklim"
+
+    if any(k in a for k in ["kedi", "tuvalet", "mama", "evcil"]):
+        return "evcil"
+
+    if any(k in a for k in ["kamera", "guvenlik", "güvenlik", "kilit", "sensor", "sensör"]):
+        return "guvenlik"
+
+    return "genel"
+
+
 
 GUVENILIR_SITE_LINKLERI = {
     "Amazon Türkiye": "https://www.amazon.com.tr/s?k={q}",
@@ -617,7 +666,7 @@ def fiyat_karsilastirma_html(kaynak_turu, row):
     return f"""
 <div class=\"price-compare-box\">
     <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
-    <div>Gösterilen tutar ortalama piyasa fiyatıdır. Satıcıya, kampanyaya ve stok durumuna göre fiyat değişebilir; en güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
+    <div>Fiyatlar anlık değişebildiği için karttaki fiyat tahminidir. En güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', urun_adi)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', urun_adi)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
@@ -632,7 +681,7 @@ def hazir_urun_guvenilir_link_html(row):
     return f"""
 <div class=\"price-compare-box\">
     <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
-    <div>Gösterilen tutar ortalama piyasa fiyatıdır. Satıcıya, kampanyaya ve stok durumuna göre fiyat değişebilir; en güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
+    <div>CSV fiyatı sabit kalabileceği için burada fiyat göstermiyoruz. En güncel fiyatı güvenilir sitelerde kontrol et.</div>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', model)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', model)}\" target=\"_blank\">Hepsiburada'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
@@ -710,6 +759,51 @@ def evet_hayir_filtrele(df, kolon, secim):
     return df[~df[kolon].astype(str).str.lower().str.contains("evet|var|ip|atm|5atm|su", na=False)]
 
 
+
+
+def ekran_hz_cek(deger):
+    import re
+    metin = str(deger).lower()
+    hzler = re.findall(r"(\d+)\s*hz", metin)
+    if hzler:
+        return max([int(x) for x in hzler])
+    sayilar = re.findall(r"\d+", metin)
+    if sayilar:
+        adaylar = [int(x) for x in sayilar if int(x) in [60, 75, 90, 120, 144, 165, 240, 300, 360]]
+        if adaylar:
+            return max(adaylar)
+    return 0
+
+
+def cpu_seviye_uygun_mu(islemci, seviye):
+    if seviye == "Farketmez":
+        return True
+    i = str(islemci).lower()
+    if seviye == "Giriş":
+        return any(k in i for k in ["i3", "ryzen 3", "celeron", "pentium"])
+    if seviye == "Orta":
+        return any(k in i for k in ["i5", "ryzen 5", "m1", "m2"])
+    if seviye == "Üst":
+        return any(k in i for k in ["i7", "ryzen 7", "m3"])
+    if seviye == "Premium":
+        return any(k in i for k in ["i9", "ryzen 9", "m4", "ultra 9"])
+    return True
+
+
+def gpu_seviye_uygun_mu(gpu, seviye):
+    if seviye == "Farketmez":
+        return True
+    g = str(gpu).lower()
+    if seviye == "Paylaşımlı":
+        return any(k in g for k in ["uhd", "iris", "integrated", "paylaşımlı", "dahili"])
+    if seviye == "Giriş":
+        return any(k in g for k in ["rtx 3050", "rtx 4050", "gtx", "mx"])
+    if seviye == "Orta":
+        return any(k in g for k in ["rtx 3060", "rtx 4060", "rtx 3070", "rtx 4070", "rx 7600", "rx 7700"])
+    if seviye == "Üst":
+        return any(k in g for k in ["rtx 4080", "rtx 4090", "rtx 5080", "rtx 5090", "rx 7900"])
+    return True
+
 def hazir_urun_detay_filtrele(df, kategori, filtreler):
     if df is None or df.empty:
         return df
@@ -742,9 +836,29 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
         if min_depolama != "Farketmez" and "Depolama" in sonuc.columns:
             sonuc = sonuc[sonuc["Depolama"].apply(kapasite_gb_cek) >= int(min_depolama)]
 
+        cpu_marka = filtreler.get("cpu_marka", "Farketmez")
+        if cpu_marka != "Farketmez" and "İşlemci" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşlemci"].astype(str).str.lower().str.contains(cpu_marka.lower(), na=False)]
+
+        cpu_seviye = filtreler.get("cpu_seviye", "Farketmez")
+        if cpu_seviye != "Farketmez" and "İşlemci" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşlemci"].apply(lambda x: cpu_seviye_uygun_mu(x, cpu_seviye))]
+
         gpu_tercihi = filtreler.get("gpu_tercihi", "Farketmez")
         if gpu_tercihi != "Farketmez" and "GPU" in sonuc.columns:
             sonuc = sonuc[sonuc["GPU"].astype(str).str.lower().str.contains(gpu_tercihi.lower(), na=False)]
+
+        gpu_seviye = filtreler.get("gpu_seviye", "Farketmez")
+        if gpu_seviye != "Farketmez" and "GPU" in sonuc.columns:
+            sonuc = sonuc[sonuc["GPU"].apply(lambda x: gpu_seviye_uygun_mu(x, gpu_seviye))]
+
+        panel = filtreler.get("panel", "Farketmez")
+        if panel != "Farketmez" and "Ekran" in sonuc.columns:
+            sonuc = sonuc[sonuc["Ekran"].astype(str).str.lower().str.contains(panel.lower(), na=False)]
+
+        min_hz = filtreler.get("min_hz", "Farketmez")
+        if min_hz != "Farketmez" and "Ekran" in sonuc.columns:
+            sonuc = sonuc[sonuc["Ekran"].apply(ekran_hz_cek) >= int(min_hz)]
 
         isletim = filtreler.get("isletim", "Farketmez")
         if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
@@ -758,6 +872,14 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
         min_batarya = filtreler.get("min_batarya", "Farketmez")
         if min_batarya != "Farketmez" and "Batarya (mAh)" in sonuc.columns:
             sonuc = sonuc[pd.to_numeric(sonuc["Batarya (mAh)"], errors="coerce").fillna(0) >= int(min_batarya)]
+
+        panel = filtreler.get("panel", "Farketmez")
+        if panel != "Farketmez" and "Ekran" in sonuc.columns:
+            sonuc = sonuc[sonuc["Ekran"].astype(str).str.lower().str.contains(panel.lower(), na=False)]
+
+        min_hz = filtreler.get("min_hz", "Farketmez")
+        if min_hz != "Farketmez" and "Ekran" in sonuc.columns:
+            sonuc = sonuc[sonuc["Ekran"].apply(ekran_hz_cek) >= int(min_hz)]
 
         isletim = filtreler.get("isletim", "Farketmez")
         if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
@@ -869,12 +991,16 @@ def pc_parca_filtrele(
     min_kapasite,
     min_watt,
     rgb,
-    siralama
+    siralama,
+    marka="Farketmez"
 ):
     sonuc = pc_parcalari_getir(alt_kategori, min_butce, max_butce)
 
     if sonuc.empty:
         return sonuc
+
+    if marka != "Farketmez" and "Marka" in sonuc.columns:
+        sonuc = sonuc[sonuc["Marka"].astype(str).str.upper() == str(marka).upper()]
 
     if soket != "Farketmez" and "Soket" in sonuc.columns:
         sonuc = sonuc[sonuc["Soket"].astype(str).str.upper() == soket.upper()]
@@ -1218,7 +1344,7 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
         "Soğutucu"
     ]
 
-    # En büyük hız kazancı burada: veri her sistem için tekrar tekrar filtrelenmez.
+    # En büyük hız kazancı burada: CSV her sistem için tekrar tekrar filtrelenmez.
     ana_havuzlar = {
         kategori: pc_havuzu_fast(kategori, max_butce, kullanim)
         for kategori in kategoriler
@@ -1300,7 +1426,8 @@ def ev_esyasi_oner(
     wifi="Farketmez",
     rgb="Farketmez",
     min_garanti="Farketmez",
-    stok="Farketmez"
+    stok="Farketmez",
+    marka="Farketmez"
 ):
     if ev_df.empty:
         return pd.DataFrame()
@@ -1315,6 +1442,9 @@ def ev_esyasi_oner(
 
     if alt_kategori != "Tümü":
         sonuc = sonuc[sonuc["Alt_Kategori"].astype(str) == alt_kategori]
+
+    if marka != "Farketmez" and "Marka" in sonuc.columns:
+        sonuc = sonuc[sonuc["Marka"].astype(str) == str(marka)]
 
     if kullanim:
         sonuc = sonuc[
@@ -1526,7 +1656,7 @@ def pc_parca_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
@@ -1552,7 +1682,7 @@ def ev_karti(row):
     st.markdown(f"""
 <div class="product-card">
 <div class="product-title">🏠 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-orange">💰 Tahmini {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'Puan')}</span>
 <br><br>
@@ -1849,6 +1979,11 @@ hazir_mikrofon = "Farketmez"
 hazir_min_pil = "Farketmez"
 hazir_gps = "Farketmez"
 hazir_min_pil_gun = "Farketmez"
+hazir_cpu_marka = "Farketmez"
+hazir_cpu_seviye = "Farketmez"
+hazir_gpu_seviye = "Farketmez"
+hazir_panel = "Farketmez"
+hazir_min_hz = "Farketmez"
 
 ev_ana_kategori = None
 ev_alt_kategori = None
@@ -1862,6 +1997,7 @@ ev_wifi = "Farketmez"
 ev_rgb = "Farketmez"
 ev_garanti = "Farketmez"
 ev_stok = "Farketmez"
+ev_marka = "Farketmez"
 
 
 if kategori == "Toplama Bilgisayar":
@@ -1880,107 +2016,55 @@ if kategori == "Toplama Bilgisayar":
         st.sidebar.info("Parça başlıklarını aç, seçimlerini yap, en alttaki butonla sonuçları getir.")
 
         with st.sidebar.expander("İşlemci"):
-            soket_cpu = st.selectbox(
-                "Soket",
-                ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"],
-                key="cpu_soket"
-            )
+            marka_cpu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "İşlemci"), key="cpu_marka")
+            soket_cpu = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="cpu_soket")
 
         with st.sidebar.expander("Anakart"):
-            soket_mb = st.selectbox(
-                "Soket",
-                ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"],
-                key="mb_soket"
-            )
-
-            ramtip_mb = st.selectbox(
-                "RAM Tipi",
-                ["Farketmez", "DDR4", "DDR5"],
-                key="mb_ramtip"
-            )
+            marka_mb = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Anakart"), key="mb_marka")
+            soket_mb = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="mb_soket")
+            ramtip_mb = st.selectbox("RAM Tipi", ["Farketmez", "DDR4", "DDR5"], key="mb_ramtip")
 
         with st.sidebar.expander("RAM"):
-            ramtip_ram = st.selectbox(
-                "RAM Tipi",
-                ["Farketmez", "DDR4", "DDR5"],
-                key="ram_ramtip"
-            )
-
-            rgb_ram = st.selectbox(
-                "RGB",
-                ["Farketmez", "Var", "Yok"],
-                key="ram_rgb"
-            )
+            marka_ram = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "RAM"), key="ram_marka")
+            ramtip_ram = st.selectbox("RAM Tipi", ["Farketmez", "DDR4", "DDR5"], key="ram_ramtip")
+            rgb_ram = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="ram_rgb")
 
         with st.sidebar.expander("Ekran Kartı"):
-            min_vram_gpu = st.selectbox(
-                "Minimum VRAM",
-                ["Farketmez", "4", "6", "8", "12", "16"],
-                key="gpu_vram"
-            )
+            marka_gpu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Ekran Kartı"), key="gpu_marka")
+            min_vram_gpu = st.selectbox("Minimum VRAM", ["Farketmez", "4", "6", "8", "12", "16", "24"], key="gpu_vram")
 
         with st.sidebar.expander("SSD"):
-            min_kapasite_ssd = st.selectbox(
-                "Minimum Kapasite",
-                ["Farketmez", "500", "1000", "2000", "4000"],
-                key="ssd_capacity"
-            )
+            marka_ssd = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "SSD"), key="ssd_marka")
+            min_kapasite_ssd = st.selectbox("Minimum Kapasite", ["Farketmez", "500", "1000", "2000", "4000"], key="ssd_capacity")
 
         with st.sidebar.expander("HDD"):
-            min_kapasite_hdd = st.selectbox(
-                "Minimum Kapasite",
-                ["Farketmez", "500", "1000", "2000", "4000"],
-                key="hdd_capacity"
-            )
+            marka_hdd = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "HDD"), key="hdd_marka")
+            min_kapasite_hdd = st.selectbox("Minimum Kapasite", ["Farketmez", "500", "1000", "2000", "4000"], key="hdd_capacity")
 
         with st.sidebar.expander("Güç Kaynağı"):
-            min_watt_psu = st.selectbox(
-                "Minimum Watt",
-                ["Farketmez", "500", "600", "650", "750", "850", "1000"],
-                key="psu_watt"
-            )
+            marka_psu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Güç Kaynağı"), key="psu_marka")
+            min_watt_psu = st.selectbox("Minimum Watt", ["Farketmez", "500", "600", "650", "750", "850", "1000"], key="psu_watt")
 
         with st.sidebar.expander("Kasa"):
-            rgb_kasa = st.selectbox(
-                "RGB",
-                ["Farketmez", "Var", "Yok"],
-                key="case_rgb"
-            )
+            marka_kasa = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Kasa"), key="case_marka")
+            rgb_kasa = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="case_rgb")
 
         with st.sidebar.expander("Soğutucu"):
-            soket_cooler = st.selectbox(
-                "Soket",
-                ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"],
-                key="cooler_soket"
-            )
-
-            rgb_cooler = st.selectbox(
-                "RGB",
-                ["Farketmez", "Var", "Yok"],
-                key="cooler_rgb"
-            )
+            marka_cooler = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Soğutucu"), key="cooler_marka")
+            soket_cooler = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="cooler_soket")
+            rgb_cooler = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="cooler_rgb")
 
         with st.sidebar.expander("Monitör"):
-            monitor_rgb = st.selectbox(
-                "RGB",
-                ["Farketmez", "Var", "Yok"],
-                key="monitor_rgb"
-            )
+            marka_monitor = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Monitör"), key="monitor_marka")
+            monitor_rgb = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="monitor_rgb")
 
         with st.sidebar.expander("Klavye"):
-            rgb_keyboard = st.selectbox(
-                "RGB",
-                ["Farketmez", "Var", "Yok"],
-                key="keyboard_rgb"
-            )
+            marka_keyboard = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Klavye"), key="keyboard_marka")
+            rgb_keyboard = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="keyboard_rgb")
 
         with st.sidebar.expander("Mouse"):
-            rgb_mouse = st.selectbox(
-                "RGB",
-                ["Farketmez", "Var", "Yok"],
-                key="mouse_rgb"
-            )
-
+            marka_mouse = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Mouse"), key="mouse_marka")
+            rgb_mouse = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="mouse_rgb")
         st.sidebar.markdown("---")
 
         if st.sidebar.button("🔎 Seçimlerime Göre Önerilenleri Getir", key="pc_all_parts_filter_button"):
@@ -1997,7 +2081,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     "Farketmez",
-                    siralama
+                    siralama,
+                    marka=marka_cpu
                 )
             )
 
@@ -2012,7 +2097,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     "Farketmez",
-                    siralama
+                    siralama,
+                    marka=marka_mb
                 )
             )
 
@@ -2027,7 +2113,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     rgb_ram,
-                    siralama
+                    siralama,
+                    marka=marka_ram
                 )
             )
 
@@ -2042,7 +2129,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     "Farketmez",
-                    siralama
+                    siralama,
+                    marka=marka_gpu
                 )
             )
 
@@ -2057,7 +2145,8 @@ if kategori == "Toplama Bilgisayar":
                     min_kapasite_ssd,
                     "Farketmez",
                     "Farketmez",
-                    siralama
+                    siralama,
+                    marka=marka_ssd
                 )
             )
 
@@ -2072,7 +2161,8 @@ if kategori == "Toplama Bilgisayar":
                     min_kapasite_hdd,
                     "Farketmez",
                     "Farketmez",
-                    siralama
+                    siralama,
+                    marka=marka_hdd
                 )
             )
 
@@ -2087,7 +2177,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     min_watt_psu,
                     "Farketmez",
-                    siralama
+                    siralama,
+                    marka=marka_psu
                 )
             )
 
@@ -2102,7 +2193,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     rgb_kasa,
-                    siralama
+                    siralama,
+                    marka=marka_kasa
                 )
             )
 
@@ -2117,7 +2209,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     rgb_cooler,
-                    siralama
+                    siralama,
+                    marka=marka_cooler
                 )
             )
 
@@ -2132,7 +2225,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     monitor_rgb,
-                    siralama
+                    siralama,
+                    marka=marka_monitor
                 )
             )
 
@@ -2147,7 +2241,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     rgb_keyboard,
-                    siralama
+                    siralama,
+                    marka=marka_keyboard
                 )
             )
 
@@ -2162,7 +2257,8 @@ if kategori == "Toplama Bilgisayar":
                     "Farketmez",
                     "Farketmez",
                     rgb_mouse,
-                    siralama
+                    siralama,
+                    marka=marka_mouse
                 )
             )
 
@@ -2207,18 +2303,20 @@ elif kategori == "Elektronik Ev Eşyaları":
         )
 
     ev_alt_kategori = st.sidebar.selectbox("Alt Kategori", alt_kategoriler)
+    ev_tipi = ev_alt_kategori_tipi(ev_alt_kategori)
+
+    ev_marka = st.sidebar.selectbox(
+        "Marka",
+        marka_listesi_getir(ev_df, "Alt_Kategori", ev_alt_kategori, "Ana_Kategori", ev_ana_kategori),
+        key="ev_marka"
+    )
 
     ev_min_puan = st.sidebar.slider(
         "Minimum Puan",
         min_value=0.0,
-        max_value=5.0,
+        max_value=100.0,
         value=0.0,
-        step=0.1
-    )
-
-    ev_enerji = st.sidebar.selectbox(
-        "Enerji Sınıfı",
-        ["Farketmez", "A+++", "A++", "A+", "A", "B", "C", "Belirtilmemiş"]
+        step=1.0
     )
 
     ev_site = st.sidebar.selectbox(
@@ -2226,30 +2324,44 @@ elif kategori == "Elektronik Ev Eşyaları":
         ["Farketmez", "Hepsiburada", "Trendyol", "Teknosa", "MediaMarkt", "Vatan Bilgisayar", "Amazon Türkiye", "n11"]
     )
 
-    ev_min_watt = st.sidebar.selectbox(
-        "Minimum Watt",
-        ["Farketmez", "500", "800", "1000", "1200", "1500", "1800", "2000", "2200", "2500", "3000"]
-    )
+    if ev_tipi in ["pisirme", "icecek", "hava_iklim"]:
+        ev_enerji = st.sidebar.selectbox(
+            "Enerji Sınıfı",
+            ["Farketmez", "A+++", "A++", "A+", "A", "B", "C", "Belirtilmemiş"]
+        )
 
-    ev_min_emis = st.sidebar.selectbox(
-        "Minimum Emiş Gücü / Pa",
-        ["Farketmez", "1000", "2000", "3000", "4000", "5000", "6000", "7000"]
-    )
+    if ev_tipi in ["pisirme", "icecek", "hava_iklim"]:
+        ev_min_watt = st.sidebar.selectbox(
+            "Minimum Watt",
+            ["Farketmez", "500", "800", "1000", "1200", "1500", "1800", "2000", "2200", "2500", "3000"]
+        )
 
-    ev_min_hazne = st.sidebar.selectbox(
-        "Minimum Hazne / Litre",
-        ["Farketmez", "1", "2", "3", "4", "5", "6", "7", "8"]
-    )
+    if ev_tipi == "supurge":
+        ev_min_emis = st.sidebar.selectbox(
+            "Minimum Emiş Gücü / Pa",
+            ["Farketmez", "1000", "2000", "3000", "4000", "5000", "6000", "7000"]
+        )
 
-    ev_wifi = st.sidebar.selectbox(
-        "Wi-Fi",
-        ["Farketmez", "Var", "Yok"]
-    )
+    if ev_tipi in ["supurge", "pisirme", "icecek", "evcil"]:
+        hazne_etiketi = "Minimum Hazne / Litre"
+        if ev_tipi == "evcil":
+            hazne_etiketi = "Minimum Atık/Hazne Kapasitesi"
+        ev_min_hazne = st.sidebar.selectbox(
+            hazne_etiketi,
+            ["Farketmez", "1", "2", "3", "4", "5", "6", "7", "8"]
+        )
 
-    ev_rgb = st.sidebar.selectbox(
-        "RGB / Işık",
-        ["Farketmez", "Var", "Yok"]
-    )
+    if ev_tipi in ["supurge", "icecek", "hava_iklim", "evcil", "guvenlik", "genel"]:
+        ev_wifi = st.sidebar.selectbox(
+            "Wi-Fi / Akıllı Bağlantı",
+            ["Farketmez", "Var", "Yok"]
+        )
+
+    if ev_tipi in ["guvenlik", "genel"]:
+        ev_rgb = st.sidebar.selectbox(
+            "RGB / Işık",
+            ["Farketmez", "Var", "Yok"]
+        )
 
     ev_garanti = st.sidebar.selectbox(
         "Minimum Garanti",
@@ -2272,130 +2384,44 @@ elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulaklık", "Akıllı Saat
     )
 
     if kategori == "Telefon":
-        hazir_min_depolama = st.sidebar.selectbox(
-            "Minimum Depolama",
-            ["Farketmez", "64", "128", "256", "512", "1000"],
-            key="telefon_depolama"
-        )
-        hazir_min_kamera = st.sidebar.selectbox(
-            "Minimum Kamera / MP",
-            ["Farketmez", "12", "24", "48", "64", "108", "200"],
-            key="telefon_kamera"
-        )
-        hazir_min_batarya = st.sidebar.selectbox(
-            "Minimum Batarya / mAh",
-            ["Farketmez", "3000", "4000", "4500", "5000", "5500", "6000"],
-            key="telefon_batarya"
-        )
-        hazir_5g = st.sidebar.selectbox(
-            "5G",
-            ["Farketmez", "Evet", "Hayır"],
-            key="telefon_5g"
-        )
-        hazir_nfc = st.sidebar.selectbox(
-            "NFC",
-            ["Farketmez", "Evet", "Hayır"],
-            key="telefon_nfc"
-        )
-        hazir_su = st.sidebar.selectbox(
-            "Su Geçirmezlik",
-            ["Farketmez", "Evet", "Hayır"],
-            key="telefon_su"
-        )
+        hazir_min_depolama = st.sidebar.selectbox("Minimum Depolama", ["Farketmez", "64", "128", "256", "512", "1000"], key="telefon_depolama")
+        hazir_min_kamera = st.sidebar.selectbox("Minimum Kamera / MP", ["Farketmez", "12", "24", "48", "64", "108", "200"], key="telefon_kamera")
+        hazir_min_batarya = st.sidebar.selectbox("Minimum Batarya / mAh", ["Farketmez", "3000", "4000", "4500", "5000", "5500", "6000"], key="telefon_batarya")
+        hazir_5g = st.sidebar.selectbox("5G", ["Farketmez", "Evet", "Hayır"], key="telefon_5g")
+        hazir_nfc = st.sidebar.selectbox("NFC", ["Farketmez", "Evet", "Hayır"], key="telefon_nfc")
+        hazir_su = st.sidebar.selectbox("Su Geçirmezlik", ["Farketmez", "Evet", "Hayır"], key="telefon_su")
 
     elif kategori == "Bilgisayar":
-        min_ram = st.sidebar.selectbox(
-            "Minimum RAM",
-            [0, 4, 8, 12, 16, 24, 32, 64],
-            index=2,
-            key="bilgisayar_ram"
-        )
-        hazir_min_depolama = st.sidebar.selectbox(
-            "Minimum Depolama",
-            ["Farketmez", "256", "512", "1000", "2000"],
-            key="bilgisayar_depolama"
-        )
-        hazir_gpu = st.sidebar.selectbox(
-            "GPU Tercihi",
-            ["Farketmez", "RTX", "GTX", "Radeon", "Intel", "Apple", "Paylaşımlı"],
-            key="bilgisayar_gpu"
-        )
-        hazir_isletim = st.sidebar.selectbox(
-            "İşletim Sistemi",
-            secenekleri_getir(tech_df, kategori, "İşletim Sistemi"),
-            key="bilgisayar_isletim"
-        )
+        hazir_cpu_marka = st.sidebar.selectbox("İşlemci Markası", ["Farketmez", "Intel", "AMD", "Apple"], key="bilgisayar_cpu_marka")
+        hazir_cpu_seviye = st.sidebar.selectbox("İşlemci Seviyesi", ["Farketmez", "Giriş", "Orta", "Üst", "Premium"], key="bilgisayar_cpu_seviye")
+        min_ram = st.sidebar.selectbox("Minimum RAM", [0, 4, 8, 12, 16, 24, 32, 64], index=2, key="bilgisayar_ram")
+        hazir_min_depolama = st.sidebar.selectbox("Minimum Depolama", ["Farketmez", "256", "512", "1000", "2000", "4000"], key="bilgisayar_depolama")
+        hazir_gpu = st.sidebar.selectbox("GPU Tercihi", ["Farketmez", "RTX", "GTX", "Radeon", "Intel", "Apple", "Paylaşımlı"], key="bilgisayar_gpu")
+        hazir_gpu_seviye = st.sidebar.selectbox("GPU Seviyesi", ["Farketmez", "Paylaşımlı", "Giriş", "Orta", "Üst"], key="bilgisayar_gpu_seviye")
+        hazir_panel = st.sidebar.selectbox("Ekran Paneli", ["Farketmez", "IPS", "OLED", "AMOLED", "Retina"], key="bilgisayar_panel")
+        hazir_min_hz = st.sidebar.selectbox("Minimum Yenileme Hızı", ["Farketmez", "60", "90", "120", "144", "165", "240"], key="bilgisayar_hz")
+        hazir_isletim = st.sidebar.selectbox("İşletim Sistemi", secenekleri_getir(tech_df, kategori, "İşletim Sistemi"), key="bilgisayar_isletim")
 
     elif kategori == "Tablet":
-        hazir_min_depolama = st.sidebar.selectbox(
-            "Minimum Depolama",
-            ["Farketmez", "64", "128", "256", "512", "1000"],
-            key="tablet_depolama"
-        )
-        hazir_min_batarya = st.sidebar.selectbox(
-            "Minimum Batarya / mAh",
-            ["Farketmez", "4000", "6000", "8000", "10000"],
-            key="tablet_batarya"
-        )
-        hazir_isletim = st.sidebar.selectbox(
-            "İşletim Sistemi",
-            secenekleri_getir(tech_df, kategori, "İşletim Sistemi"),
-            key="tablet_isletim"
-        )
-        hazir_su = st.sidebar.selectbox(
-            "Su Geçirmezlik",
-            ["Farketmez", "Evet", "Hayır"],
-            key="tablet_su"
-        )
+        hazir_min_depolama = st.sidebar.selectbox("Minimum Depolama", ["Farketmez", "64", "128", "256", "512", "1000"], key="tablet_depolama")
+        hazir_min_batarya = st.sidebar.selectbox("Minimum Batarya / mAh", ["Farketmez", "4000", "6000", "8000", "10000"], key="tablet_batarya")
+        hazir_panel = st.sidebar.selectbox("Ekran Paneli", ["Farketmez", "IPS", "OLED", "AMOLED", "Retina"], key="tablet_panel")
+        hazir_min_hz = st.sidebar.selectbox("Minimum Yenileme Hızı", ["Farketmez", "60", "90", "120", "144"], key="tablet_hz")
+        hazir_isletim = st.sidebar.selectbox("İşletim Sistemi", secenekleri_getir(tech_df, kategori, "İşletim Sistemi"), key="tablet_isletim")
+        hazir_su = st.sidebar.selectbox("Su Geçirmezlik", ["Farketmez", "Evet", "Hayır"], key="tablet_su")
 
     elif kategori == "Kulaklık":
-        hazir_kulaklik_tipi = st.sidebar.selectbox(
-            "Kulaklık Tipi",
-            secenekleri_getir(tech_df, kategori, "Kulaklık Tipi"),
-            key="kulaklik_tipi"
-        )
-        hazir_baglanti = st.sidebar.selectbox(
-            "Bağlantı Türü",
-            secenekleri_getir(tech_df, kategori, "Bağlantı Türü"),
-            key="kulaklik_baglanti"
-        )
-        hazir_gurultu = st.sidebar.selectbox(
-            "Gürültü Engelleme",
-            ["Farketmez", "Evet", "Hayır"],
-            key="kulaklik_gurultu"
-        )
-        hazir_mikrofon = st.sidebar.selectbox(
-            "Mikrofon",
-            ["Farketmez", "Evet", "Hayır"],
-            key="kulaklik_mikrofon"
-        )
-        hazir_min_pil = st.sidebar.selectbox(
-            "Minimum Pil Ömrü / saat",
-            ["Farketmez", "5", "10", "20", "30", "40", "50"],
-            key="kulaklik_pil"
-        )
+        hazir_kulaklik_tipi = st.sidebar.selectbox("Kulaklık Tipi", secenekleri_getir(tech_df, kategori, "Kulaklık Tipi"), key="kulaklik_tipi")
+        hazir_baglanti = st.sidebar.selectbox("Bağlantı Türü", secenekleri_getir(tech_df, kategori, "Bağlantı Türü"), key="kulaklik_baglanti")
+        hazir_gurultu = st.sidebar.selectbox("Gürültü Engelleme", ["Farketmez", "Evet", "Hayır"], key="kulaklik_gurultu")
+        hazir_mikrofon = st.sidebar.selectbox("Mikrofon", ["Farketmez", "Evet", "Hayır"], key="kulaklik_mikrofon")
+        hazir_min_pil = st.sidebar.selectbox("Minimum Pil Ömrü / saat", ["Farketmez", "5", "10", "20", "30", "40", "50"], key="kulaklik_pil")
 
     elif kategori == "Akıllı Saat / Bileklik":
-        hazir_gps = st.sidebar.selectbox(
-            "GPS",
-            ["Farketmez", "Evet", "Hayır"],
-            key="saat_gps"
-        )
-        hazir_su = st.sidebar.selectbox(
-            "Su Geçirmezlik",
-            ["Farketmez", "Evet", "Hayır"],
-            key="saat_su"
-        )
-        hazir_min_pil_gun = st.sidebar.selectbox(
-            "Minimum Pil Ömrü / gün",
-            ["Farketmez", "1", "3", "5", "7", "10", "14"],
-            key="saat_pil"
-        )
-        hazir_isletim = st.sidebar.selectbox(
-            "İşletim Sistemi",
-            secenekleri_getir(tech_df, kategori, "İşletim Sistemi"),
-            key="saat_isletim"
-        )
+        hazir_gps = st.sidebar.selectbox("GPS", ["Farketmez", "Evet", "Hayır"], key="saat_gps")
+        hazir_su = st.sidebar.selectbox("Su Geçirmezlik", ["Farketmez", "Evet", "Hayır"], key="saat_su")
+        hazir_min_pil_gun = st.sidebar.selectbox("Minimum Pil Ömrü / gün", ["Farketmez", "1", "3", "5", "7", "10", "14"], key="saat_pil")
+        hazir_isletim = st.sidebar.selectbox("İşletim Sistemi", secenekleri_getir(tech_df, kategori, "İşletim Sistemi"), key="saat_isletim")
 
 
 st.sidebar.markdown("---")
@@ -2423,7 +2449,8 @@ if kategori != "Toplama Bilgisayar":
                 wifi=ev_wifi,
                 rgb=ev_rgb,
                 min_garanti=ev_garanti,
-                stok=ev_stok
+                stok=ev_stok,
+                marka=ev_marka
             )
 
         else:
@@ -2453,7 +2480,12 @@ if kategori != "Toplama Bilgisayar":
                 "mikrofon": hazir_mikrofon,
                 "min_pil": hazir_min_pil,
                 "gps": hazir_gps,
-                "min_pil_gun": hazir_min_pil_gun
+                "min_pil_gun": hazir_min_pil_gun,
+                "cpu_marka": hazir_cpu_marka,
+                "cpu_seviye": hazir_cpu_seviye,
+                "gpu_seviye": hazir_gpu_seviye,
+                "panel": hazir_panel,
+                "min_hz": hazir_min_hz
             }
 
             sonuc = hazir_urun_detay_filtrele(sonuc, kategori, hazir_filtreler)
@@ -2710,7 +2742,7 @@ else:
                 st.markdown(f"""
 <div class="product-card">
 <div class="product-title">📦 {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {veri_getir(row, 'FIYAT_SAYI')} TL</span>
+<span class="badge-orange">💰 Tahmini {veri_getir(row, 'FIYAT_SAYI')} TL</span>
 <span class="badge-blue">🏷️ {veri_getir(row, 'Kategori')}</span>
 <span class="badge-purple">⭐ {veri_getir(row, 'ONERI_PUANI')}</span>
 <br><br>
