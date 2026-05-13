@@ -542,26 +542,34 @@ def temizle_yazi(x):
 
 
 def ev_alt_kategori_tipi(alt_kategori):
-    """Elektronik ev eşyasında saçma filtre çıkmasın diye alt kategori tipini belirler."""
+    """Elektronik ev eşyasında sadece ilgili filtreler çıksın diye alt kategori tipini belirler."""
     a = temizle_yazi(str(alt_kategori))
 
-    if any(k in a for k in ["supurge", "robot", "dikey", "süpürge"]):
+    # ÖNEMLİ: "Buharlı Dikey Ütü" içinde dikey geçtiği için önce ütüyü yakalıyoruz.
+    if any(k in a for k in ["utu", "buharli utu", "buhar kazanli", "utuler"]):
+        return "utu"
+
+    # Sadece "dikey" kelimesine göre süpürge sayma. Dikey ütü de var.
+    if any(k in a for k in ["supurge", "robot supurge", "dikey supurge", "sarjli supurge", "elektrikli supurge", "vacuum"]):
         return "supurge"
 
-    if any(k in a for k in ["airfryer", "fritoz", "fritöz", "pisirme", "firin", "fırın"]):
+    if any(k in a for k in ["airfryer", "fritoz", "fritöz", "pisirme", "firin", "fırın", "mikrodalga"]):
         return "pisirme"
 
-    if any(k in a for k in ["kahve", "espresso", "cay", "çay", "kettle"]):
+    if any(k in a for k in ["kahve", "espresso", "cay", "çay", "kettle", "su isitici", "su ısıtıcı"]):
         return "icecek"
 
-    if any(k in a for k in ["klima", "hava", "vantilator", "vantilatör", "isitici", "ısıtıcı", "kombi"]):
+    if any(k in a for k in ["klima", "hava", "vantilator", "vantilatör", "isitici", "ısıtıcı", "kombi", "nem", "temizleyici"]):
         return "hava_iklim"
 
-    if any(k in a for k in ["kedi", "tuvalet", "mama", "evcil"]):
+    if any(k in a for k in ["kedi", "tuvalet", "mama", "evcil", "pet"]):
         return "evcil"
 
-    if any(k in a for k in ["kamera", "guvenlik", "güvenlik", "kilit", "sensor", "sensör"]):
+    if any(k in a for k in ["kamera", "guvenlik", "güvenlik", "kilit", "sensor", "sensör", "alarm"]):
         return "guvenlik"
+
+    if any(k in a for k in ["bulasik", "bulaşık", "camasir", "çamaşır", "buzdolabi", "buzdolabı", "derin dondurucu"]):
+        return "beyaz_esya"
 
     return "genel"
 
@@ -2339,13 +2347,13 @@ elif kategori == "Elektronik Ev Eşyaları":
         ["Farketmez", "Hepsiburada", "Trendyol", "Teknosa", "MediaMarkt", "Vatan Bilgisayar", "Amazon Türkiye", "n11"]
     )
 
-    if ev_tipi in ["pisirme", "icecek", "hava_iklim"]:
+    if ev_tipi in ["pisirme", "icecek", "hava_iklim", "utu", "beyaz_esya"]:
         ev_enerji = st.sidebar.selectbox(
             "Enerji Sınıfı",
             ["Farketmez", "A+++", "A++", "A+", "A", "B", "C", "Belirtilmemiş"]
         )
 
-    if ev_tipi in ["pisirme", "icecek", "hava_iklim"]:
+    if ev_tipi in ["pisirme", "icecek", "hava_iklim", "utu"]:
         ev_min_watt = st.sidebar.selectbox(
             "Minimum Watt",
             ["Farketmez", "500", "800", "1000", "1200", "1500", "1800", "2000", "2200", "2500", "3000"]
@@ -2366,13 +2374,13 @@ elif kategori == "Elektronik Ev Eşyaları":
             ["Farketmez", "1", "2", "3", "4", "5", "6", "7", "8"]
         )
 
-    if ev_tipi in ["supurge", "icecek", "hava_iklim", "evcil", "guvenlik", "genel"]:
+    if ev_tipi in ["supurge", "icecek", "hava_iklim", "evcil", "guvenlik"]:
         ev_wifi = st.sidebar.selectbox(
             "Wi-Fi / Akıllı Bağlantı",
             ["Farketmez", "Var", "Yok"]
         )
 
-    if ev_tipi in ["guvenlik", "genel"]:
+    if ev_tipi in ["guvenlik"]:
         ev_rgb = st.sidebar.selectbox(
             "RGB / Işık",
             ["Farketmez", "Var", "Yok"]
