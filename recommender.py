@@ -113,8 +113,13 @@ def teknoloji_dataset_yukle():
 
     df = pd.read_csv(TEKNOLOJI_DATASET)
 
-    if "Fiyat (TL)" in df.columns:
+    # Yeni güncel CSV'lerde fiyat bazen Fiyat_TL, eski CSV'de Fiyat (TL) olarak gelebilir.
+    if "Fiyat_TL" in df.columns:
+        df["FIYAT_SAYI"] = df["Fiyat_TL"].apply(fiyat_sayiya_cevir)
+    elif "Fiyat (TL)" in df.columns:
         df["FIYAT_SAYI"] = df["Fiyat (TL)"].apply(fiyat_sayiya_cevir)
+    elif "FIYAT_SAYI" in df.columns:
+        df["FIYAT_SAYI"] = df["FIYAT_SAYI"].apply(fiyat_sayiya_cevir)
     else:
         df["FIYAT_SAYI"] = 0
 
@@ -122,6 +127,17 @@ def teknoloji_dataset_yukle():
         df["RAM_SAYI"] = df["RAM"].apply(ram_sayiya_cevir)
     else:
         df["RAM_SAYI"] = 0
+
+    # Epey benzeri 100 üzerinden puanı hazırla.
+    # Öncelik: Topluluk_Puani > Puan > ONERI_PUANI
+    if "Topluluk_Puani" in df.columns:
+        df["TOPLULUK_PUANI"] = pd.to_numeric(df["Topluluk_Puani"], errors="coerce").fillna(0).astype(int)
+    elif "Puan" in df.columns:
+        df["TOPLULUK_PUANI"] = pd.to_numeric(df["Puan"], errors="coerce").fillna(0).astype(int)
+    elif "ONERI_PUANI" in df.columns:
+        df["TOPLULUK_PUANI"] = pd.to_numeric(df["ONERI_PUANI"], errors="coerce").fillna(0).astype(int)
+    else:
+        df["TOPLULUK_PUANI"] = 0
 
     return df
 
@@ -320,23 +336,35 @@ def urun_oner(kategori, min_butce, max_butce, min_ram, siralama, kullanim=""):
             filtre.apply(lambda row: ihtiyaca_uygun_mu(row, kategori, kullanim), axis=1)
         ].copy()
 
-    filtre["ONERI_PUANI"] = filtre.apply(
+    # Bu skor sadece kullanıcının ihtiyacına uygunluğu için hesaplanır.
+    # Ekranda gösterilen puanı ezmez.
+    filtre["IHTIYAC_PUANI"] = filtre.apply(
         lambda row: urun_puani_hesapla(row, kategori, kullanim),
         axis=1
     )
+
+    # Ekranda gösterilecek puan artık CSV'deki Epey benzeri 100'lük puandır.
+    if "TOPLULUK_PUANI" in filtre.columns:
+        filtre["ONERI_PUANI"] = pd.to_numeric(filtre["TOPLULUK_PUANI"], errors="coerce").fillna(0).astype(int)
+    elif "Topluluk_Puani" in filtre.columns:
+        filtre["ONERI_PUANI"] = pd.to_numeric(filtre["Topluluk_Puani"], errors="coerce").fillna(0).astype(int)
+    elif "Puan" in filtre.columns:
+        filtre["ONERI_PUANI"] = pd.to_numeric(filtre["Puan"], errors="coerce").fillna(0).astype(int)
+    else:
+        filtre["ONERI_PUANI"] = 0
 
     if "Model" in filtre.columns:
         filtre = filtre.drop_duplicates(subset=["Model"], keep="first")
 
     if siralama == "Ucuzdan pahalıya":
         filtre = filtre.sort_values(
-            by=["ONERI_PUANI", "FIYAT_SAYI"],
-            ascending=[False, True]
+            by=["IHTIYAC_PUANI", "ONERI_PUANI", "FIYAT_SAYI"],
+            ascending=[False, False, True]
         )
     else:
         filtre = filtre.sort_values(
-            by=["ONERI_PUANI", "FIYAT_SAYI"],
-            ascending=[False, False]
+            by=["IHTIYAC_PUANI", "ONERI_PUANI", "FIYAT_SAYI"],
+            ascending=[False, False, False]
         )
 
     return filtre.head(30)
@@ -452,7 +480,12 @@ def pc_ihtiyac_puani(row, kullanim=""):
     kapasite = sayi_al(row.get("Kapasite", 0))
     hz = sayi_al(row.get("Cozunurluk", 0))
 
-    puan += float(row.get("Puan", 0)) * 8
+    temel_puan = float(row.get("Puan", 0))
+    if temel_puan > 10:
+        puan += temel_puan * 0.8
+    else:
+        puan += temel_puan * 8
+
     puan += min(float(row.get("Yorum_Sayisi", 0)) / 100, 20)
 
     if ihtiyac == "oyun":
@@ -1029,8 +1062,13 @@ def aciklama_uret(row, kategori, min_butce, max_butce, min_ram):
 
     puan = row.get("ONERI_PUANI", 0)
 
+    try:
+        puan = int(float(puan))
+    except Exception:
+        puan = 0
+
     if puan > 0:
-        aciklamalar.append(f"kullanıcı ihtiyacına göre {puan} puan aldı")
+        aciklamalar.append(f"günümüz şartlarına göre {puan}/100 topluluk puanına sahip")
 
     if len(aciklamalar) == 0:
         return "Bu ürün kriterlere yakın olduğu için önerildi."
