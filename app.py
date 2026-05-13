@@ -1506,7 +1506,22 @@ def ev_esyasi_oner(
         sonuc = sonuc[sonuc["Ana_Kategori"].astype(str) == ana_kategori]
 
     if alt_kategori != "Tümü":
-        sonuc = sonuc[sonuc["Alt_Kategori"].astype(str) == alt_kategori]
+        # Alt kategori birebir eşleşmezse esnek eşleşme yap.
+        # Örn: "Kahve Makinesi" seçilince "Espresso Kahve Makinesi" de gelsin.
+        alt_norm = temizle_yazi(alt_kategori)
+        birebir = sonuc[sonuc["Alt_Kategori"].astype(str).apply(temizle_yazi) == alt_norm]
+
+        if not birebir.empty:
+            sonuc = birebir
+        else:
+            sonuc = sonuc[
+                sonuc["Alt_Kategori"]
+                .astype(str)
+                .apply(temizle_yazi)
+                .str.contains(alt_norm, na=False)
+                |
+                pd.Series([alt_norm in temizle_yazi(x) for x in sonuc["Alt_Kategori"].astype(str)], index=sonuc.index)
+            ]
 
     if marka != "Farketmez" and "Marka" in sonuc.columns:
         sonuc = sonuc[sonuc["Marka"].astype(str) == str(marka)]
@@ -1564,9 +1579,6 @@ def ev_esyasi_oner(
 
     if min_garanti != "Farketmez":
         sonuc = sonuc[sonuc["Garanti_Ay"] >= int(min_garanti)]
-
-    if stok != "Farketmez":
-        sonuc = sonuc[sonuc["Stok_Durumu"].astype(str) == stok]
 
     sonuc = sonuc.drop_duplicates(subset=["Marka", "Model"], keep="first")
 
@@ -1761,7 +1773,6 @@ def ev_karti(row):
 🛡️ <b>Garanti:</b> {veri_getir(row, 'Garanti_Ay')} ay<br>
 🔥 <b>Popülerlik:</b> {kart_populerlik_getir(row)}<br>
 💬 <b>Yorum Sayısı:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
-📦 <b>Stok:</b> {veri_getir(row, 'Stok_Durumu')}<br>
 🛒 <b>Kaynak Site:</b> {veri_getir(row, 'Kaynak_Site')}
 {fiyat_karsilastirma_html('ev', row)}
 </div>
@@ -2063,7 +2074,6 @@ ev_min_hazne = "Farketmez"
 ev_wifi = "Farketmez"
 ev_rgb = "Farketmez"
 ev_garanti = "Farketmez"
-ev_stok = "Farketmez"
 ev_marka = "Farketmez"
 
 
@@ -2435,11 +2445,6 @@ elif kategori == "Elektronik Ev Eşyaları":
         ["Farketmez", "12", "24", "36"]
     )
 
-    ev_stok = st.sidebar.selectbox(
-        "Stok Durumu",
-        ["Farketmez", "Stokta var", "Az stok", "Kampanyalı", "Hızlı teslimat"]
-    )
-
 
 elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulaklık", "Akıllı Saat / Bileklik"]:
     st.sidebar.markdown("### 🔎 Kategoriye Özel Filtreler")
@@ -2516,7 +2521,6 @@ if kategori != "Toplama Bilgisayar":
                 wifi=ev_wifi,
                 rgb=ev_rgb,
                 min_garanti=ev_garanti,
-                stok=ev_stok,
                 marka=ev_marka
             )
 
