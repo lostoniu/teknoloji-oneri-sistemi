@@ -437,7 +437,7 @@ def _json_data_to_df(rows):
     return pd.DataFrame(temiz_rows)
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)
 def products_db_yukle(source):
     try:
         with get_db_connection() as conn:
