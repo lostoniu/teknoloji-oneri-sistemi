@@ -461,7 +461,7 @@ def products_db_yukle(source):
         return pd.DataFrame()
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)
 def ev_esyalari_yukle():
     df = products_db_yukle("ev")
 
@@ -485,7 +485,7 @@ def ev_esyalari_yukle():
     return df
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)
 def pc_dataset_yukle():
     df = products_db_yukle("pc")
 
@@ -507,7 +507,7 @@ def pc_dataset_yukle():
     return df
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=86400, show_spinner=False)
 def teknoloji_dataset_yukle():
     df = products_db_yukle("teknoloji")
 
@@ -1634,8 +1634,42 @@ def sistemi_butceye_yaklastir(parcalar, havuzlar, min_butce, max_butce, hedef_fi
     return parcalar
 
 
-def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, ana_havuzlar, varyasyon):
-    oranlar = {
+def pc_kurulum_kategorileri(kurulum_tipi="Temel Sistem"):
+    temel = [
+        "İşlemci",
+        "Ekran Kartı",
+        "Anakart",
+        "RAM",
+        "SSD",
+        "Güç Kaynağı",
+        "Kasa",
+        "Soğutucu"
+    ]
+
+    if kurulum_tipi == "Tam Kurulum":
+        return temel + ["HDD", "Monitör", "Klavye", "Mouse"]
+
+    return temel
+
+
+def pc_butce_oranlari(kurulum_tipi="Temel Sistem"):
+    if kurulum_tipi == "Tam Kurulum":
+        return {
+            "İşlemci": 0.15,
+            "Ekran Kartı": 0.30,
+            "Anakart": 0.09,
+            "RAM": 0.08,
+            "SSD": 0.07,
+            "HDD": 0.04,
+            "Güç Kaynağı": 0.06,
+            "Kasa": 0.05,
+            "Soğutucu": 0.04,
+            "Monitör": 0.09,
+            "Klavye": 0.015,
+            "Mouse": 0.015,
+        }
+
+    return {
         "İşlemci": 0.18,
         "Ekran Kartı": 0.35,
         "Anakart": 0.12,
@@ -1646,6 +1680,9 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
         "Soğutucu": 0.05
     }
 
+
+def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, ana_havuzlar, varyasyon, kurulum_tipi="Temel Sistem"):
+    oranlar = pc_butce_oranlari(kurulum_tipi)
     parcalar = {}
 
     islemci = fiyat_hedefine_yakin_satir(
@@ -1678,7 +1715,10 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
         "Ekran Kartı": ana_havuzlar.get("Ekran Kartı", pd.DataFrame()),
     }
 
-    for kategori in ["Anakart", "RAM", "SSD", "Güç Kaynağı", "Kasa", "Soğutucu"]:
+    zorunlu_kategoriler = ["Anakart", "RAM", "SSD", "Güç Kaynağı", "Kasa", "Soğutucu"]
+    ek_kategoriler = ["HDD", "Monitör", "Klavye", "Mouse"] if kurulum_tipi == "Tam Kurulum" else []
+
+    for kategori in zorunlu_kategoriler + ek_kategoriler:
         uyumlu_havuzlar[kategori] = uyumlu_havuz_filtrele(
             ana_havuzlar.get(kategori, pd.DataFrame()),
             kategori,
@@ -1689,12 +1729,15 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
 
         secilen = fiyat_hedefine_yakin_satir(
             uyumlu_havuzlar[kategori],
-            hedef_fiyat * oranlar[kategori],
+            hedef_fiyat * oranlar.get(kategori, 0.03),
             varyasyon
         )
 
+        # Temel parçalar olmadan sistem oluşturulmaz. Tam kurulum ek parçalarında veri yoksa sistem tamamen iptal edilmez.
         if secilen is None:
-            return None
+            if kategori in zorunlu_kategoriler:
+                return None
+            continue
 
         parcalar[kategori] = secilen
 
@@ -1720,24 +1763,16 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
         "max_butce": max_butce,
         "butce": max_butce,
         "hedef_fiyat": hedef_fiyat,
+        "kurulum_tipi": kurulum_tipi,
         "imza": sistem_imza(parcalar)
     }
 
 
-def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
+def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed, kurulum_tipi="Temel Sistem"):
     if pc_df.empty:
         return []
 
-    kategoriler = [
-        "İşlemci",
-        "Ekran Kartı",
-        "Anakart",
-        "RAM",
-        "SSD",
-        "Güç Kaynağı",
-        "Kasa",
-        "Soğutucu"
-    ]
+    kategoriler = pc_kurulum_kategorileri(kurulum_tipi)
 
     # En büyük hız kazancı burada: Veri seti her sistem için tekrar tekrar filtrelenmez.
     ana_havuzlar = {
@@ -1768,7 +1803,8 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
                 kullanim=kullanim,
                 seed=seed,
                 ana_havuzlar=ana_havuzlar,
-                varyasyon=(i * 2) + varyasyon
+                varyasyon=(i * 2) + varyasyon,
+                kurulum_tipi=kurulum_tipi
             )
 
             if sistem is None:
@@ -1793,7 +1829,7 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed):
 
 
 def uyumlu_pc_sistem_topla(max_butce, kullanim, seed):
-    sistemler = besli_pc_sistem_olustur(0, max_butce, kullanim, seed)
+    sistemler = besli_pc_sistem_olustur(0, max_butce, kullanim, seed, kurulum_tipi="Temel Sistem")
     if sistemler:
         return sistemler[0]
     return {
@@ -2143,6 +2179,56 @@ def chatbot_kategori_bul(mesaj_lower):
     return None
 
 
+
+def chatbot_ev_alt_kategori_bul(mesaj_lower):
+    """Chatbotun elektronik ev eşyasında alt kategoriyi paneldeki filtreler kadar doğru yakalaması için kullanılır."""
+    alt_map = {
+        "Dikey Süpürge": ["dikey süpürge", "dikey supurge", "şarjlı süpürge", "sarjli supurge"],
+        "Robot Süpürge": ["robot süpürge", "robot supurge", "robot vacuum"],
+        "Elektrikli Süpürge": ["elektrikli süpürge", "elektrikli supurge", "süpürge", "supurge"],
+        "Buharlı Ütü": ["buharlı ütü", "buharli utu", "ütü", "utu"],
+        "Buhar Kazanlı Ütü": ["buhar kazanlı", "buhar kazanli"],
+        "Airfryer": ["airfryer", "fritöz", "fritoz"],
+        "Espresso Kahve Makinesi": ["espresso"],
+        "Filtre Kahve Makinesi": ["filtre kahve"],
+        "Türk Kahvesi Makinesi": ["türk kahvesi", "turk kahvesi"],
+        "Kahve Makinesi": ["kahve makinesi", "kahve"],
+        "Çay Makinesi": ["çay makinesi", "cay makinesi"],
+        "Kettle": ["kettle", "su ısıtıcı", "su isitici"],
+        "Hava Temizleyici": ["hava temizleyici", "hava temizleme"],
+        "Klima": ["klima"],
+        "Akıllı Kedi Tuvaleti": ["kedi tuvaleti", "akıllı kedi", "akilli kedi"],
+    }
+
+    mevcut_altlar = []
+    if not ev_df.empty and "Alt_Kategori" in ev_df.columns:
+        mevcut_altlar = [str(x) for x in ev_df["Alt_Kategori"].dropna().unique()]
+
+    for hedef_alt, kelimeler in alt_map.items():
+        if any(k in mesaj_lower for k in kelimeler):
+            if hedef_alt in mevcut_altlar:
+                return hedef_alt
+            # Datasette "Dikey Süpürge" yerine "Şarjlı Dikey Süpürge" gibi daha uzun ad varsa onu yakala.
+            hedef_norm = temizle_yazi(hedef_alt)
+            for alt in mevcut_altlar:
+                alt_norm = temizle_yazi(alt)
+                if hedef_norm in alt_norm or alt_norm in hedef_norm:
+                    return alt
+            # Sadece süpürge gibi genel ifadelerde, varsa en yakın süpürge alt kategorisini döndür.
+            if "supurge" in hedef_norm:
+                for alt in mevcut_altlar:
+                    if "supurge" in temizle_yazi(alt):
+                        return alt
+            return hedef_alt
+
+    return "Tümü"
+
+
+def chatbot_pc_kurulum_tipi_bul(mesaj_lower):
+    if any(k in mesaj_lower for k in ["tam kurulum", "monitör", "monitor", "klavye", "mouse", "fare", "hdd"]):
+        return "Tam Kurulum"
+    return "Temel Sistem"
+
 def chatbot_urun_istegi_var_mi(mesaj_lower):
     urun_kelimeleri = [
         "öner", "oner", "al", "alayım", "alayim", "ne al", "bütçe", "butce", "tl", "₺",
@@ -2310,11 +2396,13 @@ with col_chat:
                 st.session_state.aktif_mod = "pc_build"
                 st.session_state.sonuc = None
                 st.session_state.pc_build = None
+                chat_kurulum_tipi = chatbot_pc_kurulum_tipi_bul(mesaj_lower)
                 st.session_state.pc_builds = besli_pc_sistem_olustur(
                     min_butce=chat_min_butce,
                     max_butce=chat_max_butce,
                     kullanim=chat_kullanim,
-                    seed=st.session_state.pc_random_seed
+                    seed=st.session_state.pc_random_seed,
+                    kurulum_tipi=chat_kurulum_tipi
                 )
                 st.session_state.selected_pc_build_index = 0
                 bot_mesaji = chatbot_sonuc_mesaji(
@@ -2330,9 +2418,10 @@ with col_chat:
                 st.session_state.aktif_mod = "ev_esyalari"
                 st.session_state.pc_build = None
                 st.session_state.pc_builds = []
+                chat_ev_alt_kategori = chatbot_ev_alt_kategori_bul(mesaj_lower)
                 st.session_state.sonuc = ev_esyasi_oner(
                     ana_kategori="Tümü",
-                    alt_kategori="Tümü",
+                    alt_kategori=chat_ev_alt_kategori,
                     min_butce=chat_min_butce,
                     max_butce=chat_max_butce,
                     siralama=chatbot_siralama,
@@ -2902,6 +2991,14 @@ if kategori == "Toplama Bilgisayar":
             st.rerun()
 
     else:
+        pc_kurulum_tipi = st.sidebar.selectbox(
+            "Kurulum Tipi",
+            ["Temel Sistem", "Tam Kurulum"],
+            help="Temel Sistem sadece kasa içi parçaları toplar. Tam Kurulum monitör, klavye, mouse ve varsa HDD de ekler.",
+            key="pc_kurulum_tipi_select"
+        )
+        st.session_state.pc_kurulum_tipi = pc_kurulum_tipi
+
         if st.sidebar.button("🖥️ Sistem Topla", key="build_pc_button"):
             st.session_state.aktif_mod = "pc_build"
             st.session_state.pc_build = None
@@ -2909,7 +3006,8 @@ if kategori == "Toplama Bilgisayar":
                 min_butce=min_butce,
                 max_butce=max_butce,
                 kullanim=kullanim,
-                seed=st.session_state.pc_random_seed
+                seed=st.session_state.pc_random_seed,
+                kurulum_tipi=pc_kurulum_tipi
             )
             st.session_state.selected_pc_build_index = 0
             st.session_state.sonuc = None
@@ -3311,7 +3409,8 @@ Ekran kalabalığı olmaması için önce sadece özet kartlar gösterilir; seç
                     min_butce=min_butce,
                     max_butce=max_butce,
                     kullanim=kullanim,
-                    seed=st.session_state.pc_random_seed
+                    seed=st.session_state.pc_random_seed,
+                    kurulum_tipi=st.session_state.get("pc_kurulum_tipi", "Temel Sistem")
                 )
                 st.session_state.selected_pc_build_index = 0
                 st.rerun()
