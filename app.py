@@ -37,92 +37,93 @@ html, body, [class*="css"] {
 }
 
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #f4d8f7 0%, #f1ccf6 48%, #ead1ff 100%);
+    color: #080b2f;
 }
 
 section[data-testid="stSidebar"] {
-    background: rgba(15, 23, 42, 0.96);
-    border-right: 1px solid rgba(139, 92, 246, 0.45);
-    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.22);
+    background: rgba(255, 255, 255, 0.88);
+    border-right: 1px solid rgba(76, 43, 230, 0.35);
+    box-shadow: 8px 0 30px rgba(76, 43, 230, 0.12);
 }
 
 h1, h2, h3, h4 {
-    color: #ffffff !important;
+    color: #4b2ee8 !important;
     letter-spacing: -0.02em;
 }
 
 p, label, span, div {
-    color: #ffffff;
+    color: #080b2f;
 }
 
 .stButton button {
-    background: linear-gradient(135deg, #f59e0b 0%, #ee8713 100%);
+    background: linear-gradient(135deg, #4b2ee8 0%, #6d3cff 100%);
     color: white;
     border: none;
     border-radius: 14px;
     font-weight: 800;
     padding: 0.65rem 1rem;
     transition: all 0.22s ease;
-    box-shadow: 0 10px 22px rgba(238, 135, 19, 0.18);
+    box-shadow: 0 10px 22px rgba(76, 43, 230, 0.22);
 }
 
 .stButton button:hover {
-    background: linear-gradient(135deg, #ffb347 0%, #f97316 100%);
+    background: linear-gradient(135deg, #ff9226 0%, #ff7a00 100%);
     color: white;
     transform: translateY(-2px);
-    border: 1px solid rgba(87, 164, 251, 0.7);
+    border: 1px solid rgba(75, 46, 232, 0.55);
 }
 
 [data-baseweb="select"] > div,
 .stTextInput input,
 .stNumberInput input {
-    background-color: rgba(17, 24, 39, 0.94) !important;
-    color: white !important;
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    color: #080b2f !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(87, 164, 251, 0.75) !important;
+    border: 1px solid rgba(75, 46, 232, 0.55) !important;
 }
 
 .stChatInput textarea {
-    background-color: rgba(17, 24, 39, 0.96) !important;
-    color: white !important;
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    color: #080b2f !important;
     border-radius: 14px !important;
+    border: 1px solid rgba(75, 46, 232, 0.55) !important;
 }
 
 div[data-testid="stAlert"] {
-    background-color: rgba(30, 41, 59, 0.95);
-    border-left: 6px solid #f59e0b;
+    background-color: rgba(255, 255, 255, 0.92);
+    border-left: 6px solid #ff9226;
     border-radius: 14px;
 }
 
 .product-card {
-    background: #f8f5f0;
-    border: 1px solid rgba(139, 92, 246, 0.35);
+    background: #ffffff;
+    border: 1px solid rgba(75, 46, 232, 0.35);
     border-radius: 20px;
     padding: 20px;
     margin-bottom: 18px;
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 16px 34px rgba(76, 43, 230, 0.16);
     transition: all 0.24s ease;
 }
 
 .product-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 22px 45px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(87, 164, 251, 0.25);
+    box-shadow: 0 22px 45px rgba(76, 43, 230, 0.20), 0 0 0 1px rgba(255, 146, 38, 0.35);
 }
 
 .product-card, .product-card div, .product-card p, .product-card b {
-    color: #111827 !important;
+    color: #080b2f !important;
 }
 
 .product-title {
     font-size: 21px;
     font-weight: 900;
-    color: #111827 !important;
+    color: #4b2ee8 !important;
 }
 
 .badge-blue {
-    background-color: #57a4fb;
-    color: #0f172a !important;
+    background-color: #4b2ee8;
+    color: white !important;
     padding: 6px 11px;
     border-radius: 999px;
     font-size: 13px;
@@ -130,7 +131,7 @@ div[data-testid="stAlert"] {
 }
 
 .badge-purple {
-    background-color: #8b5cf6;
+    background-color: #7b2cff;
     color: white !important;
     padding: 6px 11px;
     border-radius: 999px;
@@ -139,7 +140,7 @@ div[data-testid="stAlert"] {
 }
 
 .badge-orange {
-    background-color: #ee8713;
+    background-color: #ff9226;
     color: white !important;
     padding: 6px 11px;
     border-radius: 999px;
@@ -148,34 +149,34 @@ div[data-testid="stAlert"] {
 }
 
 .system-card {
-    background: rgba(248, 245, 240, 0.98);
-    border: 1px solid rgba(139, 92, 246, 0.38);
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(75, 46, 232, 0.38);
     border-radius: 22px;
     padding: 18px;
     min-height: 138px;
-    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.20);
+    box-shadow: 0 18px 38px rgba(76, 43, 230, 0.18);
     transition: all 0.22s ease;
 }
 
 .system-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 22px 46px rgba(0, 0, 0, 0.26), 0 0 0 1px rgba(87, 164, 251, 0.25);
+    box-shadow: 0 22px 46px rgba(76, 43, 230, 0.22), 0 0 0 1px rgba(255, 146, 38, 0.32);
 }
 
 .system-card, .system-card div, .system-card span, .system-card b {
-    color: #111827 !important;
+    color: #080b2f !important;
 }
 
 .system-title {
     font-size: 19px;
     font-weight: 900;
-    color: #111827 !important;
+    color: #4b2ee8 !important;
 }
 
 .system-price {
     font-size: 22px;
     font-weight: 900;
-    color: #4c1d95 !important;
+    color: #ff7a00 !important;
     margin-top: 6px;
 }
 
@@ -189,41 +190,94 @@ div[data-testid="stAlert"] {
     color: white !important;
 }
 
-.chip-1 { background: #10b981; }
-.chip-2 { background: #57a4fb; color: #0f172a !important; }
-.chip-3 { background: #8b5cf6; }
-.chip-4 { background: #f59e0b; }
-.chip-5 { background: #ef4444; }
+.chip-1 { background: #4b2ee8; }
+.chip-2 { background: #6d3cff; color: white !important; }
+.chip-3 { background: #7b2cff; }
+.chip-4 { background: #ff9226; }
+.chip-5 { background: #080b2f; }
 
 .summary-box {
-    background: rgba(248, 245, 240, 0.98);
-    border: 1px solid rgba(87, 164, 251, 0.35);
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(75, 46, 232, 0.35);
     border-radius: 22px;
     padding: 20px;
     margin: 16px 0 20px 0;
-    box-shadow: 0 18px 38px rgba(0,0,0,0.18);
+    box-shadow: 0 18px 38px rgba(76,43,230,0.15);
 }
 
 .summary-box, .summary-box div, .summary-box b {
-    color: #111827 !important;
+    color: #080b2f !important;
 }
 
 hr {
-    border: 1px solid rgba(139, 92, 246, 0.45);
+    border: 1px solid rgba(75, 46, 232, 0.35);
 }
 
 [data-testid="stDataFrame"] {
     border-radius: 16px;
     overflow: hidden;
 }
-.price-compare-box { background: rgba(17, 24, 39, 0.06); border: 1px solid rgba(17, 24, 39, 0.12); border-radius: 14px; padding: 12px; margin-top: 14px; }
-.price-compare-title { color: #111827 !important; font-weight: 900; margin-bottom: 8px; }
-.price-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(17, 24, 39, 0.16); }
-.price-row:last-child { border-bottom: none; }
-.price-site { color: #111827 !important; font-weight: 800; }
-.price-value { color: #4c1d95 !important; font-weight: 900; }
-.price-link { display: inline-block; margin-top: 10px; background: #10b981; color: white !important; text-decoration: none; padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 13px; }
-.price-link-secondary { display: inline-block; margin: 6px 6px 0 0; background: #111827; color: white !important; text-decoration: none; padding: 7px 10px; border-radius: 999px; font-weight: 800; font-size: 12px; }
+
+.price-compare-box {
+    background: rgba(244, 216, 247, 0.55);
+    border: 1px solid rgba(75, 46, 232, 0.22);
+    border-radius: 14px;
+    padding: 12px;
+    margin-top: 14px;
+}
+
+.price-compare-title {
+    color: #4b2ee8 !important;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(75, 46, 232, 0.22);
+}
+
+.price-row:last-child {
+    border-bottom: none;
+}
+
+.price-site {
+    color: #080b2f !important;
+    font-weight: 800;
+}
+
+.price-value {
+    color: #ff7a00 !important;
+    font-weight: 900;
+}
+
+.price-link {
+    display: inline-block;
+    margin-top: 10px;
+    background: #ff9226;
+    color: white !important;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 13px;
+}
+
+.price-link-secondary {
+    display: inline-block;
+    margin: 6px 6px 0 0;
+    background: #4b2ee8;
+    color: white !important;
+    text-decoration: none;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+}
 
 </style>
 """, unsafe_allow_html=True)
