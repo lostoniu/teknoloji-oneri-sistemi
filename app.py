@@ -229,13 +229,24 @@ hr {
 """, unsafe_allow_html=True)
 
 
+def get_secret_value(key, default=None):
+    env_value = os.getenv(key)
+    if env_value not in [None, ""]:
+        return env_value
+
+    try:
+        return st.secrets.get(key, default)
+    except Exception:
+        return default
+
+
 def get_db_connection():
     return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        database=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        port=os.getenv("DB_PORT")
+        host=get_secret_value("DB_HOST"),
+        database=get_secret_value("DB_NAME"),
+        user=get_secret_value("DB_USER"),
+        password=get_secret_value("DB_PASSWORD"),
+        port=get_secret_value("DB_PORT", "5432")
     )
 
 
@@ -396,56 +407,141 @@ if "pc_random_seed" not in st.session_state:
     st.session_state.pc_random_seed = 1
 
 
-@st.cache_data
-def ev_esyalari_yukle():
-    dosya = "elektronik_ev_esyalari_dataset.csv"
+def _json_data_to_df(rows):
+    temiz_rows = []
 
-    if not os.path.exists(dosya):
+    for row in rows:
+        data = row.get("data", {})
+
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except Exception:
+                data = {}
+
+        if not isinstance(data, dict):
+            data = {}
+
+        merged = dict(data)
+        merged.setdefault("Kategori", row.get("kategori"))
+        merged.setdefault("Ana_Kategori", row.get("kategori"))
+        merged.setdefault("Alt_Kategori", row.get("alt_kategori"))
+        merged.setdefault("Marka", row.get("marka"))
+        merged.setdefault("Model", row.get("model"))
+        merged.setdefault("Fiyat_TL", row.get("fiyat_tl", 0))
+        merged.setdefault("Puan", row.get("puan", 0))
+        merged.setdefault("Topluluk_Puani", row.get("puan", 0))
+        merged.setdefault("Populerlik", row.get("populerlik"))
+        temiz_rows.append(merged)
+
+    return pd.DataFrame(temiz_rows)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def products_db_yukle(source):
+    try:
+        with get_db_connection() as conn:
+            df = pd.read_sql(
+                """
+                SELECT source, kategori, alt_kategori, marka, model, fiyat_tl, puan, populerlik, data
+                FROM products
+                WHERE source = %s
+                """,
+                conn,
+                params=[source]
+            )
+
+        if df.empty:
+            return pd.DataFrame()
+
+        return _json_data_to_df(df.to_dict("records"))
+
+    except Exception as e:
+        st.warning(f"Ürün tablosu okunamadı, CSV yedeği kullanılacak: {e}")
         return pd.DataFrame()
 
-    df = pd.read_csv(dosya)
 
-    df["Fiyat_TL"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
-    df["Puan"] = pd.to_numeric(df["Puan"], errors="coerce").fillna(0)
-    df["Yorum_Sayisi"] = pd.to_numeric(df["Yorum_Sayisi"], errors="coerce").fillna(0).astype(int)
-    df["Garanti_Ay"] = pd.to_numeric(df["Garanti_Ay"], errors="coerce").fillna(0).astype(int)
+@st.cache_data(ttl=3600, show_spinner=False)
+def ev_esyalari_yukle():
+    df = products_db_yukle("ev")
+
+    if df.empty:
+        dosya = "elektronik_ev_esyalari_dataset.csv"
+        if not os.path.exists(dosya):
+            return pd.DataFrame()
+        df = pd.read_csv(dosya, low_memory=False)
+
+    if "Fiyat_TL" in df.columns:
+        df["Fiyat_TL"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+    if "Puan" in df.columns:
+        df["Puan"] = pd.to_numeric(df["Puan"], errors="coerce").fillna(0)
+    if "Topluluk_Puani" in df.columns:
+        df["Topluluk_Puani"] = pd.to_numeric(df["Topluluk_Puani"], errors="coerce").fillna(0)
+    if "Yorum_Sayisi" in df.columns:
+        df["Yorum_Sayisi"] = pd.to_numeric(df["Yorum_Sayisi"], errors="coerce").fillna(0).astype(int)
+    if "Garanti_Ay" in df.columns:
+        df["Garanti_Ay"] = pd.to_numeric(df["Garanti_Ay"], errors="coerce").fillna(0).astype(int)
 
     return df
 
 
-@st.cache_data
+@st.cache_data(ttl=3600, show_spinner=False)
 def pc_dataset_yukle():
-    dosya = "pc_parts_dataset.csv"
+    df = products_db_yukle("pc")
 
-    if not os.path.exists(dosya):
-        return pd.DataFrame()
-
-    df = pd.read_csv(dosya)
+    if df.empty:
+        dosya = "pc_parts_dataset.csv"
+        if not os.path.exists(dosya):
+            return pd.DataFrame()
+        df = pd.read_csv(dosya, low_memory=False)
 
     if "Fiyat_TL" in df.columns:
         df["Fiyat_TL"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
-
     if "Puan" in df.columns:
         df["Puan"] = pd.to_numeric(df["Puan"], errors="coerce").fillna(0)
-
+    if "Topluluk_Puani" in df.columns:
+        df["Topluluk_Puani"] = pd.to_numeric(df["Topluluk_Puani"], errors="coerce").fillna(0)
     if "Yorum_Sayisi" in df.columns:
         df["Yorum_Sayisi"] = pd.to_numeric(df["Yorum_Sayisi"], errors="coerce").fillna(0).astype(int)
 
     return df
 
 
-
-@st.cache_data
+@st.cache_data(ttl=3600, show_spinner=False)
 def teknoloji_dataset_yukle():
-    dosya = "teknoloji_urunleri_dataset.csv"
+    df = products_db_yukle("teknoloji")
 
-    if not os.path.exists(dosya):
-        return pd.DataFrame()
+    if df.empty:
+        dosya = "teknoloji_urunleri_dataset.csv"
+        if not os.path.exists(dosya):
+            return pd.DataFrame()
+        df = pd.read_csv(dosya, low_memory=False)
 
-    df = pd.read_csv(dosya)
-
-    if "Fiyat (TL)" in df.columns:
+    if "Fiyat_TL" in df.columns:
+        df["Fiyat_TL"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+        df["FIYAT_SAYI"] = df["Fiyat_TL"]
+    elif "Fiyat (TL)" in df.columns:
         df["Fiyat (TL)"] = pd.to_numeric(df["Fiyat (TL)"], errors="coerce").fillna(0).astype(int)
+        df["FIYAT_SAYI"] = df["Fiyat (TL)"]
+    elif "FIYAT_SAYI" in df.columns:
+        df["FIYAT_SAYI"] = pd.to_numeric(df["FIYAT_SAYI"], errors="coerce").fillna(0).astype(int)
+    else:
+        df["FIYAT_SAYI"] = 0
+
+    if "RAM" in df.columns:
+        df["RAM_SAYI"] = df["RAM"].astype(str).str.extract(r"(\d+)")[0]
+        df["RAM_SAYI"] = pd.to_numeric(df["RAM_SAYI"], errors="coerce").fillna(0).astype(int)
+    else:
+        df["RAM_SAYI"] = 0
+
+    if "Topluluk_Puani" in df.columns:
+        df["ONERI_PUANI"] = pd.to_numeric(df["Topluluk_Puani"], errors="coerce").fillna(0).astype(int)
+    elif "Puan" in df.columns:
+        df["ONERI_PUANI"] = pd.to_numeric(df["Puan"], errors="coerce").fillna(0).astype(int)
+    elif "ONERI_PUANI" in df.columns:
+        df["ONERI_PUANI"] = pd.to_numeric(df["ONERI_PUANI"], errors="coerce").fillna(0).astype(int)
+    else:
+        df["ONERI_PUANI"] = 0
 
     return df
 
@@ -581,6 +677,56 @@ def temizle_yazi(x):
     x = x.replace("ö", "o")
     x = x.replace("ç", "c")
     return x
+
+
+def hazir_urun_oner_db(kategori, min_butce, max_butce, min_ram, siralama, kullanim=""):
+    if tech_df.empty:
+        return pd.DataFrame()
+
+    sonuc = tech_df.copy()
+
+    if "Kategori" in sonuc.columns:
+        sonuc = sonuc[sonuc["Kategori"].astype(str).apply(temizle_yazi) == temizle_yazi(kategori)]
+
+    if "FIYAT_SAYI" not in sonuc.columns:
+        if "Fiyat_TL" in sonuc.columns:
+            sonuc["FIYAT_SAYI"] = pd.to_numeric(sonuc["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+        elif "Fiyat (TL)" in sonuc.columns:
+            sonuc["FIYAT_SAYI"] = pd.to_numeric(sonuc["Fiyat (TL)"], errors="coerce").fillna(0).astype(int)
+        else:
+            sonuc["FIYAT_SAYI"] = 0
+
+    sonuc = sonuc[(sonuc["FIYAT_SAYI"] >= int(min_butce)) & (sonuc["FIYAT_SAYI"] <= int(max_butce))]
+
+    if temizle_yazi(kategori) in ["bilgisayar", "telefon", "tablet"] and "RAM_SAYI" in sonuc.columns:
+        sonuc = sonuc[sonuc["RAM_SAYI"] >= int(min_ram)]
+
+    if kullanim and "Kullanım Amacı" in sonuc.columns:
+        k = temizle_yazi(kullanim)
+        filtre = sonuc[sonuc["Kullanım Amacı"].astype(str).apply(temizle_yazi).str.contains(k, na=False)]
+        if not filtre.empty:
+            sonuc = filtre
+
+    if "ONERI_PUANI" not in sonuc.columns:
+        if "Topluluk_Puani" in sonuc.columns:
+            sonuc["ONERI_PUANI"] = pd.to_numeric(sonuc["Topluluk_Puani"], errors="coerce").fillna(0).astype(int)
+        elif "Puan" in sonuc.columns:
+            sonuc["ONERI_PUANI"] = pd.to_numeric(sonuc["Puan"], errors="coerce").fillna(0).astype(int)
+        else:
+            sonuc["ONERI_PUANI"] = 0
+
+    if "Model" in sonuc.columns:
+        sonuc = sonuc.drop_duplicates(subset=["Model"], keep="first")
+
+    sonuc = siralama_uygula(
+        sonuc,
+        siralama,
+        fiyat_kolon="FIYAT_SAYI",
+        puan_kolon="ONERI_PUANI",
+        ram_kolon="RAM"
+    )
+
+    return sonuc.head(50)
 
 
 def ev_alt_kategori_tipi(alt_kategori):
@@ -982,6 +1128,190 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
 
     return sonuc
 
+
+
+def karsilastirma_urun_adi(row):
+    marka = veri_getir(row, "Marka")
+    model = veri_getir(row, "Model")
+
+    if marka != "Yok" and model != "Yok":
+        return f"{marka} {model}"
+
+    if model != "Yok":
+        return str(model)
+
+    return "Ürün"
+
+
+def karsilastirma_fiyat(row):
+    for kolon in ["Fiyat_TL", "FIYAT_SAYI", "Fiyat (TL)"]:
+        if kolon in row.index and str(row[kolon]) != "nan":
+            return fiyat_formatla(row[kolon])
+    return "Yok"
+
+
+def karsilastirma_puan(row):
+    if "kart_puani_getir" in globals():
+        return kart_puani_getir(row)
+
+    for kolon in ["Topluluk_Puani", "Puan", "ONERI_PUANI"]:
+        if kolon in row.index and str(row[kolon]) != "nan":
+            try:
+                puan = float(row[kolon])
+                if puan <= 10:
+                    puan *= 10
+                return f"{int(round(puan))}/100"
+            except Exception:
+                pass
+
+    return "Yok"
+
+
+def karsilastirma_satiri_uret(ozellik, row1, row2, kolonlar):
+    deger1 = "Yok"
+    deger2 = "Yok"
+
+    for kolon in kolonlar:
+        if kolon in row1.index and str(row1[kolon]) != "nan":
+            deger1 = row1[kolon]
+            break
+
+    for kolon in kolonlar:
+        if kolon in row2.index and str(row2[kolon]) != "nan":
+            deger2 = row2[kolon]
+            break
+
+    return {
+        "Özellik": ozellik,
+        "1. Ürün": deger1,
+        "2. Ürün": deger2
+    }
+
+
+def karsilastirma_tablo_olustur(row1, row2, kaynak_turu):
+    satirlar = [
+        {"Özellik": "Ürün", "1. Ürün": karsilastirma_urun_adi(row1), "2. Ürün": karsilastirma_urun_adi(row2)},
+        {"Özellik": "Ortalama Piyasa Fiyatı", "1. Ürün": karsilastirma_fiyat(row1), "2. Ürün": karsilastirma_fiyat(row2)},
+        {"Özellik": "Puan", "1. Ürün": karsilastirma_puan(row1), "2. Ürün": karsilastirma_puan(row2)},
+        karsilastirma_satiri_uret("Marka", row1, row2, ["Marka"]),
+        karsilastirma_satiri_uret("Kategori", row1, row2, ["Kategori", "Ana_Kategori"]),
+        karsilastirma_satiri_uret("Alt Kategori", row1, row2, ["Alt_Kategori"]),
+        karsilastirma_satiri_uret("Segment", row1, row2, ["Segment"]),
+    ]
+
+    if kaynak_turu == "Hazır Teknoloji Ürünleri":
+        ekstra = [
+            ("Kullanım Amacı", ["Kullanım Amacı"]),
+            ("İşlemci", ["İşlemci"]),
+            ("RAM", ["RAM"]),
+            ("Depolama", ["Depolama"]),
+            ("GPU", ["GPU"]),
+            ("Ekran", ["Ekran"]),
+            ("Batarya", ["Batarya (mAh)", "Pil Ömrü", "Pil Ömrü (gün)"]),
+            ("Kamera", ["Kamera (MP)"]),
+            ("5G", ["5G"]),
+            ("NFC", ["NFC"]),
+            ("Su Geçirmezlik", ["Su Geçirmezlik"]),
+            ("İşletim Sistemi", ["İşletim Sistemi"]),
+            ("Bağlantı", ["Bağlantı Türü"]),
+            ("Gürültü Engelleme", ["Gürültü Engelleme"]),
+            ("Mikrofon", ["Mikrofon"]),
+            ("GPS", ["GPS"]),
+        ]
+
+    elif kaynak_turu == "Elektronik Ev Eşyaları":
+        ekstra = [
+            ("Kullanım Amacı", ["Kullanim_Amaci"]),
+            ("Özellikler", ["Ozellikler"]),
+            ("Enerji Sınıfı", ["Enerji_Sinifi"]),
+            ("Renk", ["Renk"]),
+            ("Garanti", ["Garanti_Ay"]),
+            ("Kaynak Site", ["Kaynak_Site"]),
+            ("Popülerlik", ["Populerlik"]),
+        ]
+
+    else:
+        ekstra = [
+            ("Soket", ["Soket"]),
+            ("RAM Tipi", ["RAM_Tipi"]),
+            ("Watt", ["Watt"]),
+            ("Kapasite", ["Kapasite"]),
+            ("Uyumluluk", ["Uyumluluk"]),
+            ("RGB", ["RGB"]),
+            ("Boyut", ["Boyut"]),
+            ("Çözünürlük", ["Cozunurluk"]),
+            ("VRAM", ["VRAM"]),
+            ("Kaynak", ["Kaynak"]),
+            ("Popülerlik", ["Populerlik"]),
+        ]
+
+    for ozellik, kolonlar in ekstra:
+        satir = karsilastirma_satiri_uret(ozellik, row1, row2, kolonlar)
+        if satir["1. Ürün"] != "Yok" or satir["2. Ürün"] != "Yok":
+            satirlar.append(satir)
+
+    return pd.DataFrame(satirlar)
+
+
+def karsilastirma_dataframe_getir(kaynak_turu, kategori_secimi):
+    if kaynak_turu == "Hazır Teknoloji Ürünleri":
+        if tech_df.empty:
+            return pd.DataFrame()
+
+        df = tech_df.copy()
+
+        if "Kategori" in df.columns and kategori_secimi != "Tümü":
+            df = df[df["Kategori"].astype(str) == str(kategori_secimi)]
+
+        if "FIYAT_SAYI" not in df.columns:
+            if "Fiyat_TL" in df.columns:
+                df["FIYAT_SAYI"] = pd.to_numeric(df["Fiyat_TL"], errors="coerce").fillna(0).astype(int)
+            elif "Fiyat (TL)" in df.columns:
+                df["FIYAT_SAYI"] = pd.to_numeric(df["Fiyat (TL)"], errors="coerce").fillna(0).astype(int)
+
+        return df.drop_duplicates(subset=["Model"], keep="first").copy()
+
+    if kaynak_turu == "Elektronik Ev Eşyaları":
+        if ev_df.empty:
+            return pd.DataFrame()
+
+        df = ev_df.copy()
+
+        if "Alt_Kategori" in df.columns and kategori_secimi != "Tümü":
+            df = df[df["Alt_Kategori"].astype(str) == str(kategori_secimi)]
+
+        return df.drop_duplicates(subset=["Marka", "Model"], keep="first").copy()
+
+    if pc_df.empty:
+        return pd.DataFrame()
+
+    df = pc_df.copy()
+
+    if "Alt_Kategori" in df.columns and kategori_secimi != "Tümü":
+        df = df[df["Alt_Kategori"].astype(str) == str(kategori_secimi)]
+
+    return df.drop_duplicates(subset=["Alt_Kategori", "Marka", "Model"], keep="first").copy()
+
+
+def karsilastirma_urun_listesi(df):
+    if df.empty:
+        return []
+
+    liste = []
+
+    for index, row in df.iterrows():
+        ad = karsilastirma_urun_adi(row)
+
+        kategori_bilgi = ""
+        if "Alt_Kategori" in row.index and str(row["Alt_Kategori"]) != "nan":
+            kategori_bilgi = f" / {row['Alt_Kategori']}"
+        elif "Kategori" in row.index and str(row["Kategori"]) != "nan":
+            kategori_bilgi = f" / {row['Kategori']}"
+
+        fiyat = karsilastirma_fiyat(row)
+        liste.append((f"{ad}{kategori_bilgi} - {fiyat}", index))
+
+    return liste
 
 def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon=None, ram_kolon=None):
     if df is None or df.empty:
@@ -1910,7 +2240,7 @@ with col_chat:
                     st.session_state.aktif_mod = "chatbot"
                     st.session_state.pc_build = None
                     st.session_state.pc_builds = []
-                    st.session_state.sonuc = urun_oner(
+                    st.session_state.sonuc = hazir_urun_oner_db(
                         chat_kategori,
                         chat_min_butce,
                         chat_max_butce,
@@ -1992,7 +2322,8 @@ kategori = st.sidebar.selectbox(
         "Kulaklık",
         "Akıllı Saat / Bileklik",
         "Toplama Bilgisayar",
-        "Elektronik Ev Eşyaları"
+        "Elektronik Ev Eşyaları",
+        "Ürün Karşılaştırma"
     ]
 )
 
@@ -2031,7 +2362,8 @@ kullanim_secimleri = {
     "Kulaklık": ["", "Müzik", "Oyun", "Spor", "Gürültü Engelleme", "Toplantı", "Günlük Kullanım"],
     "Akıllı Saat / Bileklik": ["", "Spor", "Sağlık Takibi", "Günlük Kullanım", "Bildirim", "Uzun Pil"],
     "Toplama Bilgisayar": ["", "Oyun", "Yazılım", "Tasarım", "Video Edit", "Ofis"],
-    "Elektronik Ev Eşyaları": ["", "Ev Temizliği", "Pratik Yemek", "Akıllı Ev", "Alerji", "Hava Kalitesi", "Güvenlik", "Günlük Kullanım"]
+    "Elektronik Ev Eşyaları": ["", "Ev Temizliği", "Pratik Yemek", "Akıllı Ev", "Alerji", "Hava Kalitesi", "Güvenlik", "Günlük Kullanım"],
+    "Ürün Karşılaştırma": [""]
 }
 
 kullanim = st.sidebar.selectbox(
@@ -2075,6 +2407,86 @@ ev_wifi = "Farketmez"
 ev_rgb = "Farketmez"
 ev_garanti = "Farketmez"
 ev_marka = "Farketmez"
+
+
+if kategori == "Ürün Karşılaştırma":
+    st.sidebar.markdown("### ⚖️ Ürün Karşılaştırma")
+
+    karsilastirma_kaynak = st.sidebar.selectbox(
+        "Karşılaştırma Grubu",
+        [
+            "Hazır Teknoloji Ürünleri",
+            "Elektronik Ev Eşyaları",
+            "Toplama PC Parçaları"
+        ],
+        key="karsilastirma_kaynak"
+    )
+
+    if karsilastirma_kaynak == "Hazır Teknoloji Ürünleri":
+        if tech_df.empty or "Kategori" not in tech_df.columns:
+            karsilastirma_kategoriler = ["Tümü"]
+        else:
+            karsilastirma_kategoriler = ["Tümü"] + sorted(tech_df["Kategori"].dropna().astype(str).unique())
+
+    elif karsilastirma_kaynak == "Elektronik Ev Eşyaları":
+        if ev_df.empty or "Alt_Kategori" not in ev_df.columns:
+            karsilastirma_kategoriler = ["Tümü"]
+        else:
+            karsilastirma_kategoriler = ["Tümü"] + sorted(ev_df["Alt_Kategori"].dropna().astype(str).unique())
+
+    else:
+        if pc_df.empty or "Alt_Kategori" not in pc_df.columns:
+            karsilastirma_kategoriler = ["Tümü"]
+        else:
+            karsilastirma_kategoriler = ["Tümü"] + sorted(pc_df["Alt_Kategori"].dropna().astype(str).unique())
+
+    karsilastirma_kategori = st.sidebar.selectbox(
+        "Karşılaştırılacak Kategori",
+        karsilastirma_kategoriler,
+        key="karsilastirma_kategori"
+    )
+
+    karsilastirma_df = karsilastirma_dataframe_getir(
+        karsilastirma_kaynak,
+        karsilastirma_kategori
+    )
+
+    urun_listesi = karsilastirma_urun_listesi(karsilastirma_df)
+
+    if len(urun_listesi) < 2:
+        st.sidebar.warning("Bu grupta karşılaştırma için yeterli ürün yok.")
+    else:
+        urun_etiketleri = [x[0] for x in urun_listesi]
+
+        urun1_label = st.sidebar.selectbox(
+            "1. Ürün",
+            urun_etiketleri,
+            key="karsilastirma_urun1"
+        )
+
+        urun2_label = st.sidebar.selectbox(
+            "2. Ürün",
+            urun_etiketleri,
+            index=1,
+            key="karsilastirma_urun2"
+        )
+
+        if st.sidebar.button("⚖️ Ürünleri Karşılaştır", key="karsilastirma_button"):
+            urun1_index = dict(urun_listesi)[urun1_label]
+            urun2_index = dict(urun_listesi)[urun2_label]
+
+            st.session_state.karsilastirma = {
+                "kaynak": karsilastirma_kaynak,
+                "urun1": karsilastirma_df.loc[urun1_index].to_dict(),
+                "urun2": karsilastirma_df.loc[urun2_index].to_dict()
+            }
+
+            st.session_state.aktif_mod = "karsilastirma"
+            st.session_state.sonuc = None
+            st.session_state.pc_build = None
+            st.session_state.pc_builds = []
+            st.rerun()
+
 
 
 if kategori == "Toplama Bilgisayar":
@@ -2498,7 +2910,7 @@ elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulaklık", "Akıllı Saat
 
 st.sidebar.markdown("---")
 
-if kategori != "Toplama Bilgisayar":
+if kategori not in ["Toplama Bilgisayar", "Ürün Karşılaştırma"]:
     if st.sidebar.button("Öneri Getir", key="oneri_getir_button"):
         st.session_state.pc_build = None
         st.session_state.sonuc = None
@@ -2526,7 +2938,7 @@ if kategori != "Toplama Bilgisayar":
 
         else:
             st.session_state.aktif_mod = "panel"
-            sonuc = urun_oner(
+            sonuc = hazir_urun_oner_db(
                 kategori,
                 min_butce,
                 max_butce,
@@ -2590,7 +3002,64 @@ pc_build_ekrani_acik = (
     )
 )
 
-if pc_build_ekrani_acik:
+
+if st.session_state.aktif_mod == "karsilastirma":
+    st.subheader("⚖️ Ürün Karşılaştırma")
+
+    bilgi = st.session_state.get("karsilastirma", None)
+
+    if not bilgi:
+        st.info("Soldaki panelden iki ürün seçip karşılaştırabilirsin.")
+
+    else:
+        row1 = pd.Series(bilgi["urun1"])
+        row2 = pd.Series(bilgi["urun2"])
+        kaynak = bilgi.get("kaynak", "Hazır Teknoloji Ürünleri")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown(f"""
+<div class="product-card">
+<div class="product-title">1️⃣ {karsilastirma_urun_adi(row1)}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {karsilastirma_fiyat(row1)}</span>
+<span class="badge-purple">⭐ Puan: {karsilastirma_puan(row1)}</span>
+</div>
+""", unsafe_allow_html=True)
+
+        with col2:
+            st.markdown(f"""
+<div class="product-card">
+<div class="product-title">2️⃣ {karsilastirma_urun_adi(row2)}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {karsilastirma_fiyat(row2)}</span>
+<span class="badge-purple">⭐ Puan: {karsilastirma_puan(row2)}</span>
+</div>
+""", unsafe_allow_html=True)
+
+        tablo = karsilastirma_tablo_olustur(row1, row2, kaynak)
+        st.dataframe(tablo, use_container_width=True, hide_index=True)
+
+        st.markdown("### 🔎 Güncel Fiyat Kontrolü")
+
+        col_link1, col_link2 = st.columns(2)
+
+        with col_link1:
+            if kaynak == "Elektronik Ev Eşyaları":
+                st.markdown(fiyat_karsilastirma_html("ev", row1), unsafe_allow_html=True)
+            elif kaynak == "Toplama PC Parçaları":
+                st.markdown(fiyat_karsilastirma_html("pc", row1), unsafe_allow_html=True)
+            else:
+                st.markdown(hazir_urun_guvenilir_link_html(row1), unsafe_allow_html=True)
+
+        with col_link2:
+            if kaynak == "Elektronik Ev Eşyaları":
+                st.markdown(fiyat_karsilastirma_html("ev", row2), unsafe_allow_html=True)
+            elif kaynak == "Toplama PC Parçaları":
+                st.markdown(fiyat_karsilastirma_html("pc", row2), unsafe_allow_html=True)
+            else:
+                st.markdown(hazir_urun_guvenilir_link_html(row2), unsafe_allow_html=True)
+
+elif pc_build_ekrani_acik:
     st.subheader("🖥️ Bütçeye Göre 5 Farklı Uyumlu Toplama Bilgisayar Sistemi")
 
     builds = st.session_state.get("pc_builds", [])
