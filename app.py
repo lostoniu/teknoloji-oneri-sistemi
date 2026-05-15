@@ -42,7 +42,7 @@ html, body, [class*="css"] {
 }
 
 section[data-testid="stSidebar"] {
-    background: rgba(10, 10, 10, 0.88);
+    background: rgba(255, 255, 255, 0.88);
     border-right: 1px solid rgba(76, 43, 230, 0.35);
     box-shadow: 8px 0 30px rgba(76, 43, 230, 0.12);
 }
@@ -296,6 +296,17 @@ div[data-testid="stPopoverBody"] {
     padding: 14px !important;
     overflow: hidden !important;
     box-shadow: 0 18px 42px rgba(76, 43, 230, 0.20) !important;
+}
+.st-popover {
+    display: inline-block;
+    margin-top: 10px;
+    background: #ff9226;
+    color: white !important;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 13px;
 }
 
 /* Popover içi genel yazılar */
@@ -2532,7 +2543,7 @@ with col_title:
     st.title("🤖 Akıllı Teknoloji Ürünleri Öneri Sistemi")
 
 with col_chat:
-    with st.popover("💬 Chatbot"):
+    with st-popover("💬 Chatbot"):
         st.subheader("Ürün Asistanı")
 
         chatbot_siralama = st.selectbox(
