@@ -52,17 +52,19 @@ h1, h2, h3, h4 {
     letter-spacing: -0.02em;
 }
 
-p, label, span, div {
+p, label {
     color: #080b2f;
 }
 
 .stButton button {
     background: linear-gradient(135deg, #4b2ee8 0%, #6d3cff 100%);
-    color: white;
+    color: white !important;
     border: none;
     border-radius: 14px;
     font-weight: 800;
-    padding: 0.65rem 1rem;
+    padding: 0.52rem 0.9rem;
+    font-size: 15px;
+    min-height: 44px;
     transition: all 0.22s ease;
     box-shadow: 0 10px 22px rgba(76, 43, 230, 0.22);
 }
@@ -277,6 +279,72 @@ hr {
     border-radius: 999px;
     font-weight: 800;
     font-size: 12px;
+}
+
+/* CHATBOT GÖRÜNÜRLÜK DÜZELTMESİ */
+[data-testid="stPopoverBody"],
+[data-testid="stPopoverBody"] div,
+[data-testid="stPopoverBody"] span,
+[data-testid="stPopoverBody"] p,
+[data-testid="stPopoverBody"] label {
+    color: #ffffff !important;
+}
+
+[data-testid="stPopoverBody"] h1,
+[data-testid="stPopoverBody"] h2,
+[data-testid="stPopoverBody"] h3,
+[data-testid="stPopoverBody"] h4 {
+    color: #ffffff !important;
+}
+
+.stChatMessage,
+.stChatMessage div,
+.stChatMessage span,
+.stChatMessage p,
+[data-testid="stChatMessageContent"],
+[data-testid="stChatMessageContent"] div,
+[data-testid="stChatMessageContent"] span,
+[data-testid="stChatMessageContent"] p {
+    color: #ffffff !important;
+}
+
+.stChatInput textarea,
+[data-testid="stChatInput"] textarea {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    color: #080b2f !important;
+    -webkit-text-fill-color: #080b2f !important;
+    caret-color: #080b2f !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(75, 46, 232, 0.55) !important;
+    font-weight: 600;
+}
+
+.stChatInput textarea::placeholder,
+[data-testid="stChatInput"] textarea::placeholder {
+    color: rgba(8, 11, 47, 0.58) !important;
+    -webkit-text-fill-color: rgba(8, 11, 47, 0.58) !important;
+}
+
+[data-testid="stChatInput"] button {
+    width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+}
+
+[data-testid="stPopoverBody"] .stButton button {
+    width: auto !important;
+    max-width: 175px !important;
+    min-height: 40px !important;
+    padding: 0.42rem 0.78rem !important;
+    font-size: 14px !important;
+    border-radius: 13px !important;
+    box-shadow: 0 8px 18px rgba(76, 43, 230, 0.18) !important;
+}
+
+[data-testid="stPopoverBody"] .stButton {
+    width: fit-content !important;
 }
 
 </style>
