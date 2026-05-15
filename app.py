@@ -282,37 +282,25 @@ hr {
 }
 
 
-/* CHATBOT FINAL - TEMİZ */
+/* CHATBOT FINAL - CUSTOM, STABLE */
 
-/* Popover dış kabı: küçük, sabit ve taşmayan panel */
+/* Popover panel */
 div[data-testid="stPopoverBody"] {
-    width: 420px !important;
-    max-width: min(420px, calc(100vw - 32px)) !important;
-    height: 520px !important;
+    width: 430px !important;
+    max-width: min(430px, calc(100vw - 32px)) !important;
+    height: 540px !important;
     max-height: 72vh !important;
     background: #ffffff !important;
     border: 2px solid #eadcff !important;
     border-radius: 22px !important;
     padding: 14px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    overflow: hidden !important;
     box-shadow: 0 18px 42px rgba(76, 43, 230, 0.20) !important;
 }
 
-/* Streamlit popover'ın fazladan büyüyen iç containerlarını sıkıştır */
-div[data-testid="stPopoverBody"] > div,
-div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"],
-div[data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* Panel içinde okunabilir yazı renkleri */
+/* Popover içi genel yazılar */
 div[data-testid="stPopoverBody"],
-div[data-testid="stPopoverBody"] p,
-div[data-testid="stPopoverBody"] label,
-div[data-testid="stPopoverBody"] span,
-div[data-testid="stPopoverBody"] div {
+div[data-testid="stPopoverBody"] * {
     color: #111827 !important;
 }
 
@@ -324,7 +312,7 @@ div[data-testid="stPopoverBody"] h4 {
     margin-bottom: 8px !important;
 }
 
-/* Sıralama select kutusu */
+/* Select */
 div[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
     background: #ffffff !important;
     color: #111827 !important;
@@ -338,139 +326,142 @@ div[data-testid="stPopoverBody"] [data-baseweb="select"] * {
     color: #111827 !important;
 }
 
-/* Chat mesajları */
-div[data-testid="stPopoverBody"] [data-testid="stChatMessage"] {
-    background: #f8f5ff !important;
-    border: 1px solid #e4d8ff !important;
-    border-radius: 16px !important;
-    padding: 10px 12px !important;
-    margin: 10px 0 !important;
+/* Chat geçmiş alanı */
+.chatbot-history {
+    height: 245px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #ffffff;
+    border: 1px solid #eadcff;
+    border-radius: 18px;
+    padding: 10px;
+    margin: 10px 0 12px 0;
 }
 
-div[data-testid="stPopoverBody"] [data-testid="stChatMessage"] * {
-    color: #111827 !important;
+.chatbot-history::-webkit-scrollbar {
+    width: 7px;
 }
 
-/* Chat input alanı */
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] {
-    background: #f3edff !important;
-    border: 1px solid #ded0ff !important;
+.chatbot-history::-webkit-scrollbar-thumb {
+    background: #c4b5fd;
+    border-radius: 999px;
+}
+
+.chatbot-history::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chatbot-msg {
+    border-radius: 15px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    line-height: 1.45;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid #e4d8ff;
+}
+
+.chatbot-msg.user {
+    background: #f3edff;
+}
+
+.chatbot-msg.assistant {
+    background: #fff7ed;
+    border-color: #ffd9a8;
+}
+
+.chatbot-role {
+    font-weight: 900;
+    color: #4b2ee8 !important;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.chatbot-empty {
+    background: #f8f5ff;
+    border: 1px dashed #c4b5fd;
+    border-radius: 15px;
+    padding: 12px;
+    color: #6b7280 !important;
+    font-size: 14px;
+}
+
+/* Form/input alanı */
+div[data-testid="stPopoverBody"] form {
+    background: #f4efff !important;
+    border: 1px solid #e0d2ff !important;
     border-radius: 18px !important;
-    padding: 8px !important;
-    margin-top: 10px !important;
-    width: 100% !important;
+    padding: 10px !important;
+    margin-top: 8px !important;
 }
 
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] > div {
-    background: transparent !important;
-    border: none !important;
-    width: 100% !important;
-}
-
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea {
+div[data-testid="stPopoverBody"] textarea {
     background: #ffffff !important;
     color: #111827 !important;
     -webkit-text-fill-color: #111827 !important;
     caret-color: #111827 !important;
     border: 2px solid #6d3cff !important;
     border-radius: 14px !important;
-    min-height: 46px !important;
-    max-height: 88px !important;
+    min-height: 72px !important;
+    max-height: 90px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     box-shadow: none !important;
 }
 
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea::placeholder {
+div[data-testid="stPopoverBody"] textarea::placeholder {
     color: #6b7280 !important;
     -webkit-text-fill-color: #6b7280 !important;
     opacity: 1 !important;
 }
 
-/* Gönder butonu */
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button {
+/* Gönder butonu form içinde */
+div[data-testid="stPopoverBody"] form .stButton button {
     background: #6d3cff !important;
     color: white !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
+    width: 100% !important;
+    min-height: 40px !important;
     border-radius: 14px !important;
     border: none !important;
     padding: 0 !important;
-    box-shadow: none !important;
+    box-shadow: 0 8px 18px rgba(109, 60, 255, 0.22) !important;
     transform: none !important;
+    font-size: 18px !important;
 }
 
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button:hover {
+div[data-testid="stPopoverBody"] form .stButton button:hover {
     background: #ff9226 !important;
     transform: none !important;
 }
 
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button svg {
+/* Temizle butonu */
+div[data-testid="stPopoverBody"] .stButton button[kind="secondary"] {
+    background: #6d3cff !important;
     color: white !important;
-    fill: white !important;
-    stroke: white !important;
-}
-
-/* Temizle butonu: sadece küçük çöp kutusu ikon gibi görünsün */
-div[data-testid="stPopoverBody"] .stButton {
-    width: 42px !important;
-    max-width: 42px !important;
-    margin-top: 8px !important;
-}
-
-div[data-testid="stPopoverBody"] .stButton button {
-    position: relative !important;
     width: 42px !important;
     min-width: 42px !important;
     max-width: 42px !important;
     height: 42px !important;
     min-height: 42px !important;
     border-radius: 12px !important;
-    background: #6d3cff !important;
     border: none !important;
     padding: 0 !important;
+    font-size: 18px !important;
     box-shadow: 0 8px 18px rgba(109, 60, 255, 0.22) !important;
     overflow: hidden !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    text-indent: -9999px !important;
-    transform: none !important;
+    white-space: nowrap !important;
+    transition: width 0.2s ease, max-width 0.2s ease, background 0.2s ease !important;
 }
 
-div[data-testid="stPopoverBody"] .stButton button::before {
-    content: "🗑️";
-    position: absolute !important;
-    inset: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: white !important;
-    font-size: 17px !important;
-    text-indent: 0 !important;
-}
-
-div[data-testid="stPopoverBody"] .stButton button:hover {
+div[data-testid="stPopoverBody"] .stButton button[kind="secondary"]:hover {
+    width: 158px !important;
+    max-width: 158px !important;
     background: #ff9226 !important;
-    transform: none !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
 }
 
-/* Scrollbar */
-div[data-testid="stPopoverBody"]::-webkit-scrollbar {
-    width: 7px;
-}
-
-div[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {
-    background: #c4b5fd;
-    border-radius: 999px;
-}
-
-div[data-testid="stPopoverBody"]::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-/* Mobilde taşmayı engelle */
 @media (max-width: 700px) {
     div[data-testid="stPopoverBody"] {
         width: calc(100vw - 28px) !important;
@@ -2558,15 +2549,39 @@ with col_chat:
             key="chatbot_siralama_select"
         )
 
-        for mesaj in st.session_state.mesajlar:
-            with st.chat_message(mesaj["rol"]):
-                st.write(mesaj["icerik"])
+        st.markdown('<div class="chatbot-history">', unsafe_allow_html=True)
+        if len(st.session_state.mesajlar) == 0:
+            st.markdown(
+                '<div class="chatbot-empty">Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            for mesaj in st.session_state.mesajlar:
+                rol = mesaj.get("rol", "assistant")
+                icerik = html_escape(mesaj.get("icerik", ""))
+                if rol == "user":
+                    baslik = "👤 Sen"
+                    css_rol = "user"
+                else:
+                    baslik = "🤖 Asistan"
+                    css_rol = "assistant"
+                st.markdown(
+                    f'<div class="chatbot-msg {css_rol}"><div class="chatbot-role">{baslik}</div>{icerik}</div>',
+                    unsafe_allow_html=True
+                )
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        kullanici_mesaji = st.chat_input(
-            "Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum"
-        )
+        with st.form("chatbot_mesaj_form", clear_on_submit=True):
+            kullanici_mesaji = st.text_area(
+                "Mesaj",
+                placeholder="Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum",
+                label_visibility="collapsed",
+                key="chatbot_textarea"
+            )
+            gonderildi = st.form_submit_button("⬆")
 
-        if kullanici_mesaji:
+        if gonderildi and kullanici_mesaji and kullanici_mesaji.strip():
+            kullanici_mesaji = kullanici_mesaji.strip()
             st.session_state.mesajlar.append({
                 "rol": "user",
                 "icerik": kullanici_mesaji
@@ -2730,7 +2745,7 @@ with col_chat:
 
             st.rerun()
 
-        if st.button("Sohbeti Temizle", key="clear_chat_button"):
+        if st.button("🗑️ Sohbeti Temizle", key="clear_chat_button", help="Sohbeti Temizle"):
             st.session_state.mesajlar = []
             st.session_state.sonuc = None
             st.session_state.pc_build = None
