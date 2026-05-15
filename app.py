@@ -282,75 +282,163 @@ hr {
 }
 
 
-/* CHATBOT GÖRÜNÜRLÜK VE BUTON DÜZELTMELERİ */
+/* ================= CHATBOT PANEL FINAL DÜZELTME ================= */
 
-.stChatMessage,
-.stChatMessage p,
-.stChatMessage div,
-.stChatMessage span,
-[data-testid="stChatMessageContent"],
-[data-testid="stChatMessageContent"] p,
-[data-testid="stChatMessageContent"] div,
-[data-testid="stChatMessageContent"] span {
-    color: white !important;
-}
-
-.stChatInput textarea {
-    background-color: rgba(255, 255, 255, 0.96) !important;
+/* Popover içini beyaz yap */
+div[data-testid="stPopoverBody"] {
+    background: #ffffff !important;
     color: #080b2f !important;
-    font-weight: 600 !important;
-    border-radius: 14px !important;
-    border: 1px solid rgba(75, 46, 232, 0.55) !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(75, 46, 232, 0.25) !important;
+    box-shadow: 0 18px 45px rgba(76, 43, 230, 0.22) !important;
 }
 
-.stChatInput textarea::placeholder {
-    color: #6f7487 !important;
+/* Chatbot içindeki tüm normal yazılar siyah */
+div[data-testid="stPopoverBody"] h1,
+div[data-testid="stPopoverBody"] h2,
+div[data-testid="stPopoverBody"] h3,
+div[data-testid="stPopoverBody"] h4,
+div[data-testid="stPopoverBody"] p,
+div[data-testid="stPopoverBody"] label,
+div[data-testid="stPopoverBody"] span,
+div[data-testid="stPopoverBody"] div {
+    color: #080b2f !important;
+}
+
+/* Chatbot başlığı */
+div[data-testid="stPopoverBody"] h3 {
+    color: #080b2f !important;
+    font-weight: 900 !important;
+}
+
+/* Selectbox */
+div[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
+    background: #ffffff !important;
+    color: #080b2f !important;
+    border: 1px solid rgba(75, 46, 232, 0.65) !important;
+    border-radius: 14px !important;
+}
+
+div[data-testid="stPopoverBody"] [data-baseweb="select"] span,
+div[data-testid="stPopoverBody"] [data-baseweb="select"] div {
+    color: #080b2f !important;
+}
+
+/* Chat mesaj alanları */
+div[data-testid="stPopoverBody"] [data-testid="stChatMessage"],
+div[data-testid="stPopoverBody"] [data-testid="stChatMessageContent"] {
+    background: #f6f0ff !important;
+    color: #080b2f !important;
+    border-radius: 14px !important;
+}
+
+div[data-testid="stPopoverBody"] [data-testid="stChatMessage"] p,
+div[data-testid="stPopoverBody"] [data-testid="stChatMessageContent"] p {
+    color: #080b2f !important;
+}
+
+/* Chat input kutusu */
+div[data-testid="stPopoverBody"] .stChatInput textarea,
+div[data-testid="stPopoverBody"] textarea {
+    background: #ffffff !important;
+    color: #080b2f !important;
+    border: 1px solid rgba(75, 46, 232, 0.65) !important;
+    border-radius: 14px !important;
+    font-weight: 700 !important;
+}
+
+div[data-testid="stPopoverBody"] textarea::placeholder {
+    color: #6b7280 !important;
     opacity: 1 !important;
     font-weight: 700 !important;
 }
 
-/* Popover içindeki chatbot panel yazıları */
-div[data-testid="stPopoverBody"],
-div[data-testid="stPopoverBody"] div,
-div[data-testid="stPopoverBody"] span,
-div[data-testid="stPopoverBody"] p,
-div[data-testid="stPopoverBody"] label,
-div[data-testid="stPopoverBody"] h1,
-div[data-testid="stPopoverBody"] h2,
-div[data-testid="stPopoverBody"] h3,
-div[data-testid="stPopoverBody"] h4 {
-    color: white !important;
-}
-
-/* Popover içindeki select ve input yazıları açık zeminde koyu kalsın */
-div[data-testid="stPopoverBody"] [data-baseweb="select"] div,
-div[data-testid="stPopoverBody"] [data-baseweb="select"] span,
-div[data-testid="stPopoverBody"] input,
-div[data-testid="stPopoverBody"] textarea {
-    color: #080b2f !important;
-}
-
-/* Sohbeti Temizle butonu büyük görünmesin */
-div[data-testid="stPopoverBody"] .stButton button {
-    width: auto !important;
-    min-width: 145px !important;
-    max-width: 165px !important;
-    height: 42px !important;
-    min-height: 42px !important;
-    padding: 0.35rem 0.75rem !important;
-    font-size: 14px !important;
+/* Chat input dış alanı açık renk */
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] {
+    background: #f4f0fb !important;
     border-radius: 14px !important;
 }
 
-/* Chat gönder ok butonu küçük kare kalsın */
-div[data-testid="stPopoverBody"] .stChatInput button,
-div[data-testid="stPopoverBody"] button[kind="secondary"] {
+/* Mesaj gönderme tuşu mor */
+div[data-testid="stPopoverBody"] [data-testid="stChatInputSubmitButton"],
+div[data-testid="stPopoverBody"] button[aria-label="Send"],
+div[data-testid="stPopoverBody"] button[aria-label="Gönder"],
+div[data-testid="stPopoverBody"] .stChatInput button {
+    background: linear-gradient(135deg, #4b2ee8 0%, #6d3cff 100%) !important;
+    color: #ffffff !important;
+    border-radius: 14px !important;
     width: 46px !important;
     height: 46px !important;
     min-width: 46px !important;
-    min-height: 46px !important;
     padding: 0 !important;
+    border: none !important;
+}
+
+div[data-testid="stPopoverBody"] [data-testid="stChatInputSubmitButton"] svg,
+div[data-testid="stPopoverBody"] button[aria-label="Send"] svg,
+div[data-testid="stPopoverBody"] button[aria-label="Gönder"] svg,
+div[data-testid="stPopoverBody"] .stChatInput button svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* Sohbeti temizle: normalde çöp kutusu */
+div[data-testid="stPopoverBody"] .stButton button {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #4b2ee8 0%, #6d3cff 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(76, 43, 230, 0.25) !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+}
+
+/* Buton içindeki gerçek yazıyı gizle */
+div[data-testid="stPopoverBody"] .stButton button p {
+    font-size: 0 !important;
+    line-height: 1 !important;
+}
+
+/* Normal görünüm: sadece çöp kutusu */
+div[data-testid="stPopoverBody"] .stButton button p::before {
+    content: "🗑️";
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
+
+/* Üstüne gelince yazıya dönüşsün */
+div[data-testid="stPopoverBody"] .stButton button:hover {
+    width: 165px !important;
+    min-width: 165px !important;
+    max-width: 165px !important;
+    background: linear-gradient(135deg, #ff9226 0%, #ff7a00 100%) !important;
+    transform: translateY(-2px) !important;
+}
+
+div[data-testid="stPopoverBody"] .stButton button:hover p::before {
+    content: "Sohbeti Temizle";
+    font-size: 14px !important;
+    font-weight: 900 !important;
+}
+
+/* Chatbot açma butonu */
+div[data-testid="stPopover"] button {
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: #080b2f !important;
+    border: 1px solid rgba(75, 46, 232, 0.18) !important;
     border-radius: 12px !important;
+}
+
+div[data-testid="stPopover"] button p,
+div[data-testid="stPopover"] button span,
+div[data-testid="stPopover"] button div {
+    color: #080b2f !important;
 }
 
 </style>
@@ -2604,7 +2692,7 @@ with col_chat:
 
             st.rerun()
 
-        if st.button("Sohbeti Temizle", key="clear_chat_button"):
+        if st.button("🗑️", key="clear_chat_button", help="Sohbeti Temizle"):
             st.session_state.mesajlar = []
             st.session_state.sonuc = None
             st.session_state.pc_build = None
