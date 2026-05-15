@@ -28,7 +28,6 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
-st.success("YENI CSS CALISIYOR")
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -282,22 +281,41 @@ hr {
     font-size: 12px;
 }
 
-/* CHATBOT GÖRÜNÜRLÜK DÜZELTMESİ */
+
+/* CHATBOT FINAL - TEMİZ */
+
 [data-testid="stPopoverBody"] {
-    width: 520px !important;
-    max-width: 520px !important;
-    height: 620px !important;
+    width: 480px !important;
+    max-width: 480px !important;
+    height: 540px !important;
+    max-height: 75vh !important;
     background: #ffffff !important;
-    border-radius: 24px !important;
+    color: #111827 !important;
+    border-radius: 22px !important;
     border: 2px solid #eadcff !important;
-    padding: 16px !important;
+    padding: 14px !important;
     overflow-y: auto !important;
-    box-shadow: 0 18px 45px rgba(109,60,255,0.18) !important;
+    overflow-x: hidden !important;
+    box-shadow: 0 18px 45px rgba(109, 60, 255, 0.18) !important;
 }
 
 [data-testid="stPopoverBody"],
 [data-testid="stPopoverBody"] * {
     color: #111827 !important;
+}
+
+[data-testid="stPopoverBody"] h1,
+[data-testid="stPopoverBody"] h2,
+[data-testid="stPopoverBody"] h3,
+[data-testid="stPopoverBody"] h4 {
+    color: #080b2f !important;
+}
+
+[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
+    background: #ffffff !important;
+    border: 1.5px solid #7b4dff !important;
+    border-radius: 14px !important;
+    min-height: 44px !important;
 }
 
 [data-testid="stPopoverBody"] .stChatMessage {
@@ -308,95 +326,108 @@ hr {
     margin-bottom: 10px !important;
 }
 
-[data-testid="stChatInput"] {
+[data-testid="stPopoverBody"] [data-testid="stChatInput"] {
     background: #f4efff !important;
     border: 1px solid #e0d2ff !important;
     border-radius: 18px !important;
     padding: 8px !important;
 }
 
-[data-testid="stChatInput"] textarea {
+[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea {
     background: #ffffff !important;
     color: #111827 !important;
     -webkit-text-fill-color: #111827 !important;
+    caret-color: #111827 !important;
     border: 2px solid #7b4dff !important;
     border-radius: 14px !important;
     min-height: 52px !important;
+    max-height: 90px !important;
     font-weight: 600 !important;
 }
 
-[data-testid="stChatInput"] textarea::placeholder {
+[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea::placeholder {
     color: #6b7280 !important;
     -webkit-text-fill-color: #6b7280 !important;
+    opacity: 1 !important;
 }
 
-[data-testid="stChatInput"] button {
+[data-testid="stPopoverBody"] [data-testid="stChatInput"] button {
     background: #6d3cff !important;
     color: white !important;
     width: 44px !important;
+    min-width: 44px !important;
     height: 44px !important;
     min-height: 44px !important;
     border-radius: 14px !important;
+    border: none !important;
     padding: 0 !important;
+}
+
+[data-testid="stPopoverBody"] [data-testid="stChatInput"] button svg {
+    color: white !important;
+    fill: white !important;
+    stroke: white !important;
+}
+
+[data-testid="stPopoverBody"] .stButton {
+    width: fit-content !important;
 }
 
 [data-testid="stPopoverBody"] .stButton button {
-      position: relative !important;
-
+    position: relative !important;
     width: 42px !important;
-    height: 42px !important;
-
     min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
     min-height: 42px !important;
-
     border-radius: 12px !important;
-
     background: #6d3cff !important;
-
-    color: transparent !important;
-
-    text-indent: -9999px !important;
-
-    overflow: hidden !important;
-
     padding: 0 !important;
-
+    overflow: hidden !important;
     white-space: nowrap !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    text-indent: -9999px !important;
 }
 
 [data-testid="stPopoverBody"] .stButton button::before {
-    
     content: "🗑️";
-
-    position: absolute;
-
-    top: 50%;
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     color: white !important;
-
     font-size: 16px !important;
-
     text-indent: 0 !important;
 }
 
 [data-testid="stPopoverBody"] .stButton button:hover {
-   width: 170px !important;
-
-    text-indent: 0 !important;
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+    background: #ff9226 !important;
+    transform: translateY(-2px) !important;
 }
 
+[data-testid="stPopoverBody"] .stButton button:hover::before {
     content: "🗑️ Sohbeti Temizle";
-
     font-size: 13px !important;
-
-    font-weight: 700 !important;
-
+    font-weight: 800 !important;
     white-space: nowrap !important;
 }
 
+[data-testid="stPopoverBody"]::-webkit-scrollbar {
+    width: 8px;
+}
+
+[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {
+    background: #c4b5fd;
+    border-radius: 999px;
+}
+
+[data-testid="stPopoverBody"]::-webkit-scrollbar-track {
+    background: transparent;
+}
 </style>
 """, unsafe_allow_html=True)
 
