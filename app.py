@@ -86,14 +86,14 @@ p, label {
 }
 
 .stChatInput textarea {
-    background-color: rgba(255, 255, 255, 0.96) !important;
+    background-color: rgba(10, 10, 10, 0.96) !important;
     color: #080b2f !important;
     border-radius: 14px !important;
     border: 1px solid rgba(75, 46, 232, 0.55) !important;
 }
 
 div[data-testid="stAlert"] {
-    background-color: rgba(255, 255, 255, 0.92);
+    background-color: rgba(10, 10, 10, 0.92);
     border-left: 6px solid #ff9226;
     border-radius: 14px;
 }
