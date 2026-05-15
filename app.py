@@ -341,37 +341,59 @@ hr {
 }
 
 [data-testid="stPopoverBody"] .stButton button {
+      position: relative !important;
+
     width: 42px !important;
-    min-width: 42px !important;
-    max-width: 42px !important;
     height: 42px !important;
+
+    min-width: 42px !important;
     min-height: 42px !important;
-    padding: 0 !important;
+
     border-radius: 12px !important;
+
     background: #6d3cff !important;
+
     color: transparent !important;
-    font-size: 0 !important;
+
+    text-indent: -9999px !important;
+
     overflow: hidden !important;
+
+    padding: 0 !important;
+
+    white-space: nowrap !important;
 }
 
 [data-testid="stPopoverBody"] .stButton button::before {
+    
     content: "🗑️";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
     color: white !important;
+
     font-size: 16px !important;
+
+    text-indent: 0 !important;
 }
 
 [data-testid="stPopoverBody"] .stButton button:hover {
-    width: 160px !important;
-    min-width: 160px !important;
-    max-width: 160px !important;
-    background: #ff9226 !important;
+   width: 170px !important;
+
+    text-indent: 0 !important;
 }
 
-[data-testid="stPopoverBody"] .stButton button:hover::before {
     content: "🗑️ Sohbeti Temizle";
-    color: white !important;
+
     font-size: 13px !important;
-    font-weight: 800 !important;
+
+    font-weight: 700 !important;
+
     white-space: nowrap !important;
 }
 
