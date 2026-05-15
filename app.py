@@ -2549,39 +2549,77 @@ with col_chat:
             key="chatbot_siralama_select"
         )
 
-        st.markdown('<div class="chatbot-history">', unsafe_allow_html=True)
-        if len(st.session_state.mesajlar) == 0:
-            st.markdown(
-                '<div class="chatbot-empty">Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum</div>',
-                unsafe_allow_html=True
-            )
-        else:
-            for mesaj in st.session_state.mesajlar:
-                rol = mesaj.get("rol", "assistant")
-                icerik = html_escape(mesaj.get("icerik", ""))
-                if rol == "user":
-                    baslik = "👤 Sen"
-                    css_rol = "user"
-                else:
-                    baslik = "🤖 Asistan"
-                    css_rol = "assistant"
-                st.markdown(
-                    f'<div class="chatbot-msg {css_rol}"><div class="chatbot-role">{baslik}</div>{icerik}</div>',
-                    unsafe_allow_html=True
-                )
-        st.markdown('</div>', unsafe_allow_html=True)
+        mesaj_alani = st.container(height=260)
 
-        with st.form("chatbot_mesaj_form", clear_on_submit=True):
+        with mesaj_alani:
+            if len(st.session_state.mesajlar) == 0:
+                st.info("İsteğini aşağıya yazabilirsin.")
+            else:
+                for mesaj in st.session_state.mesajlar:
+                    rol = mesaj.get("rol", "")
+                    icerik = mesaj.get("icerik", "")
+
+                    if rol == "user":
+                        st.markdown(
+                            f"""
+                            <div style="
+                                background:#fff3f8;
+                                border:1px solid #ffd0e8;
+                                border-radius:14px;
+                                padding:10px 12px;
+                                margin-bottom:10px;
+                                color:#111827;
+                                font-weight:600;
+                            ">
+                                👤 {icerik}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.markdown(
+                            f"""
+                            <div style="
+                                background:#f4efff;
+                                border:1px solid #ded0ff;
+                                border-radius:14px;
+                                padding:10px 12px;
+                                margin-bottom:10px;
+                                color:#111827;
+                                font-weight:500;
+                            ">
+                                🤖 {icerik}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+        with st.form("chatbot_form", clear_on_submit=True):
             kullanici_mesaji = st.text_area(
                 "Mesaj",
                 placeholder="Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum",
                 label_visibility="collapsed",
-                key="chatbot_textarea"
+                height=80,
+                key="chatbot_text_area"
             )
-            gonderildi = st.form_submit_button("⬆")
 
-        if gonderildi and kullanici_mesaji and kullanici_mesaji.strip():
+            form_col1, form_col2 = st.columns([5, 1])
+
+            with form_col1:
+                gonderildi = st.form_submit_button("Gönder")
+
+            with form_col2:
+                temizlendi = st.form_submit_button("🗑️")
+
+        if temizlendi:
+            st.session_state.mesajlar = []
+            st.session_state.sonuc = None
+            st.session_state.pc_build = None
+            st.rerun()
+
+        if gonderildi and kullanici_mesaji.strip():
             kullanici_mesaji = kullanici_mesaji.strip()
+
             st.session_state.mesajlar.append({
                 "rol": "user",
                 "icerik": kullanici_mesaji
@@ -2591,164 +2629,93 @@ with col_chat:
 
             if chatbot_resmi_kontrol(mesaj_lower):
                 bot_mesaji = "Elbette. Bundan sonra daha resmi, saygılı ve açıklayıcı bir dil kullanacağım."
-                st.session_state.mesajlar.append({
-                    "rol": "assistant",
-                    "icerik": bot_mesaji
-                })
-                st.rerun()
-
-            if not chatbot_urun_istegi_var_mi(mesaj_lower):
-                bot_mesaji = (
-                    "Size yardımcı olabilmem için lütfen ürün kategorisini, bütçe aralığını ve kullanım amacını belirtiniz.\n\n"
-                    "Örnek: 40000-50000 TL arası oyun için bilgisayar öner."
-                )
-                st.session_state.mesajlar.append({
-                    "rol": "assistant",
-                    "icerik": bot_mesaji
-                })
-                st.rerun()
-
-            chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim = chatbot_metnini_anla(
-                kullanici_mesaji
-            )
-
-            kategori_mesajdan = chatbot_kategori_bul(mesaj_lower)
-
-            llm_sonuc = None
-            try:
-                gelen_llm_sonuc = llm_analiz_et(kullanici_mesaji)
-                if gelen_llm_sonuc is not None:
-                    llm_sonuc = gelen_llm_sonuc
-            except Exception:
-                llm_sonuc = None
-
-            if llm_sonuc is not None:
-                llm_kategori = llm_sonuc.get("kategori", None)
-                if kategori_mesajdan:
-                    chat_kategori = kategori_mesajdan
-                elif llm_kategori and str(llm_kategori).strip() not in ["", "None", "null"]:
-                    chat_kategori = llm_kategori
-
-                chat_min_butce = int(llm_sonuc.get("min_butce", chat_min_butce))
-                chat_max_butce = int(llm_sonuc.get("max_butce", chat_max_butce))
-                chat_ram = int(llm_sonuc.get("ram", chat_ram))
-                chat_kullanim = llm_sonuc.get("kullanim", chat_kullanim)
-            else:
-                if kategori_mesajdan:
-                    chat_kategori = kategori_mesajdan
-
-            if kategori_mesajdan is None:
-                bot_mesaji = (
-                    "Ürün kategorisi net olarak belirtilmediği için öneri listesi oluşturamadım.\n\n"
-                    f"{chatbot_kriter_mesaji(None, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}\n\n"
-                    "Lütfen kategori de belirterek tekrar deneyiniz. Örneğin: 30000 TL bütçeyle telefon öner."
-                )
-                st.session_state.mesajlar.append({
-                    "rol": "assistant",
-                    "icerik": bot_mesaji
-                })
-                st.rerun()
-
-            if int(chat_max_butce) < 100:
-                bot_mesaji = (
-                    "Belirttiğiniz bütçe aralığında uygun teknoloji ürünü bulunması mümkün görünmüyor.\n\n"
-                    f"{chatbot_kriter_mesaji(chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}\n\n"
-                    "Öneri: Bütçeyi artırarak veya daha düşük fiyatlı bir kategori seçerek tekrar deneyebilirsiniz."
-                )
-                st.session_state.mesajlar.append({
-                    "rol": "assistant",
-                    "icerik": bot_mesaji
-                })
-                st.rerun()
-
-            if chat_kategori == "Toplama Bilgisayar":
-                st.session_state.aktif_mod = "pc_build"
-                st.session_state.sonuc = None
-                st.session_state.pc_build = None
-                chat_kurulum_tipi = chatbot_pc_kurulum_tipi_bul(mesaj_lower)
-                st.session_state.pc_builds = besli_pc_sistem_olustur(
-                    min_butce=chat_min_butce,
-                    max_butce=chat_max_butce,
-                    kullanim=chat_kullanim,
-                    seed=st.session_state.pc_random_seed,
-                    kurulum_tipi=chat_kurulum_tipi
-                )
-                st.session_state.selected_pc_build_index = 0
-                bot_mesaji = chatbot_sonuc_mesaji(
-                    st.session_state.pc_builds,
-                    chat_kategori,
-                    chat_min_butce,
-                    chat_max_butce,
-                    chat_ram,
-                    chat_kullanim
-                )
-
-            elif chat_kategori == "Elektronik Ev Eşyaları":
-                st.session_state.aktif_mod = "ev_esyalari"
-                st.session_state.pc_build = None
-                st.session_state.pc_builds = []
-                chat_ev_alt_kategori = chatbot_ev_alt_kategori_bul(mesaj_lower)
-                st.session_state.sonuc = ev_esyasi_oner(
-                    ana_kategori="Tümü",
-                    alt_kategori=chat_ev_alt_kategori,
-                    min_butce=chat_min_butce,
-                    max_butce=chat_max_butce,
-                    siralama=chatbot_siralama,
-                    kullanim="",
-                    min_puan=0,
-                    enerji_sinifi="Farketmez",
-                    kaynak_site="Farketmez"
-                )
-                bot_mesaji = chatbot_sonuc_mesaji(
-                    st.session_state.sonuc,
-                    chat_kategori,
-                    chat_min_butce,
-                    chat_max_butce,
-                    chat_ram,
-                    chat_kullanim
-                )
 
             else:
-                st.session_state.aktif_mod = "chatbot"
-                st.session_state.pc_build = None
-                st.session_state.pc_builds = []
-                st.session_state.sonuc = hazir_urun_oner_db(
-                    chat_kategori,
-                    chat_min_butce,
-                    chat_max_butce,
-                    chat_ram,
-                    chatbot_siralama,
-                    chat_kullanim
-                )
+                chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim = chatbot_metnini_anla(kullanici_mesaji)
 
-                st.session_state.sonuc = siralama_uygula(
-                    st.session_state.sonuc,
-                    chatbot_siralama,
-                    fiyat_kolon="FIYAT_SAYI",
-                    puan_kolon="ONERI_PUANI",
-                    ram_kolon="RAM"
-                )
+                if chat_kategori in ["Toplama Bilgisayar", "Toplama PC", "PC Toplama"]:
+                    st.session_state.aktif_mod = "pc_build"
+                    st.session_state.sonuc = None
 
-                bot_mesaji = chatbot_sonuc_mesaji(
-                    st.session_state.sonuc,
-                    chat_kategori,
-                    chat_min_butce,
-                    chat_max_butce,
-                    chat_ram,
-                    chat_kullanim
-                )
+                    st.session_state.pc_builds = pc_sistemleri_uret(
+                        chat_min_butce,
+                        chat_max_butce,
+                        chat_kullanim
+                    )
+
+                    st.session_state.selected_pc_build_index = 0
+
+                    bot_mesaji = chatbot_sonuc_mesaji(
+                        st.session_state.pc_builds,
+                        "Toplama Bilgisayar",
+                        chat_min_butce,
+                        chat_max_butce,
+                        chat_ram,
+                        chat_kullanim
+                    )
+
+                elif chat_kategori == "Elektronik Ev Eşyaları":
+                    st.session_state.aktif_mod = "chatbot"
+                    st.session_state.pc_build = None
+                    st.session_state.pc_builds = []
+
+                    st.session_state.sonuc = ev_esyasi_oner(
+                        ana_kategori="Tümü",
+                        alt_kategori="Tümü",
+                        min_butce=chat_min_butce,
+                        max_butce=chat_max_butce,
+                        kullanim_amaci=chat_kullanim,
+                        marka="Farketmez",
+                        segment="Farketmez",
+                        enerji_sinifi="Farketmez",
+                        kaynak_site="Farketmez"
+                    )
+
+                    bot_mesaji = chatbot_sonuc_mesaji(
+                        st.session_state.sonuc,
+                        chat_kategori,
+                        chat_min_butce,
+                        chat_max_butce,
+                        chat_ram,
+                        chat_kullanim
+                    )
+
+                else:
+                    st.session_state.aktif_mod = "chatbot"
+                    st.session_state.pc_build = None
+                    st.session_state.pc_builds = []
+
+                    st.session_state.sonuc = hazir_urun_oner_db(
+                        chat_kategori,
+                        chat_min_butce,
+                        chat_max_butce,
+                        chat_ram,
+                        chatbot_siralama,
+                        chat_kullanim
+                    )
+
+                    st.session_state.sonuc = siralama_uygula(
+                        st.session_state.sonuc,
+                        chatbot_siralama,
+                        fiyat_kolon="FIYAT_SAYI",
+                        puan_kolon="ONERI_PUANI",
+                        ram_kolon="RAM"
+                    )
+
+                    bot_mesaji = chatbot_sonuc_mesaji(
+                        st.session_state.sonuc,
+                        chat_kategori,
+                        chat_min_butce,
+                        chat_max_butce,
+                        chat_ram,
+                        chat_kullanim
+                    )
 
             st.session_state.mesajlar.append({
                 "rol": "assistant",
                 "icerik": bot_mesaji
             })
 
-            st.rerun()
-
-        if st.button("🗑️ Sohbeti Temizle", key="clear_chat_button", help="Sohbeti Temizle"):
-            st.session_state.mesajlar = []
-            st.session_state.sonuc = None
-            st.session_state.pc_build = None
             st.rerun()
 
 
