@@ -290,7 +290,7 @@ div[data-testid="stPopoverBody"] {
     max-width: min(430px, calc(100vw - 32px)) !important;
     height: 1000px !important;
     max-height: 72vh !important;
-    background: #ffffff !important;
+    background: #000000 !important;
     border: 2px solid #eadcff !important;
     border-radius: 22px !important;
     padding: 14px !important;
