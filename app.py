@@ -284,96 +284,143 @@ hr {
 
 /* CHATBOT FINAL - TEMİZ */
 
-[data-testid="stPopoverBody"] {
-    width: 480px !important;
-    max-width: 480px !important;
-    height: 540px !important;
-    max-height: 75vh !important;
+/* Popover dış kabı: küçük, sabit ve taşmayan panel */
+div[data-testid="stPopoverBody"] {
+    width: 420px !important;
+    max-width: min(420px, calc(100vw - 32px)) !important;
+    height: 520px !important;
+    max-height: 72vh !important;
     background: #ffffff !important;
-    color: #111827 !important;
-    border-radius: 22px !important;
     border: 2px solid #eadcff !important;
+    border-radius: 22px !important;
     padding: 14px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    box-shadow: 0 18px 45px rgba(109, 60, 255, 0.18) !important;
+    box-shadow: 0 18px 42px rgba(76, 43, 230, 0.20) !important;
 }
 
-[data-testid="stPopoverBody"],
-[data-testid="stPopoverBody"] * {
+/* Streamlit popover'ın fazladan büyüyen iç containerlarını sıkıştır */
+div[data-testid="stPopoverBody"] > div,
+div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"],
+div[data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Panel içinde okunabilir yazı renkleri */
+div[data-testid="stPopoverBody"],
+div[data-testid="stPopoverBody"] p,
+div[data-testid="stPopoverBody"] label,
+div[data-testid="stPopoverBody"] span,
+div[data-testid="stPopoverBody"] div {
     color: #111827 !important;
 }
 
-[data-testid="stPopoverBody"] h1,
-[data-testid="stPopoverBody"] h2,
-[data-testid="stPopoverBody"] h3,
-[data-testid="stPopoverBody"] h4 {
-    color: #080b2f !important;
+div[data-testid="stPopoverBody"] h1,
+div[data-testid="stPopoverBody"] h2,
+div[data-testid="stPopoverBody"] h3,
+div[data-testid="stPopoverBody"] h4 {
+    color: #4b2ee8 !important;
+    margin-bottom: 8px !important;
 }
 
-[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
+/* Sıralama select kutusu */
+div[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
     background: #ffffff !important;
-    border: 1.5px solid #7b4dff !important;
+    color: #111827 !important;
+    border: 1.5px solid #6d3cff !important;
     border-radius: 14px !important;
-    min-height: 44px !important;
+    min-height: 42px !important;
+    box-shadow: none !important;
 }
 
-[data-testid="stPopoverBody"] .stChatMessage {
+div[data-testid="stPopoverBody"] [data-baseweb="select"] * {
+    color: #111827 !important;
+}
+
+/* Chat mesajları */
+div[data-testid="stPopoverBody"] [data-testid="stChatMessage"] {
     background: #f8f5ff !important;
-    border: 1px solid #e7ddff !important;
+    border: 1px solid #e4d8ff !important;
     border-radius: 16px !important;
     padding: 10px 12px !important;
-    margin-bottom: 10px !important;
+    margin: 10px 0 !important;
 }
 
-[data-testid="stPopoverBody"] [data-testid="stChatInput"] {
-    background: #f4efff !important;
-    border: 1px solid #e0d2ff !important;
+div[data-testid="stPopoverBody"] [data-testid="stChatMessage"] * {
+    color: #111827 !important;
+}
+
+/* Chat input alanı */
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] {
+    background: #f3edff !important;
+    border: 1px solid #ded0ff !important;
     border-radius: 18px !important;
     padding: 8px !important;
+    margin-top: 10px !important;
+    width: 100% !important;
 }
 
-[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea {
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] > div {
+    background: transparent !important;
+    border: none !important;
+    width: 100% !important;
+}
+
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea {
     background: #ffffff !important;
     color: #111827 !important;
     -webkit-text-fill-color: #111827 !important;
     caret-color: #111827 !important;
-    border: 2px solid #7b4dff !important;
+    border: 2px solid #6d3cff !important;
     border-radius: 14px !important;
-    min-height: 52px !important;
-    max-height: 90px !important;
+    min-height: 46px !important;
+    max-height: 88px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
+    box-shadow: none !important;
 }
 
-[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea::placeholder {
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea::placeholder {
     color: #6b7280 !important;
     -webkit-text-fill-color: #6b7280 !important;
     opacity: 1 !important;
 }
 
-[data-testid="stPopoverBody"] [data-testid="stChatInput"] button {
+/* Gönder butonu */
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button {
     background: #6d3cff !important;
     color: white !important;
-    width: 44px !important;
-    min-width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
     border-radius: 14px !important;
     border: none !important;
     padding: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
-[data-testid="stPopoverBody"] [data-testid="stChatInput"] button svg {
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button:hover {
+    background: #ff9226 !important;
+    transform: none !important;
+}
+
+div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button svg {
     color: white !important;
     fill: white !important;
     stroke: white !important;
 }
 
-[data-testid="stPopoverBody"] .stButton {
-    width: fit-content !important;
+/* Temizle butonu: sadece küçük çöp kutusu ikon gibi görünsün */
+div[data-testid="stPopoverBody"] .stButton {
+    width: 42px !important;
+    max-width: 42px !important;
+    margin-top: 8px !important;
 }
 
-[data-testid="stPopoverBody"] .stButton button {
+div[data-testid="stPopoverBody"] .stButton button {
     position: relative !important;
     width: 42px !important;
     min-width: 42px !important;
@@ -382,52 +429,56 @@ hr {
     min-height: 42px !important;
     border-radius: 12px !important;
     background: #6d3cff !important;
+    border: none !important;
     padding: 0 !important;
+    box-shadow: 0 8px 18px rgba(109, 60, 255, 0.22) !important;
     overflow: hidden !important;
-    white-space: nowrap !important;
     color: transparent !important;
     font-size: 0 !important;
     text-indent: -9999px !important;
+    transform: none !important;
 }
 
-[data-testid="stPopoverBody"] .stButton button::before {
+div[data-testid="stPopoverBody"] .stButton button::before {
     content: "🗑️";
     position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     color: white !important;
-    font-size: 16px !important;
+    font-size: 17px !important;
     text-indent: 0 !important;
 }
 
-[data-testid="stPopoverBody"] .stButton button:hover {
-    width: 170px !important;
-    min-width: 170px !important;
-    max-width: 170px !important;
+div[data-testid="stPopoverBody"] .stButton button:hover {
     background: #ff9226 !important;
-    transform: translateY(-2px) !important;
+    transform: none !important;
 }
 
-[data-testid="stPopoverBody"] .stButton button:hover::before {
-    content: "🗑️ Sohbeti Temizle";
-    font-size: 13px !important;
-    font-weight: 800 !important;
-    white-space: nowrap !important;
+/* Scrollbar */
+div[data-testid="stPopoverBody"]::-webkit-scrollbar {
+    width: 7px;
 }
 
-[data-testid="stPopoverBody"]::-webkit-scrollbar {
-    width: 8px;
-}
-
-[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {
+div[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {
     background: #c4b5fd;
     border-radius: 999px;
 }
 
-[data-testid="stPopoverBody"]::-webkit-scrollbar-track {
+div[data-testid="stPopoverBody"]::-webkit-scrollbar-track {
     background: transparent;
 }
+
+/* Mobilde taşmayı engelle */
+@media (max-width: 700px) {
+    div[data-testid="stPopoverBody"] {
+        width: calc(100vw - 28px) !important;
+        max-width: calc(100vw - 28px) !important;
+        height: 70vh !important;
+    }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
