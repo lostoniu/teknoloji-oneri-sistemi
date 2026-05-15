@@ -288,7 +288,7 @@ hr {
 div[data-testid="stPopoverBody"] {
     width: 430px !important;
     max-width: min(430px, calc(100vw - 32px)) !important;
-    height: 540px !important;
+    height: 1000px !important;
     max-height: 72vh !important;
     background: #ffffff !important;
     border: 2px solid #eadcff !important;
@@ -328,7 +328,7 @@ div[data-testid="stPopoverBody"] [data-baseweb="select"] * {
 
 /* Chat geçmiş alanı */
 .chatbot-history {
-    height: 245px;
+    height: 500px;
     overflow-y: auto;
     overflow-x: hidden;
     background: #ffffff;
