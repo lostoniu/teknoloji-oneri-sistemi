@@ -297,17 +297,7 @@ div[data-testid="stPopoverBody"] {
     overflow: hidden !important;
     box-shadow: 0 18px 42px rgba(76, 43, 230, 0.20) !important;
 }
-.popover {
-    display: inline-block;
-    margin-top: 10px;
-    background: #ff9226;
-    color: white !important;
-    text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 999px;
-    font-weight: 900;
-    font-size: 13px;
-}
+
 
 /* Popover içi genel yazılar */
 div[data-testid="stPopoverBody"],
