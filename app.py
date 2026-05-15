@@ -42,7 +42,7 @@ html, body, [class*="css"] {
 }
 
 section[data-testid="stSidebar"] {
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(10, 10, 10, 0.88);
     border-right: 1px solid rgba(76, 43, 230, 0.35);
     box-shadow: 8px 0 30px rgba(76, 43, 230, 0.12);
 }
