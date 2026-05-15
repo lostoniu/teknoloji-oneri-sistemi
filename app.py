@@ -58,7 +58,7 @@ p, label {
 
 .stButton button {
     background: linear-gradient(135deg, #4b2ee8 0%, #6d3cff 100%);
-    color: white;
+    color: white !important;
     border: none;
     border-radius: 14px;
     font-weight: 800;
@@ -85,22 +85,11 @@ p, label {
     border: 1px solid rgba(75, 46, 232, 0.55) !important;
 }
 
-[data-baseweb="select"] span,
-[data-baseweb="select"] div {
-    color: #080b2f !important;
-}
-
 .stChatInput textarea {
-    background-color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.96) !important;
     color: #080b2f !important;
     border-radius: 14px !important;
     border: 1px solid rgba(75, 46, 232, 0.55) !important;
-    font-weight: 700 !important;
-}
-
-.stChatInput textarea::placeholder {
-    color: #6b7280 !important;
-    opacity: 1 !important;
 }
 
 div[data-testid="stAlert"] {
@@ -134,9 +123,32 @@ div[data-testid="stAlert"] {
     color: #4b2ee8 !important;
 }
 
-.badge-blue { background-color: #4b2ee8; color: white !important; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 800; }
-.badge-purple { background-color: #7b2cff; color: white !important; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 800; }
-.badge-orange { background-color: #ff9226; color: white !important; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 800; }
+.badge-blue {
+    background-color: #4b2ee8;
+    color: white !important;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.badge-purple {
+    background-color: #7b2cff;
+    color: white !important;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.badge-orange {
+    background-color: #ff9226;
+    color: white !important;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
 
 .system-card {
     background: rgba(255, 255, 255, 0.96);
@@ -153,10 +165,33 @@ div[data-testid="stAlert"] {
     box-shadow: 0 22px 46px rgba(76, 43, 230, 0.22), 0 0 0 1px rgba(255, 146, 38, 0.32);
 }
 
-.system-card, .system-card div, .system-card span, .system-card b { color: #080b2f !important; }
-.system-title { font-size: 19px; font-weight: 900; color: #4b2ee8 !important; }
-.system-price { font-size: 22px; font-weight: 900; color: #ff7a00 !important; margin-top: 6px; }
-.system-chip { display: inline-block; margin-top: 10px; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; color: white !important; }
+.system-card, .system-card div, .system-card span, .system-card b {
+    color: #080b2f !important;
+}
+
+.system-title {
+    font-size: 19px;
+    font-weight: 900;
+    color: #4b2ee8 !important;
+}
+
+.system-price {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ff7a00 !important;
+    margin-top: 6px;
+}
+
+.system-chip {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    color: white !important;
+}
+
 .chip-1 { background: #4b2ee8; }
 .chip-2 { background: #6d3cff; color: white !important; }
 .chip-3 { background: #7b2cff; }
@@ -171,221 +206,146 @@ div[data-testid="stAlert"] {
     margin: 16px 0 20px 0;
     box-shadow: 0 18px 38px rgba(76,43,230,0.15);
 }
-.summary-box, .summary-box div, .summary-box b { color: #080b2f !important; }
-hr { border: 1px solid rgba(75, 46, 232, 0.35); }
-[data-testid="stDataFrame"] { border-radius: 16px; overflow: hidden; }
 
-.price-compare-box { background: rgba(244, 216, 247, 0.55); border: 1px solid rgba(75, 46, 232, 0.22); border-radius: 14px; padding: 12px; margin-top: 14px; }
-.price-compare-title { color: #4b2ee8 !important; font-weight: 900; margin-bottom: 8px; }
-.price-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(75, 46, 232, 0.22); }
-.price-row:last-child { border-bottom: none; }
-.price-site { color: #080b2f !important; font-weight: 800; }
-.price-value { color: #ff7a00 !important; font-weight: 900; }
-.price-link { display: inline-block; margin-top: 10px; background: #ff9226; color: white !important; text-decoration: none; padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 13px; }
-.price-link-secondary { display: inline-block; margin: 6px 6px 0 0; background: #4b2ee8; color: white !important; text-decoration: none; padding: 7px 10px; border-radius: 999px; font-weight: 800; font-size: 12px; }
-
-/* CHATBOT POPUP - FINAL TEMİZ TASARIM */
-
-/* Chatbot açma butonu */
-div[data-testid="stPopover"] button,
-div[data-testid="stPopover"] button[kind="secondary"] {
-    background: #ffffff !important;
+.summary-box, .summary-box div, .summary-box b {
     color: #080b2f !important;
-    border: 1px solid rgba(109, 60, 255, 0.25) !important;
+}
+
+hr {
+    border: 1px solid rgba(75, 46, 232, 0.35);
+}
+
+[data-testid="stDataFrame"] {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.price-compare-box {
+    background: rgba(244, 216, 247, 0.55);
+    border: 1px solid rgba(75, 46, 232, 0.22);
+    border-radius: 14px;
+    padding: 12px;
+    margin-top: 14px;
+}
+
+.price-compare-title {
+    color: #4b2ee8 !important;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(75, 46, 232, 0.22);
+}
+
+.price-row:last-child {
+    border-bottom: none;
+}
+
+.price-site {
+    color: #080b2f !important;
+    font-weight: 800;
+}
+
+.price-value {
+    color: #ff7a00 !important;
+    font-weight: 900;
+}
+
+.price-link {
+    display: inline-block;
+    margin-top: 10px;
+    background: #ff9226;
+    color: white !important;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 13px;
+}
+
+.price-link-secondary {
+    display: inline-block;
+    margin: 6px 6px 0 0;
+    background: #4b2ee8;
+    color: white !important;
+    text-decoration: none;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+/* CHATBOT GÖRÜNÜRLÜK DÜZELTMESİ */
+[data-testid="stPopoverBody"],
+[data-testid="stPopoverBody"] div,
+[data-testid="stPopoverBody"] span,
+[data-testid="stPopoverBody"] p,
+[data-testid="stPopoverBody"] label {
+    color: #ffffff !important;
+}
+
+[data-testid="stPopoverBody"] h1,
+[data-testid="stPopoverBody"] h2,
+[data-testid="stPopoverBody"] h3,
+[data-testid="stPopoverBody"] h4 {
+    color: #ffffff !important;
+}
+
+.stChatMessage,
+.stChatMessage div,
+.stChatMessage span,
+.stChatMessage p,
+[data-testid="stChatMessageContent"],
+[data-testid="stChatMessageContent"] div,
+[data-testid="stChatMessageContent"] span,
+[data-testid="stChatMessageContent"] p {
+    color: #ffffff !important;
+}
+
+.stChatInput textarea,
+[data-testid="stChatInput"] textarea {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    color: #080b2f !important;
+    -webkit-text-fill-color: #080b2f !important;
+    caret-color: #080b2f !important;
     border-radius: 14px !important;
-    box-shadow: 0 10px 22px rgba(109, 60, 255, 0.12) !important;
-    font-size: 15px !important;
-    font-weight: 800 !important;
+    border: 1px solid rgba(75, 46, 232, 0.55) !important;
+    font-weight: 600;
 }
 
-div[data-testid="stPopover"] button *,
-div[data-testid="stPopover"] button p,
-div[data-testid="stPopover"] button span {
-    color: #080b2f !important;
+.stChatInput textarea::placeholder,
+[data-testid="stChatInput"] textarea::placeholder {
+    color: rgba(8, 11, 47, 0.58) !important;
+    -webkit-text-fill-color: rgba(8, 11, 47, 0.58) !important;
 }
 
-/* Popover dış ve iç kutu: koyu temayı tamamen kapatır */
-div[data-baseweb="popover"],
-div[data-baseweb="popover"] > div,
-div[data-baseweb="popover"] [role="dialog"],
-div[data-testid="stPopoverBody"],
-div[data-testid="stPopoverBody"] > div,
-div[data-testid="stPopoverBody"] div[data-testid="stVerticalBlock"],
-div[data-testid="stPopoverBody"] div[data-testid="stVerticalBlockBorderWrapper"],
-div[data-testid="stPopoverBody"] div[data-testid="stVerticalBlockBorderWrapper"] > div,
-div[data-testid="stPopoverBody"] div[data-testid="stVerticalBlock"] > div,
-div[data-testid="stPopoverBody"] div[data-testid="stElementContainer"] {
-    background: #ffffff !important;
-    color: #080b2f !important;
-}
-
-/* Chatbot ekranını yaklaşık 1.5 kat büyüt */
-div[data-testid="stPopoverBody"] {
-    width: 660px !important;
-    max-width: 94vw !important;
-    min-height: 650px !important;
-    padding: 34px 38px !important;
-    border-radius: 30px !important;
-    border: 1px solid rgba(109, 60, 255, 0.20) !important;
-    box-shadow: 0 24px 70px rgba(109, 60, 255, 0.22) !important;
-    overflow: visible !important;
-}
-
-/* Popover içindeki tüm normal yazılar siyah */
-div[data-testid="stPopoverBody"] *,
-div[data-testid="stPopoverBody"] p,
-div[data-testid="stPopoverBody"] label,
-div[data-testid="stPopoverBody"] span,
-div[data-testid="stPopoverBody"] div,
-div[data-testid="stPopoverBody"] h1,
-div[data-testid="stPopoverBody"] h2,
-div[data-testid="stPopoverBody"] h3,
-div[data-testid="stPopoverBody"] h4 {
-    color: #080b2f !important;
-}
-
-div[data-testid="stPopoverBody"] h3 {
-    font-size: 34px !important;
-    font-weight: 900 !important;
-    margin-bottom: 26px !important;
-}
-
-/* Selectbox */
-div[data-testid="stPopoverBody"] [data-baseweb="select"] > div,
-div[data-testid="stPopoverBody"] [data-baseweb="select"] div {
-    background: #ffffff !important;
-    color: #080b2f !important;
-}
-
-div[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
-    min-height: 56px !important;
-    border: 1.5px solid #6d3cff !important;
-    border-radius: 16px !important;
-    box-shadow: none !important;
-}
-
-/* Chat mesajları */
-div[data-testid="stPopoverBody"] .stChatMessage,
-div[data-testid="stPopoverBody"] [data-testid="stChatMessage"],
-div[data-testid="stPopoverBody"] [data-testid="stChatMessageContent"] {
-    background: #f5f0ff !important;
-    color: #080b2f !important;
-    border: 1px solid #e4d6ff !important;
-    border-radius: 18px !important;
-}
-
-/* Chat input ana alan: siyah/gri alanı beyaza yakın yapar */
-div[data-testid="stPopoverBody"] .stChatInput,
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"],
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] > div,
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] div,
-div[data-testid="stPopoverBody"] div:has(> textarea) {
-    background: #f5f0ff !important;
-    color: #080b2f !important;
-    border-color: #e4d6ff !important;
-}
-
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] {
-    border: 1.5px solid #e4d6ff !important;
-    border-radius: 22px !important;
-    padding: 12px !important;
-    box-shadow: none !important;
-}
-
-/* Yazı yazılan input */
-div[data-testid="stPopoverBody"] textarea,
-div[data-testid="stPopoverBody"] .stChatInput textarea,
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] textarea {
-    background: #ffffff !important;
-    color: #080b2f !important;
-    border: 1.5px solid #6d3cff !important;
-    border-radius: 18px !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    min-height: 88px !important;
-    padding: 14px 16px !important;
-    box-shadow: none !important;
-}
-
-div[data-testid="stPopoverBody"] textarea::placeholder {
-    color: #6b7280 !important;
-    opacity: 1 !important;
-}
-
-/* Mesaj gönderme butonu: mor */
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button,
-div[data-testid="stPopoverBody"] .stChatInput button,
-div[data-testid="stPopoverBody"] button[aria-label="Send"],
-div[data-testid="stPopoverBody"] button[title="Send"] {
-    background: #6d3cff !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 16px !important;
-    width: 52px !important;
-    min-width: 52px !important;
-    max-width: 52px !important;
-    height: 52px !important;
-    min-height: 52px !important;
+[data-testid="stChatInput"] button {
+    width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
     padding: 0 !important;
-    box-shadow: 0 10px 20px rgba(109, 60, 255, 0.28) !important;
+    border-radius: 10px !important;
 }
 
-div[data-testid="stPopoverBody"] [data-testid="stChatInput"] button svg,
-div[data-testid="stPopoverBody"] .stChatInput button svg,
-div[data-testid="stPopoverBody"] button[aria-label="Send"] svg,
-div[data-testid="stPopoverBody"] button[title="Send"] svg {
-    color: #ffffff !important;
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
+[data-testid="stPopoverBody"] .stButton button {
+    width: auto !important;
+    max-width: 175px !important;
+    min-height: 40px !important;
+    padding: 0.42rem 0.78rem !important;
+    font-size: 14px !important;
+    border-radius: 13px !important;
+    box-shadow: 0 8px 18px rgba(76, 43, 230, 0.18) !important;
 }
 
-/* Sohbeti temizle: küçük çöp kovası, hover'da yazıya dönüşür */
-div[data-testid="stPopoverBody"] .stButton button,
-div[data-testid="stPopoverBody"] button[kind="secondary"] {
-    width: 42px !important;
-    min-width: 42px !important;
-    max-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
-    padding: 0 !important;
-    border-radius: 14px !important;
-    background: #6d3cff !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    overflow: hidden !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 10px 20px rgba(109, 60, 255, 0.25) !important;
-    border: none !important;
+[data-testid="stPopoverBody"] .stButton {
+    width: fit-content !important;
 }
-
-div[data-testid="stPopoverBody"] .stButton button::before,
-div[data-testid="stPopoverBody"] button[kind="secondary"]::before {
-    content: "🗑️";
-    color: #ffffff !important;
-    font-size: 17px !important;
-    line-height: 1 !important;
-}
-
-div[data-testid="stPopoverBody"] .stButton button:hover,
-div[data-testid="stPopoverBody"] button[kind="secondary"]:hover {
-    width: 154px !important;
-    min-width: 154px !important;
-    max-width: 154px !important;
-    background: #6d3cff !important;
-    transform: translateY(-2px) !important;
-}
-
-div[data-testid="stPopoverBody"] .stButton button:hover::before,
-div[data-testid="stPopoverBody"] button[kind="secondary"]:hover::before {
-    content: "🗑️ Sohbeti Temizle";
-    color: #ffffff !important;
-    font-size: 13px !important;
-    font-weight: 800 !important;
-    white-space: nowrap !important;
-}
-
 
 </style>
 """, unsafe_allow_html=True)
@@ -2638,7 +2598,7 @@ with col_chat:
 
             st.rerun()
 
-        if st.button("🗑️", key="clear_chat_button", help="Sohbeti Temizle"):
+        if st.button("Sohbeti Temizle", key="clear_chat_button"):
             st.session_state.mesajlar = []
             st.session_state.sonuc = None
             st.session_state.pc_build = None
