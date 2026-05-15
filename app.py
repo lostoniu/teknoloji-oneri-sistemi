@@ -28,6 +28,7 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+st.success("YENI CSS CALISIYOR")
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
