@@ -297,7 +297,7 @@ div[data-testid="stPopoverBody"] {
     overflow: hidden !important;
     box-shadow: 0 18px 42px rgba(76, 43, 230, 0.20) !important;
 }
-.st-popover {
+.popover {
     display: inline-block;
     margin-top: 10px;
     background: #ff9226;
@@ -2543,7 +2543,7 @@ with col_title:
     st.title("🤖 Akıllı Teknoloji Ürünleri Öneri Sistemi")
 
 with col_chat:
-    with st-popover("💬 Chatbot"):
+    with st.popover("💬 Chatbot"):
         st.subheader("Ürün Asistanı")
 
         chatbot_siralama = st.selectbox(
