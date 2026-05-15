@@ -283,69 +283,96 @@ hr {
 }
 
 /* CHATBOT GÖRÜNÜRLÜK DÜZELTMESİ */
+[data-testid="stPopoverBody"] {
+    width: 520px !important;
+    max-width: 520px !important;
+    height: 620px !important;
+    background: #ffffff !important;
+    border-radius: 24px !important;
+    border: 2px solid #eadcff !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    box-shadow: 0 18px 45px rgba(109,60,255,0.18) !important;
+}
+
 [data-testid="stPopoverBody"],
-[data-testid="stPopoverBody"] div,
-[data-testid="stPopoverBody"] span,
-[data-testid="stPopoverBody"] p,
-[data-testid="stPopoverBody"] label {
-    color: #ffffff !important;
+[data-testid="stPopoverBody"] * {
+    color: #111827 !important;
 }
 
-[data-testid="stPopoverBody"] h1,
-[data-testid="stPopoverBody"] h2,
-[data-testid="stPopoverBody"] h3,
-[data-testid="stPopoverBody"] h4 {
-    color: #ffffff !important;
+[data-testid="stPopoverBody"] .stChatMessage {
+    background: #f8f5ff !important;
+    border: 1px solid #e7ddff !important;
+    border-radius: 16px !important;
+    padding: 10px 12px !important;
+    margin-bottom: 10px !important;
 }
 
-.stChatMessage,
-.stChatMessage div,
-.stChatMessage span,
-.stChatMessage p,
-[data-testid="stChatMessageContent"],
-[data-testid="stChatMessageContent"] div,
-[data-testid="stChatMessageContent"] span,
-[data-testid="stChatMessageContent"] p {
-    color: #ffffff !important;
+[data-testid="stChatInput"] {
+    background: #f4efff !important;
+    border: 1px solid #e0d2ff !important;
+    border-radius: 18px !important;
+    padding: 8px !important;
 }
 
-.stChatInput textarea,
 [data-testid="stChatInput"] textarea {
-    background-color: rgba(255, 255, 255, 0.96) !important;
-    color: #080b2f !important;
-    -webkit-text-fill-color: #080b2f !important;
-    caret-color: #080b2f !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    border: 2px solid #7b4dff !important;
     border-radius: 14px !important;
-    border: 1px solid rgba(75, 46, 232, 0.55) !important;
-    font-weight: 600;
+    min-height: 52px !important;
+    font-weight: 600 !important;
 }
 
-.stChatInput textarea::placeholder,
 [data-testid="stChatInput"] textarea::placeholder {
-    color: rgba(8, 11, 47, 0.58) !important;
-    -webkit-text-fill-color: rgba(8, 11, 47, 0.58) !important;
+    color: #6b7280 !important;
+    -webkit-text-fill-color: #6b7280 !important;
 }
 
 [data-testid="stChatInput"] button {
-    width: 38px !important;
-    height: 38px !important;
-    min-height: 38px !important;
+    background: #6d3cff !important;
+    color: white !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
     padding: 0 !important;
-    border-radius: 10px !important;
 }
 
 [data-testid="stPopoverBody"] .stButton button {
-    width: auto !important;
-    max-width: 175px !important;
-    min-height: 40px !important;
-    padding: 0.42rem 0.78rem !important;
-    font-size: 14px !important;
-    border-radius: 13px !important;
-    box-shadow: 0 8px 18px rgba(76, 43, 230, 0.18) !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    background: #6d3cff !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    overflow: hidden !important;
 }
 
-[data-testid="stPopoverBody"] .stButton {
-    width: fit-content !important;
+[data-testid="stPopoverBody"] .stButton button::before {
+    content: "🗑️";
+    color: white !important;
+    font-size: 16px !important;
+}
+
+[data-testid="stPopoverBody"] .stButton button:hover {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+    background: #ff9226 !important;
+}
+
+[data-testid="stPopoverBody"] .stButton button:hover::before {
+    content: "🗑️ Sohbeti Temizle";
+    color: white !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
 }
 
 </style>
