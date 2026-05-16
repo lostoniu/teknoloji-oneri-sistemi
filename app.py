@@ -37,95 +37,92 @@ html, body, [class*="css"] {
 }
 
 .stApp {
-    background: linear-gradient(135deg, #f4d8f7 0%, #f1ccf6 48%, #ead1ff 100%);
-    color: #080b2f;
+    background: linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%);
+    color: #ffffff;
 }
 
 section[data-testid="stSidebar"] {
-    background: rgba(255, 255, 255, 0.88);
-    border-right: 1px solid rgba(76, 43, 230, 0.35);
-    box-shadow: 8px 0 30px rgba(76, 43, 230, 0.12);
+    background: rgba(15, 23, 42, 0.96);
+    border-right: 1px solid rgba(139, 92, 246, 0.45);
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.22);
 }
 
 h1, h2, h3, h4 {
-    color: #4b2ee8 !important;
+    color: #ffffff !important;
     letter-spacing: -0.02em;
 }
 
-p, label {
-    color: #080b2f;
+p, label, span, div {
+    color: #ffffff;
 }
 
 .stButton button {
-    background: linear-gradient(135deg, #4b2ee8 0%, #6d3cff 100%);
-    color: white !important;
+    background: linear-gradient(135deg, #f59e0b 0%, #ee8713 100%);
+    color: white;
     border: none;
     border-radius: 14px;
     font-weight: 800;
-    padding: 0.52rem 0.9rem;
-    font-size: 15px;
-    min-height: 44px;
+    padding: 0.65rem 1rem;
     transition: all 0.22s ease;
-    box-shadow: 0 10px 22px rgba(76, 43, 230, 0.22);
+    box-shadow: 0 10px 22px rgba(238, 135, 19, 0.18);
 }
 
 .stButton button:hover {
-    background: linear-gradient(135deg, #ff9226 0%, #ff7a00 100%);
+    background: linear-gradient(135deg, #ffb347 0%, #f97316 100%);
     color: white;
     transform: translateY(-2px);
-    border: 1px solid rgba(75, 46, 232, 0.55);
+    border: 1px solid rgba(87, 164, 251, 0.7);
 }
 
 [data-baseweb="select"] > div,
 .stTextInput input,
 .stNumberInput input {
-    background-color: rgba(255, 255, 255, 0.96) !important;
-    color: #080b2f !important;
+    background-color: rgba(17, 24, 39, 0.94) !important;
+    color: white !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(75, 46, 232, 0.55) !important;
+    border: 1px solid rgba(87, 164, 251, 0.75) !important;
 }
 
 .stChatInput textarea {
-    background-color: rgba(10, 10, 10, 0.96) !important;
-    color: #080b2f !important;
+    background-color: rgba(17, 24, 39, 0.96) !important;
+    color: white !important;
     border-radius: 14px !important;
-    border: 1px solid rgba(75, 46, 232, 0.55) !important;
 }
 
 div[data-testid="stAlert"] {
-    background-color: rgba(10, 10, 10, 0.92);
-    border-left: 6px solid #ff9226;
+    background-color: rgba(30, 41, 59, 0.95);
+    border-left: 6px solid #f59e0b;
     border-radius: 14px;
 }
 
 .product-card {
-    background: #ffffff;
-    border: 1px solid rgba(75, 46, 232, 0.35);
+    background: #f8f5f0;
+    border: 1px solid rgba(139, 92, 246, 0.35);
     border-radius: 20px;
     padding: 20px;
     margin-bottom: 18px;
-    box-shadow: 0 16px 34px rgba(76, 43, 230, 0.16);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
     transition: all 0.24s ease;
 }
 
 .product-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 22px 45px rgba(76, 43, 230, 0.20), 0 0 0 1px rgba(255, 146, 38, 0.35);
+    box-shadow: 0 22px 45px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(87, 164, 251, 0.25);
 }
 
 .product-card, .product-card div, .product-card p, .product-card b {
-    color: #080b2f !important;
+    color: #111827 !important;
 }
 
 .product-title {
     font-size: 21px;
     font-weight: 900;
-    color: #4b2ee8 !important;
+    color: #111827 !important;
 }
 
 .badge-blue {
-    background-color: #4b2ee8;
-    color: white !important;
+    background-color: #57a4fb;
+    color: #0f172a !important;
     padding: 6px 11px;
     border-radius: 999px;
     font-size: 13px;
@@ -133,7 +130,7 @@ div[data-testid="stAlert"] {
 }
 
 .badge-purple {
-    background-color: #7b2cff;
+    background-color: #8b5cf6;
     color: white !important;
     padding: 6px 11px;
     border-radius: 999px;
@@ -142,7 +139,7 @@ div[data-testid="stAlert"] {
 }
 
 .badge-orange {
-    background-color: #ff9226;
+    background-color: #ee8713;
     color: white !important;
     padding: 6px 11px;
     border-radius: 999px;
@@ -151,34 +148,34 @@ div[data-testid="stAlert"] {
 }
 
 .system-card {
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(75, 46, 232, 0.38);
+    background: rgba(248, 245, 240, 0.98);
+    border: 1px solid rgba(139, 92, 246, 0.38);
     border-radius: 22px;
     padding: 18px;
     min-height: 138px;
-    box-shadow: 0 18px 38px rgba(76, 43, 230, 0.18);
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.20);
     transition: all 0.22s ease;
 }
 
 .system-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 22px 46px rgba(76, 43, 230, 0.22), 0 0 0 1px rgba(255, 146, 38, 0.32);
+    box-shadow: 0 22px 46px rgba(0, 0, 0, 0.26), 0 0 0 1px rgba(87, 164, 251, 0.25);
 }
 
 .system-card, .system-card div, .system-card span, .system-card b {
-    color: #080b2f !important;
+    color: #111827 !important;
 }
 
 .system-title {
     font-size: 19px;
     font-weight: 900;
-    color: #4b2ee8 !important;
+    color: #111827 !important;
 }
 
 .system-price {
     font-size: 22px;
     font-weight: 900;
-    color: #ff7a00 !important;
+    color: #4c1d95 !important;
     margin-top: 6px;
 }
 
@@ -192,284 +189,41 @@ div[data-testid="stAlert"] {
     color: white !important;
 }
 
-.chip-1 { background: #4b2ee8; }
-.chip-2 { background: #6d3cff; color: white !important; }
-.chip-3 { background: #7b2cff; }
-.chip-4 { background: #ff9226; }
-.chip-5 { background: #080b2f; }
+.chip-1 { background: #10b981; }
+.chip-2 { background: #57a4fb; color: #0f172a !important; }
+.chip-3 { background: #8b5cf6; }
+.chip-4 { background: #f59e0b; }
+.chip-5 { background: #ef4444; }
 
 .summary-box {
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(75, 46, 232, 0.35);
+    background: rgba(248, 245, 240, 0.98);
+    border: 1px solid rgba(87, 164, 251, 0.35);
     border-radius: 22px;
     padding: 20px;
     margin: 16px 0 20px 0;
-    box-shadow: 0 18px 38px rgba(76,43,230,0.15);
+    box-shadow: 0 18px 38px rgba(0,0,0,0.18);
 }
 
 .summary-box, .summary-box div, .summary-box b {
-    color: #080b2f !important;
+    color: #111827 !important;
 }
 
 hr {
-    border: 1px solid rgba(75, 46, 232, 0.35);
+    border: 1px solid rgba(139, 92, 246, 0.45);
 }
 
 [data-testid="stDataFrame"] {
     border-radius: 16px;
     overflow: hidden;
 }
-
-.price-compare-box {
-    background: rgba(244, 216, 247, 0.55);
-    border: 1px solid rgba(75, 46, 232, 0.22);
-    border-radius: 14px;
-    padding: 12px;
-    margin-top: 14px;
-}
-
-.price-compare-title {
-    color: #4b2ee8 !important;
-    font-weight: 900;
-    margin-bottom: 8px;
-}
-
-.price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px dashed rgba(75, 46, 232, 0.22);
-}
-
-.price-row:last-child {
-    border-bottom: none;
-}
-
-.price-site {
-    color: #080b2f !important;
-    font-weight: 800;
-}
-
-.price-value {
-    color: #ff7a00 !important;
-    font-weight: 900;
-}
-
-.price-link {
-    display: inline-block;
-    margin-top: 10px;
-    background: #ff9226;
-    color: white !important;
-    text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 999px;
-    font-weight: 900;
-    font-size: 13px;
-}
-
-.price-link-secondary {
-    display: inline-block;
-    margin: 6px 6px 0 0;
-    background: #4b2ee8;
-    color: white !important;
-    text-decoration: none;
-    padding: 7px 10px;
-    border-radius: 999px;
-    font-weight: 800;
-    font-size: 12px;
-}
-
-
-/* CHATBOT FINAL - CUSTOM, STABLE */
-
-/* Popover panel */
-div[data-testid="stPopoverBody"] {
-    width: 430px !important;
-    max-width: min(430px, calc(100vw - 32px)) !important;
-    height: 1000px !important;
-    max-height: 72vh !important;
-    background: #333333 !important;
-    border: 2px solid #eadcff !important;
-    border-radius: 22px !important;
-    padding: 14px !important;
-    overflow: hidden !important;
-    box-shadow: 0 18px 42px rgba(76, 43, 230, 0.20) !important;
-}
-
-
-/* Popover içi genel yazılar */
-div[data-testid="stPopoverBody"],
-div[data-testid="stPopoverBody"] * {
-    color: #111827 !important;
-}
-
-div[data-testid="stPopoverBody"] h1,
-div[data-testid="stPopoverBody"] h2,
-div[data-testid="stPopoverBody"] h3,
-div[data-testid="stPopoverBody"] h4 {
-    color: #4b2ee8 !important;
-    margin-bottom: 8px !important;
-}
-
-/* Select */
-div[data-testid="stPopoverBody"] [data-baseweb="select"] > div {
-    background: #ffffff !important;
-    color: #111827 !important;
-    border: 1.5px solid #6d3cff !important;
-    border-radius: 14px !important;
-    min-height: 42px !important;
-    box-shadow: none !important;
-}
-
-div[data-testid="stPopoverBody"] [data-baseweb="select"] * {
-    color: #111827 !important;
-}
-
-/* Chat geçmiş alanı */
-.chatbot-history {
-    height: 500px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background: #ffffff;
-    border: 1px solid #eadcff;
-    border-radius: 18px;
-    padding: 10px;
-    margin: 10px 0 12px 0;
-}
-
-.chatbot-history::-webkit-scrollbar {
-    width: 7px;
-}
-
-.chatbot-history::-webkit-scrollbar-thumb {
-    background: #c4b5fd;
-    border-radius: 999px;
-}
-
-.chatbot-history::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.chatbot-msg {
-    border-radius: 15px;
-    padding: 10px 12px;
-    margin-bottom: 10px;
-    line-height: 1.45;
-    font-size: 14px;
-    white-space: pre-wrap;
-    word-break: break-word;
-    border: 1px solid #e4d8ff;
-}
-
-.chatbot-msg.user {
-    background: #f3edff;
-}
-
-.chatbot-msg.assistant {
-    background: #fff7ed;
-    border-color: #ffd9a8;
-}
-
-.chatbot-role {
-    font-weight: 900;
-    color: #4b2ee8 !important;
-    margin-bottom: 4px;
-    font-size: 13px;
-}
-
-.chatbot-empty {
-    background: #f8f5ff;
-    border: 1px dashed #c4b5fd;
-    border-radius: 15px;
-    padding: 12px;
-    color: #6b7280 !important;
-    font-size: 14px;
-}
-
-/* Form/input alanı */
-div[data-testid="stPopoverBody"] form {
-    background: #f4efff !important;
-    border: 1px solid #e0d2ff !important;
-    border-radius: 18px !important;
-    padding: 10px !important;
-    margin-top: 8px !important;
-}
-
-div[data-testid="stPopoverBody"] textarea {
-    background: #ffffff !important;
-    color: #111827 !important;
-    -webkit-text-fill-color: #111827 !important;
-    caret-color: #111827 !important;
-    border: 2px solid #6d3cff !important;
-    border-radius: 14px !important;
-    min-height: 72px !important;
-    max-height: 90px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-}
-
-div[data-testid="stPopoverBody"] textarea::placeholder {
-    color: #6b7280 !important;
-    -webkit-text-fill-color: #6b7280 !important;
-    opacity: 1 !important;
-}
-
-/* Gönder butonu form içinde */
-div[data-testid="stPopoverBody"] form .stButton button {
-    background: #6d3cff !important;
-    color: white !important;
-    width: 100% !important;
-    min-height: 40px !important;
-    border-radius: 14px !important;
-    border: none !important;
-    padding: 0 !important;
-    box-shadow: 0 8px 18px rgba(109, 60, 255, 0.22) !important;
-    transform: none !important;
-    font-size: 18px !important;
-}
-
-div[data-testid="stPopoverBody"] form .stButton button:hover {
-    background: #ff9226 !important;
-    transform: none !important;
-}
-
-/* Temizle butonu */
-div[data-testid="stPopoverBody"] .stButton button[kind="secondary"] {
-    background: #6d3cff !important;
-    color: white !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    max-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
-    border-radius: 12px !important;
-    border: none !important;
-    padding: 0 !important;
-    font-size: 18px !important;
-    box-shadow: 0 8px 18px rgba(109, 60, 255, 0.22) !important;
-    overflow: hidden !important;
-    white-space: nowrap !important;
-    transition: width 0.2s ease, max-width 0.2s ease, background 0.2s ease !important;
-}
-
-div[data-testid="stPopoverBody"] .stButton button[kind="secondary"]:hover {
-    width: 158px !important;
-    max-width: 158px !important;
-    background: #ff9226 !important;
-    font-size: 13px !important;
-    font-weight: 800 !important;
-}
-
-@media (max-width: 700px) {
-    div[data-testid="stPopoverBody"] {
-        width: calc(100vw - 28px) !important;
-        max-width: calc(100vw - 28px) !important;
-        height: 70vh !important;
-    }
-}
+.price-compare-box { background: rgba(17, 24, 39, 0.06); border: 1px solid rgba(17, 24, 39, 0.12); border-radius: 14px; padding: 12px; margin-top: 14px; }
+.price-compare-title { color: #111827 !important; font-weight: 900; margin-bottom: 8px; }
+.price-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(17, 24, 39, 0.16); }
+.price-row:last-child { border-bottom: none; }
+.price-site { color: #111827 !important; font-weight: 800; }
+.price-value { color: #4c1d95 !important; font-weight: 900; }
+.price-link { display: inline-block; margin-top: 10px; background: #10b981; color: white !important; text-decoration: none; padding: 8px 12px; border-radius: 999px; font-weight: 900; font-size: 13px; }
+.price-link-secondary { display: inline-block; margin: 6px 6px 0 0; background: #111827; color: white !important; text-decoration: none; padding: 7px 10px; border-radius: 999px; font-weight: 800; font-size: 12px; }
 
 </style>
 """, unsafe_allow_html=True)
@@ -2550,77 +2304,15 @@ with col_chat:
             key="chatbot_siralama_select"
         )
 
-        mesaj_alani = st.container(height=260)
+        for mesaj in st.session_state.mesajlar:
+            with st.chat_message(mesaj["rol"]):
+                st.write(mesaj["icerik"])
 
-        with mesaj_alani:
-            if len(st.session_state.mesajlar) == 0:
-                st.info("İsteğini aşağıya yazabilirsin.")
-            else:
-                for mesaj in st.session_state.mesajlar:
-                    rol = mesaj.get("rol", "")
-                    icerik = mesaj.get("icerik", "")
+        kullanici_mesaji = st.chat_input(
+            "Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum"
+        )
 
-                    if rol == "user":
-                        st.markdown(
-                            f"""
-                            <div style="
-                                background:#fff3f8;
-                                border:1px solid #ffd0e8;
-                                border-radius:14px;
-                                padding:10px 12px;
-                                margin-bottom:10px;
-                                color:#111827;
-                                font-weight:600;
-                            ">
-                                👤 {icerik}
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-                    else:
-                        st.markdown(
-                            f"""
-                            <div style="
-                                background:#f4efff;
-                                border:1px solid #ded0ff;
-                                border-radius:14px;
-                                padding:10px 12px;
-                                margin-bottom:10px;
-                                color:#111827;
-                                font-weight:500;
-                            ">
-                                🤖 {icerik}
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-
-        with st.form("chatbot_form", clear_on_submit=True):
-            kullanici_mesaji = st.text_area(
-                "Mesaj",
-                placeholder="Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum",
-                label_visibility="collapsed",
-                height=80,
-                key="chatbot_text_area"
-            )
-
-            form_col1, form_col2 = st.columns([5, 1])
-
-            with form_col1:
-                gonderildi = st.form_submit_button("Gönder")
-
-            with form_col2:
-                temizlendi = st.form_submit_button("🗑️")
-
-        if temizlendi:
-            st.session_state.mesajlar = []
-            st.session_state.sonuc = None
-            st.session_state.pc_build = None
-            st.rerun()
-
-        if gonderildi and kullanici_mesaji.strip():
-            kullanici_mesaji = kullanici_mesaji.strip()
-
+        if kullanici_mesaji:
             st.session_state.mesajlar.append({
                 "rol": "user",
                 "icerik": kullanici_mesaji
@@ -2630,93 +2322,164 @@ with col_chat:
 
             if chatbot_resmi_kontrol(mesaj_lower):
                 bot_mesaji = "Elbette. Bundan sonra daha resmi, saygılı ve açıklayıcı bir dil kullanacağım."
+                st.session_state.mesajlar.append({
+                    "rol": "assistant",
+                    "icerik": bot_mesaji
+                })
+                st.rerun()
+
+            if not chatbot_urun_istegi_var_mi(mesaj_lower):
+                bot_mesaji = (
+                    "Size yardımcı olabilmem için lütfen ürün kategorisini, bütçe aralığını ve kullanım amacını belirtiniz.\n\n"
+                    "Örnek: 40000-50000 TL arası oyun için bilgisayar öner."
+                )
+                st.session_state.mesajlar.append({
+                    "rol": "assistant",
+                    "icerik": bot_mesaji
+                })
+                st.rerun()
+
+            chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim = chatbot_metnini_anla(
+                kullanici_mesaji
+            )
+
+            kategori_mesajdan = chatbot_kategori_bul(mesaj_lower)
+
+            llm_sonuc = None
+            try:
+                gelen_llm_sonuc = llm_analiz_et(kullanici_mesaji)
+                if gelen_llm_sonuc is not None:
+                    llm_sonuc = gelen_llm_sonuc
+            except Exception:
+                llm_sonuc = None
+
+            if llm_sonuc is not None:
+                llm_kategori = llm_sonuc.get("kategori", None)
+                if kategori_mesajdan:
+                    chat_kategori = kategori_mesajdan
+                elif llm_kategori and str(llm_kategori).strip() not in ["", "None", "null"]:
+                    chat_kategori = llm_kategori
+
+                chat_min_butce = int(llm_sonuc.get("min_butce", chat_min_butce))
+                chat_max_butce = int(llm_sonuc.get("max_butce", chat_max_butce))
+                chat_ram = int(llm_sonuc.get("ram", chat_ram))
+                chat_kullanim = llm_sonuc.get("kullanim", chat_kullanim)
+            else:
+                if kategori_mesajdan:
+                    chat_kategori = kategori_mesajdan
+
+            if kategori_mesajdan is None:
+                bot_mesaji = (
+                    "Ürün kategorisi net olarak belirtilmediği için öneri listesi oluşturamadım.\n\n"
+                    f"{chatbot_kriter_mesaji(None, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}\n\n"
+                    "Lütfen kategori de belirterek tekrar deneyiniz. Örneğin: 30000 TL bütçeyle telefon öner."
+                )
+                st.session_state.mesajlar.append({
+                    "rol": "assistant",
+                    "icerik": bot_mesaji
+                })
+                st.rerun()
+
+            if int(chat_max_butce) < 100:
+                bot_mesaji = (
+                    "Belirttiğiniz bütçe aralığında uygun teknoloji ürünü bulunması mümkün görünmüyor.\n\n"
+                    f"{chatbot_kriter_mesaji(chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}\n\n"
+                    "Öneri: Bütçeyi artırarak veya daha düşük fiyatlı bir kategori seçerek tekrar deneyebilirsiniz."
+                )
+                st.session_state.mesajlar.append({
+                    "rol": "assistant",
+                    "icerik": bot_mesaji
+                })
+                st.rerun()
+
+            if chat_kategori == "Toplama Bilgisayar":
+                st.session_state.aktif_mod = "pc_build"
+                st.session_state.sonuc = None
+                st.session_state.pc_build = None
+                chat_kurulum_tipi = chatbot_pc_kurulum_tipi_bul(mesaj_lower)
+                st.session_state.pc_builds = besli_pc_sistem_olustur(
+                    min_butce=chat_min_butce,
+                    max_butce=chat_max_butce,
+                    kullanim=chat_kullanim,
+                    seed=st.session_state.pc_random_seed,
+                    kurulum_tipi=chat_kurulum_tipi
+                )
+                st.session_state.selected_pc_build_index = 0
+                bot_mesaji = chatbot_sonuc_mesaji(
+                    st.session_state.pc_builds,
+                    chat_kategori,
+                    chat_min_butce,
+                    chat_max_butce,
+                    chat_ram,
+                    chat_kullanim
+                )
+
+            elif chat_kategori == "Elektronik Ev Eşyaları":
+                st.session_state.aktif_mod = "ev_esyalari"
+                st.session_state.pc_build = None
+                st.session_state.pc_builds = []
+                chat_ev_alt_kategori = chatbot_ev_alt_kategori_bul(mesaj_lower)
+                st.session_state.sonuc = ev_esyasi_oner(
+                    ana_kategori="Tümü",
+                    alt_kategori=chat_ev_alt_kategori,
+                    min_butce=chat_min_butce,
+                    max_butce=chat_max_butce,
+                    siralama=chatbot_siralama,
+                    kullanim="",
+                    min_puan=0,
+                    enerji_sinifi="Farketmez",
+                    kaynak_site="Farketmez"
+                )
+                bot_mesaji = chatbot_sonuc_mesaji(
+                    st.session_state.sonuc,
+                    chat_kategori,
+                    chat_min_butce,
+                    chat_max_butce,
+                    chat_ram,
+                    chat_kullanim
+                )
 
             else:
-                chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim = chatbot_metnini_anla(kullanici_mesaji)
+                st.session_state.aktif_mod = "chatbot"
+                st.session_state.pc_build = None
+                st.session_state.pc_builds = []
+                st.session_state.sonuc = hazir_urun_oner_db(
+                    chat_kategori,
+                    chat_min_butce,
+                    chat_max_butce,
+                    chat_ram,
+                    chatbot_siralama,
+                    chat_kullanim
+                )
 
-                if chat_kategori in ["Toplama Bilgisayar", "Toplama PC", "PC Toplama"]:
-                    st.session_state.aktif_mod = "pc_build"
-                    st.session_state.sonuc = None
+                st.session_state.sonuc = siralama_uygula(
+                    st.session_state.sonuc,
+                    chatbot_siralama,
+                    fiyat_kolon="FIYAT_SAYI",
+                    puan_kolon="ONERI_PUANI",
+                    ram_kolon="RAM"
+                )
 
-                    st.session_state.pc_builds = pc_sistemleri_uret(
-                        chat_min_butce,
-                        chat_max_butce,
-                        chat_kullanim
-                    )
-
-                    st.session_state.selected_pc_build_index = 0
-
-                    bot_mesaji = chatbot_sonuc_mesaji(
-                        st.session_state.pc_builds,
-                        "Toplama Bilgisayar",
-                        chat_min_butce,
-                        chat_max_butce,
-                        chat_ram,
-                        chat_kullanim
-                    )
-
-                elif chat_kategori == "Elektronik Ev Eşyaları":
-                    st.session_state.aktif_mod = "chatbot"
-                    st.session_state.pc_build = None
-                    st.session_state.pc_builds = []
-
-                    st.session_state.sonuc = ev_esyasi_oner(
-                        ana_kategori="Tümü",
-                        alt_kategori="Tümü",
-                        min_butce=chat_min_butce,
-                        max_butce=chat_max_butce,
-                        kullanim_amaci=chat_kullanim,
-                        marka="Farketmez",
-                        segment="Farketmez",
-                        enerji_sinifi="Farketmez",
-                        kaynak_site="Farketmez"
-                    )
-
-                    bot_mesaji = chatbot_sonuc_mesaji(
-                        st.session_state.sonuc,
-                        chat_kategori,
-                        chat_min_butce,
-                        chat_max_butce,
-                        chat_ram,
-                        chat_kullanim
-                    )
-
-                else:
-                    st.session_state.aktif_mod = "chatbot"
-                    st.session_state.pc_build = None
-                    st.session_state.pc_builds = []
-
-                    st.session_state.sonuc = hazir_urun_oner_db(
-                        chat_kategori,
-                        chat_min_butce,
-                        chat_max_butce,
-                        chat_ram,
-                        chatbot_siralama,
-                        chat_kullanim
-                    )
-
-                    st.session_state.sonuc = siralama_uygula(
-                        st.session_state.sonuc,
-                        chatbot_siralama,
-                        fiyat_kolon="FIYAT_SAYI",
-                        puan_kolon="ONERI_PUANI",
-                        ram_kolon="RAM"
-                    )
-
-                    bot_mesaji = chatbot_sonuc_mesaji(
-                        st.session_state.sonuc,
-                        chat_kategori,
-                        chat_min_butce,
-                        chat_max_butce,
-                        chat_ram,
-                        chat_kullanim
-                    )
+                bot_mesaji = chatbot_sonuc_mesaji(
+                    st.session_state.sonuc,
+                    chat_kategori,
+                    chat_min_butce,
+                    chat_max_butce,
+                    chat_ram,
+                    chat_kullanim
+                )
 
             st.session_state.mesajlar.append({
                 "rol": "assistant",
                 "icerik": bot_mesaji
             })
 
+            st.rerun()
+
+        if st.button("Sohbeti Temizle", key="clear_chat_button"):
+            st.session_state.mesajlar = []
+            st.session_state.sonuc = None
+            st.session_state.pc_build = None
             st.rerun()
 
 
