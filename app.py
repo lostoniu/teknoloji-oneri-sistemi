@@ -1,4 +1,4 @@
-﻿import os
+import os
 import json
 import random
 import pandas as pd
@@ -24,8 +24,8 @@ from auth import (
 
 st.set_page_config(
     
-    page_title="Ak─▒ll─▒ Teknoloji ├£r├╝nleri ├ûneri Sistemi",
-    page_icon="­şñû",
+    page_title="Akıllı Teknoloji Ürünleri Öneri Sistemi",
+    page_icon="🤖",
     layout="wide"
 )
 st.markdown("""
@@ -299,7 +299,7 @@ div[data-testid="stPopoverBody"] {
 }
 
 
-/* Popover i├ği genel yaz─▒lar */
+/* Popover içi genel yazılar */
 div[data-testid="stPopoverBody"],
 div[data-testid="stPopoverBody"] * {
     color: #111827 !important;
@@ -327,7 +327,7 @@ div[data-testid="stPopoverBody"] [data-baseweb="select"] * {
     color: #111827 !important;
 }
 
-/* Chat ge├ğmi┼ş alan─▒ */
+/* Chat geçmiş alanı */
 .chatbot-history {
     height: 500px;
     overflow-y: auto;
@@ -388,7 +388,7 @@ div[data-testid="stPopoverBody"] [data-baseweb="select"] * {
     font-size: 14px;
 }
 
-/* Form/input alan─▒ */
+/* Form/input alanı */
 div[data-testid="stPopoverBody"] form {
     background: #f4efff !important;
     border: 1px solid #e0d2ff !important;
@@ -417,7 +417,7 @@ div[data-testid="stPopoverBody"] textarea::placeholder {
     opacity: 1 !important;
 }
 
-/* G├Ânder butonu form i├ğinde */
+/* Gönder butonu form içinde */
 div[data-testid="stPopoverBody"] form .stButton button {
     background: #6d3cff !important;
     color: white !important;
@@ -525,10 +525,10 @@ def favori_ekle(user_id, product_type, product_name, product_data):
         cur.close()
         conn.close()
 
-        return True, "├£r├╝n favorilere eklendi."
+        return True, "Ürün favorilere eklendi."
 
     except Exception as e:
-        return False, f"Favori ekleme hatas─▒: {e}"
+        return False, f"Favori ekleme hatası: {e}"
 
 
 def favorileri_getir(user_id):
@@ -583,7 +583,7 @@ def sistemi_kaydet(user_id, build_name, build_data, total_price):
         return True, "Toplama bilgisayar sistemi kaydedildi."
 
     except Exception as e:
-        return False, f"Sistem kaydetme hatas─▒: {e}"
+        return False, f"Sistem kaydetme hatası: {e}"
 
 
 def kayitli_sistemleri_getir(user_id):
@@ -703,7 +703,7 @@ def products_db_yukle(source):
         return _json_data_to_df(df.to_dict("records"))
 
     except Exception as e:
-        st.warning(f"├£r├╝n tablosu okunamad─▒, CSV yede─şi kullan─▒lacak: {e}")
+        st.warning(f"Ürün tablosu okunamadı, CSV yedeği kullanılacak: {e}")
         return pd.DataFrame()
 
 
@@ -804,7 +804,7 @@ def kart_puani_getir(row):
             if kolon in row.index and str(row[kolon]) != "nan":
                 puan = float(row[kolon])
 
-                # Eski 5/10 ├Âl├ğekli puan gelirse 100'l├╝k sisteme ├ğevir
+                # Eski 5/10 ölçekli puan gelirse 100'lük sisteme çevir
                 if puan <= 10:
                     puan = puan * 10
 
@@ -827,12 +827,12 @@ def kart_populerlik_getir(row):
         if "/" in str(puan):
             sayi = int(str(puan).split("/")[0])
             if sayi >= 85:
-                return "├çok Y├╝ksek"
+                return "Çok Yüksek"
             if sayi >= 70:
-                return "Y├╝ksek"
+                return "Yüksek"
             if sayi >= 55:
                 return "Orta"
-            return "D├╝┼ş├╝k"
+            return "Düşük"
     except Exception:
         pass
 
@@ -874,30 +874,30 @@ def sayi_cek(deger):
 
 def ev_ana_kategorileri_getir():
     if ev_df.empty:
-        return ["Dataset bulunamad─▒"]
+        return ["Dataset bulunamadı"]
 
     return sorted(ev_df["Ana_Kategori"].dropna().unique())
 
 
 def ev_alt_kategorileri_getir():
     if ev_df.empty:
-        return ["Dataset bulunamad─▒"]
+        return ["Dataset bulunamadı"]
 
     return sorted(ev_df["Alt_Kategori"].dropna().unique())
 
 
 def marka_listesi_getir(df, kategori_kolon=None, kategori_deger=None, ana_kolon=None, ana_deger=None):
-    """Verilen dataframe i├ğinden g├╝venli ┼şekilde marka listesi ├╝retir."""
+    """Verilen dataframe içinden güvenli şekilde marka listesi üretir."""
     if df is None or df.empty or "Marka" not in df.columns:
         return ["Farketmez"]
 
     sonuc = df.copy()
 
-    if ana_kolon and ana_deger and ana_deger not in ["T├╝m├╝", "Farketmez", None]:
+    if ana_kolon and ana_deger and ana_deger not in ["Tümü", "Farketmez", None]:
         if ana_kolon in sonuc.columns:
             sonuc = sonuc[sonuc[ana_kolon].astype(str) == str(ana_deger)]
 
-    if kategori_kolon and kategori_deger and kategori_deger not in ["T├╝m├╝", "Farketmez", None]:
+    if kategori_kolon and kategori_deger and kategori_deger not in ["Tümü", "Farketmez", None]:
         if kategori_kolon in sonuc.columns:
             sonuc = sonuc[sonuc[kategori_kolon].astype(str) == str(kategori_deger)]
 
@@ -914,14 +914,14 @@ def marka_listesi_getir(df, kategori_kolon=None, kategori_deger=None, ana_kolon=
 
 def temizle_yazi(x):
     x = str(x).strip().lower()
-    x = x.replace("─▒", "i")
-    x = x.replace("─░", "i")
-    x = x.replace("i╠ç", "i")
-    x = x.replace("─ş", "g")
-    x = x.replace("├╝", "u")
-    x = x.replace("┼ş", "s")
-    x = x.replace("├Â", "o")
-    x = x.replace("├ğ", "c")
+    x = x.replace("ı", "i")
+    x = x.replace("İ", "i")
+    x = x.replace("i̇", "i")
+    x = x.replace("ğ", "g")
+    x = x.replace("ü", "u")
+    x = x.replace("ş", "s")
+    x = x.replace("ö", "o")
+    x = x.replace("ç", "c")
     return x
 
 
@@ -947,9 +947,9 @@ def hazir_urun_oner_db(kategori, min_butce, max_butce, min_ram, siralama, kullan
     if temizle_yazi(kategori) in ["bilgisayar", "telefon", "tablet"] and "RAM_SAYI" in sonuc.columns:
         sonuc = sonuc[sonuc["RAM_SAYI"] >= int(min_ram)]
 
-    if kullanim and "Kullan─▒m Amac─▒" in sonuc.columns:
+    if kullanim and "Kullanım Amacı" in sonuc.columns:
         k = temizle_yazi(kullanim)
-        filtre = sonuc[sonuc["Kullan─▒m Amac─▒"].astype(str).apply(temizle_yazi).str.contains(k, na=False)]
+        filtre = sonuc[sonuc["Kullanım Amacı"].astype(str).apply(temizle_yazi).str.contains(k, na=False)]
         if not filtre.empty:
             sonuc = filtre
 
@@ -976,33 +976,33 @@ def hazir_urun_oner_db(kategori, min_butce, max_butce, min_ram, siralama, kullan
 
 
 def ev_alt_kategori_tipi(alt_kategori):
-    """Elektronik ev e┼şyas─▒nda sadece ilgili filtreler ├ğ─▒ks─▒n diye alt kategori tipini belirler."""
+    """Elektronik ev eşyasında sadece ilgili filtreler çıksın diye alt kategori tipini belirler."""
     a = temizle_yazi(str(alt_kategori))
 
-    # ├ûNEML─░: "Buharl─▒ Dikey ├£t├╝" i├ğinde dikey ge├ğti─şi i├ğin ├Ânce ├╝t├╝y├╝ yakal─▒yoruz.
+    # ÖNEMLİ: "Buharlı Dikey Ütü" içinde dikey geçtiği için önce ütüyü yakalıyoruz.
     if any(k in a for k in ["utu", "buharli utu", "buhar kazanli", "utuler"]):
         return "utu"
 
-    # Sadece "dikey" kelimesine g├Âre s├╝p├╝rge sayma. Dikey ├╝t├╝ de var.
+    # Sadece "dikey" kelimesine göre süpürge sayma. Dikey ütü de var.
     if any(k in a for k in ["supurge", "robot supurge", "dikey supurge", "sarjli supurge", "elektrikli supurge", "vacuum"]):
         return "supurge"
 
-    if any(k in a for k in ["airfryer", "fritoz", "frit├Âz", "pisirme", "firin", "f─▒r─▒n", "mikrodalga"]):
+    if any(k in a for k in ["airfryer", "fritoz", "fritöz", "pisirme", "firin", "fırın", "mikrodalga"]):
         return "pisirme"
 
-    if any(k in a for k in ["kahve", "espresso", "cay", "├ğay", "kettle", "su isitici", "su ─▒s─▒t─▒c─▒"]):
+    if any(k in a for k in ["kahve", "espresso", "cay", "çay", "kettle", "su isitici", "su ısıtıcı"]):
         return "icecek"
 
-    if any(k in a for k in ["klima", "hava", "vantilator", "vantilat├Âr", "isitici", "─▒s─▒t─▒c─▒", "kombi", "nem", "temizleyici"]):
+    if any(k in a for k in ["klima", "hava", "vantilator", "vantilatör", "isitici", "ısıtıcı", "kombi", "nem", "temizleyici"]):
         return "hava_iklim"
 
     if any(k in a for k in ["kedi", "tuvalet", "mama", "evcil", "pet"]):
         return "evcil"
 
-    if any(k in a for k in ["kamera", "guvenlik", "g├╝venlik", "kilit", "sensor", "sens├Âr", "alarm"]):
+    if any(k in a for k in ["kamera", "guvenlik", "güvenlik", "kilit", "sensor", "sensör", "alarm"]):
         return "guvenlik"
 
-    if any(k in a for k in ["bulasik", "bula┼ş─▒k", "camasir", "├ğama┼ş─▒r", "buzdolabi", "buzdolab─▒", "derin dondurucu"]):
+    if any(k in a for k in ["bulasik", "bulaşık", "camasir", "çamaşır", "buzdolabi", "buzdolabı", "derin dondurucu"]):
         return "beyaz_esya"
 
     return "genel"
@@ -1010,7 +1010,7 @@ def ev_alt_kategori_tipi(alt_kategori):
 
 
 GUVENILIR_SITE_LINKLERI = {
-    "Amazon T├╝rkiye": "https://www.amazon.com.tr/s?k={q}",
+    "Amazon Türkiye": "https://www.amazon.com.tr/s?k={q}",
     "Amazon": "https://www.amazon.com.tr/s?k={q}",
     "Hepsiburada": "https://www.hepsiburada.com/ara?q={q}",
     "Trendyol": "https://www.trendyol.com/sr?q={q}",
@@ -1019,13 +1019,13 @@ GUVENILIR_SITE_LINKLERI = {
     "Vatan Bilgisayar": "https://www.vatanbilgisayar.com/arama/{q}/",
     "Vatan": "https://www.vatanbilgisayar.com/arama/{q}/",
     "n11": "https://www.n11.com/arama?q={q}",
-    "─░topya": "https://www.itopya.com/arama/?search={q}",
+    "İtopya": "https://www.itopya.com/arama/?search={q}",
     "Itopya": "https://www.itopya.com/arama/?search={q}",
-    "─░ncehesap": "https://www.incehesap.com/arama/?q={q}",
+    "İncehesap": "https://www.incehesap.com/arama/?q={q}",
     "Incehesap": "https://www.incehesap.com/arama/?q={q}",
     "Sinerji": "https://www.sinerji.gen.tr/arama?q={q}",
     "GamingGenTR": "https://www.gaming.gen.tr/?s={q}&post_type=product",
-    "Akak├ğe": "https://www.akakce.com/arama/?q={q}",
+    "Akakçe": "https://www.akakce.com/arama/?q={q}",
     "Akakce": "https://www.akakce.com/arama/?q={q}",
     "Epey": "https://www.epey.com/arama/?q={q}",
 }
@@ -1081,7 +1081,7 @@ def urun_adi_olustur(row):
         return f"{marka} {model}"
     if model != "Yok":
         return str(model)
-    return str(row.get("Model", "├£r├╝n"))
+    return str(row.get("Model", "Ürün"))
 
 
 def ayni_urun_kaynaklari(kaynak_turu, row):
@@ -1122,11 +1122,11 @@ def fiyat_karsilastirma_html(kaynak_turu, row):
     urun_adi = urun_adi_olustur(row)
     return f"""
 <div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">G├╝ncel Fiyat─▒ G├╝venilir Sitelerde Kontrol Et</div>
-    <div>G├Âsterilen tutar ortalama piyasa fiyat─▒d─▒r. Sat─▒c─▒ya, kampanyaya ve stok durumuna g├Âre fiyat de─şi┼şebilir; en g├╝ncel fiyat─▒ a┼şa─ş─▒daki g├╝venilir sitelerde kontrol edebilirsin.</div>
-    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akak├ğe', urun_adi)}\" target=\"_blank\">Akak├ğe'de ara</a>
+    <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
+    <div>Gösterilen tutar ortalama piyasa fiyatıdır. Satıcıya, kampanyaya ve stok durumuna göre fiyat değişebilir; en güncel fiyatı aşağıdaki güvenilir sitelerde kontrol edebilirsin.</div>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', urun_adi)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', urun_adi)}\" target=\"_blank\">Hepsiburada'da ara</a>
-    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon T├╝rkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', urun_adi)}\" target=\"_blank\">Amazon'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Teknosa', urun_adi)}\" target=\"_blank\">Teknosa'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Vatan Bilgisayar', urun_adi)}\" target=\"_blank\">Vatan'da ara</a>
 </div>
@@ -1137,11 +1137,11 @@ def hazir_urun_guvenilir_link_html(row):
     model = str(veri_getir(row, "Model"))
     return f"""
 <div class=\"price-compare-box\">
-    <div class=\"price-compare-title\">G├╝ncel Fiyat─▒ G├╝venilir Sitelerde Kontrol Et</div>
-    <div>G├Âsterilen tutar ortalama piyasa fiyat─▒d─▒r. Sat─▒c─▒ya, kampanyaya ve stok durumuna g├Âre fiyat de─şi┼şebilir; en g├╝ncel fiyat─▒ g├╝venilir sitelerde kontrol edebilirsin.</div>
-    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akak├ğe', model)}\" target=\"_blank\">Akak├ğe'de ara</a>
+    <div class=\"price-compare-title\">Güncel Fiyatı Güvenilir Sitelerde Kontrol Et</div>
+    <div>Gösterilen tutar ortalama piyasa fiyatıdır. Satıcıya, kampanyaya ve stok durumuna göre fiyat değişebilir; en güncel fiyatı güvenilir sitelerde kontrol edebilirsin.</div>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Akakçe', model)}\" target=\"_blank\">Akakçe'de ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Hepsiburada', model)}\" target=\"_blank\">Hepsiburada'da ara</a>
-    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon T├╝rkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
+    <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Amazon Türkiye', model)}\" target=\"_blank\">Amazon'da ara</a>
     <a class=\"price-link-secondary\" href=\"{guvenilir_site_arama_linki('Teknosa', model)}\" target=\"_blank\">Teknosa'da ara</a>
 </div>
 """
@@ -1236,11 +1236,11 @@ def cpu_seviye_uygun_mu(islemci, seviye):
     if seviye == "Farketmez":
         return True
     i = str(islemci).lower()
-    if seviye == "Giri┼ş":
+    if seviye == "Giriş":
         return any(k in i for k in ["i3", "ryzen 3", "celeron", "pentium"])
     if seviye == "Orta":
         return any(k in i for k in ["i5", "ryzen 5", "m1", "m2"])
-    if seviye == "├£st":
+    if seviye == "Üst":
         return any(k in i for k in ["i7", "ryzen 7", "m3"])
     if seviye == "Premium":
         return any(k in i for k in ["i9", "ryzen 9", "m4", "ultra 9"])
@@ -1251,13 +1251,13 @@ def gpu_seviye_uygun_mu(gpu, seviye):
     if seviye == "Farketmez":
         return True
     g = str(gpu).lower()
-    if seviye == "Payla┼ş─▒ml─▒":
-        return any(k in g for k in ["uhd", "iris", "integrated", "payla┼ş─▒ml─▒", "dahili"])
-    if seviye == "Giri┼ş":
+    if seviye == "Paylaşımlı":
+        return any(k in g for k in ["uhd", "iris", "integrated", "paylaşımlı", "dahili"])
+    if seviye == "Giriş":
         return any(k in g for k in ["rtx 3050", "rtx 4050", "gtx", "mx"])
     if seviye == "Orta":
         return any(k in g for k in ["rtx 3060", "rtx 4060", "rtx 3070", "rtx 4070", "rx 7600", "rx 7700"])
-    if seviye == "├£st":
+    if seviye == "Üst":
         return any(k in g for k in ["rtx 4080", "rtx 4090", "rtx 5080", "rtx 5090", "rx 7900"])
     return True
 
@@ -1286,7 +1286,7 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
 
         sonuc = evet_hayir_filtrele(sonuc, "5G", filtreler.get("bes_g", "Farketmez"))
         sonuc = evet_hayir_filtrele(sonuc, "NFC", filtreler.get("nfc", "Farketmez"))
-        sonuc = evet_hayir_filtrele(sonuc, "Su Ge├ğirmezlik", filtreler.get("su", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Su Geçirmezlik", filtreler.get("su", "Farketmez"))
 
     elif kategori == "Bilgisayar":
         min_depolama = filtreler.get("min_depolama", "Farketmez")
@@ -1294,12 +1294,12 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
             sonuc = sonuc[sonuc["Depolama"].apply(kapasite_gb_cek) >= int(min_depolama)]
 
         cpu_marka = filtreler.get("cpu_marka", "Farketmez")
-        if cpu_marka != "Farketmez" and "─░┼şlemci" in sonuc.columns:
-            sonuc = sonuc[sonuc["─░┼şlemci"].astype(str).str.lower().str.contains(cpu_marka.lower(), na=False)]
+        if cpu_marka != "Farketmez" and "İşlemci" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşlemci"].astype(str).str.lower().str.contains(cpu_marka.lower(), na=False)]
 
         cpu_seviye = filtreler.get("cpu_seviye", "Farketmez")
-        if cpu_seviye != "Farketmez" and "─░┼şlemci" in sonuc.columns:
-            sonuc = sonuc[sonuc["─░┼şlemci"].apply(lambda x: cpu_seviye_uygun_mu(x, cpu_seviye))]
+        if cpu_seviye != "Farketmez" and "İşlemci" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşlemci"].apply(lambda x: cpu_seviye_uygun_mu(x, cpu_seviye))]
 
         gpu_tercihi = filtreler.get("gpu_tercihi", "Farketmez")
         if gpu_tercihi != "Farketmez" and "GPU" in sonuc.columns:
@@ -1318,8 +1318,8 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
             sonuc = sonuc[sonuc["Ekran"].apply(ekran_hz_cek) >= int(min_hz)]
 
         isletim = filtreler.get("isletim", "Farketmez")
-        if isletim != "Farketmez" and "─░┼şletim Sistemi" in sonuc.columns:
-            sonuc = sonuc[sonuc["─░┼şletim Sistemi"].astype(str) == isletim]
+        if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşletim Sistemi"].astype(str) == isletim]
 
     elif kategori == "Tablet":
         min_depolama = filtreler.get("min_depolama", "Farketmez")
@@ -1339,38 +1339,38 @@ def hazir_urun_detay_filtrele(df, kategori, filtreler):
             sonuc = sonuc[sonuc["Ekran"].apply(ekran_hz_cek) >= int(min_hz)]
 
         isletim = filtreler.get("isletim", "Farketmez")
-        if isletim != "Farketmez" and "─░┼şletim Sistemi" in sonuc.columns:
-            sonuc = sonuc[sonuc["─░┼şletim Sistemi"].astype(str) == isletim]
+        if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşletim Sistemi"].astype(str) == isletim]
 
-        sonuc = evet_hayir_filtrele(sonuc, "Su Ge├ğirmezlik", filtreler.get("su", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Su Geçirmezlik", filtreler.get("su", "Farketmez"))
 
-    elif kategori == "Kulakl─▒k":
+    elif kategori == "Kulaklık":
         kulaklik_tipi = filtreler.get("kulaklik_tipi", "Farketmez")
-        if kulaklik_tipi != "Farketmez" and "Kulakl─▒k Tipi" in sonuc.columns:
-            sonuc = sonuc[sonuc["Kulakl─▒k Tipi"].astype(str) == kulaklik_tipi]
+        if kulaklik_tipi != "Farketmez" and "Kulaklık Tipi" in sonuc.columns:
+            sonuc = sonuc[sonuc["Kulaklık Tipi"].astype(str) == kulaklik_tipi]
 
         baglanti = filtreler.get("baglanti", "Farketmez")
-        if baglanti != "Farketmez" and "Ba─şlant─▒ T├╝r├╝" in sonuc.columns:
-            sonuc = sonuc[sonuc["Ba─şlant─▒ T├╝r├╝"].astype(str) == baglanti]
+        if baglanti != "Farketmez" and "Bağlantı Türü" in sonuc.columns:
+            sonuc = sonuc[sonuc["Bağlantı Türü"].astype(str) == baglanti]
 
-        sonuc = evet_hayir_filtrele(sonuc, "G├╝r├╝lt├╝ Engelleme", filtreler.get("gurultu", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Gürültü Engelleme", filtreler.get("gurultu", "Farketmez"))
         sonuc = evet_hayir_filtrele(sonuc, "Mikrofon", filtreler.get("mikrofon", "Farketmez"))
 
         min_pil = filtreler.get("min_pil", "Farketmez")
-        if min_pil != "Farketmez" and "Pil ├ûmr├╝" in sonuc.columns:
-            sonuc = sonuc[sonuc["Pil ├ûmr├╝"].apply(sayi_cek) >= int(min_pil)]
+        if min_pil != "Farketmez" and "Pil Ömrü" in sonuc.columns:
+            sonuc = sonuc[sonuc["Pil Ömrü"].apply(sayi_cek) >= int(min_pil)]
 
-    elif kategori == "Ak─▒ll─▒ Saat / Bileklik":
+    elif kategori == "Akıllı Saat / Bileklik":
         sonuc = evet_hayir_filtrele(sonuc, "GPS", filtreler.get("gps", "Farketmez"))
-        sonuc = evet_hayir_filtrele(sonuc, "Su Ge├ğirmezlik", filtreler.get("su", "Farketmez"))
+        sonuc = evet_hayir_filtrele(sonuc, "Su Geçirmezlik", filtreler.get("su", "Farketmez"))
 
         min_pil_gun = filtreler.get("min_pil_gun", "Farketmez")
-        if min_pil_gun != "Farketmez" and "Pil ├ûmr├╝ (g├╝n)" in sonuc.columns:
-            sonuc = sonuc[pd.to_numeric(sonuc["Pil ├ûmr├╝ (g├╝n)"], errors="coerce").fillna(0) >= int(min_pil_gun)]
+        if min_pil_gun != "Farketmez" and "Pil Ömrü (gün)" in sonuc.columns:
+            sonuc = sonuc[pd.to_numeric(sonuc["Pil Ömrü (gün)"], errors="coerce").fillna(0) >= int(min_pil_gun)]
 
         isletim = filtreler.get("isletim", "Farketmez")
-        if isletim != "Farketmez" and "─░┼şletim Sistemi" in sonuc.columns:
-            sonuc = sonuc[sonuc["─░┼şletim Sistemi"].astype(str) == isletim]
+        if isletim != "Farketmez" and "İşletim Sistemi" in sonuc.columns:
+            sonuc = sonuc[sonuc["İşletim Sistemi"].astype(str) == isletim]
 
     return sonuc
 
@@ -1386,7 +1386,7 @@ def karsilastirma_urun_adi(row):
     if model != "Yok":
         return str(model)
 
-    return "├£r├╝n"
+    return "Ürün"
 
 
 def karsilastirma_fiyat(row):
@@ -1428,52 +1428,52 @@ def karsilastirma_satiri_uret(ozellik, row1, row2, kolonlar):
             break
 
     return {
-        "├ûzellik": ozellik,
-        "1. ├£r├╝n": deger1,
-        "2. ├£r├╝n": deger2
+        "Özellik": ozellik,
+        "1. Ürün": deger1,
+        "2. Ürün": deger2
     }
 
 
 def karsilastirma_tablo_olustur(row1, row2, kaynak_turu):
     satirlar = [
-        {"├ûzellik": "├£r├╝n", "1. ├£r├╝n": karsilastirma_urun_adi(row1), "2. ├£r├╝n": karsilastirma_urun_adi(row2)},
-        {"├ûzellik": "Ortalama Piyasa Fiyat─▒", "1. ├£r├╝n": karsilastirma_fiyat(row1), "2. ├£r├╝n": karsilastirma_fiyat(row2)},
-        {"├ûzellik": "Puan", "1. ├£r├╝n": karsilastirma_puan(row1), "2. ├£r├╝n": karsilastirma_puan(row2)},
+        {"Özellik": "Ürün", "1. Ürün": karsilastirma_urun_adi(row1), "2. Ürün": karsilastirma_urun_adi(row2)},
+        {"Özellik": "Ortalama Piyasa Fiyatı", "1. Ürün": karsilastirma_fiyat(row1), "2. Ürün": karsilastirma_fiyat(row2)},
+        {"Özellik": "Puan", "1. Ürün": karsilastirma_puan(row1), "2. Ürün": karsilastirma_puan(row2)},
         karsilastirma_satiri_uret("Marka", row1, row2, ["Marka"]),
         karsilastirma_satiri_uret("Kategori", row1, row2, ["Kategori", "Ana_Kategori"]),
         karsilastirma_satiri_uret("Alt Kategori", row1, row2, ["Alt_Kategori"]),
         karsilastirma_satiri_uret("Segment", row1, row2, ["Segment"]),
     ]
 
-    if kaynak_turu == "Haz─▒r Teknoloji ├£r├╝nleri":
+    if kaynak_turu == "Hazır Teknoloji Ürünleri":
         ekstra = [
-            ("Kullan─▒m Amac─▒", ["Kullan─▒m Amac─▒"]),
-            ("─░┼şlemci", ["─░┼şlemci"]),
+            ("Kullanım Amacı", ["Kullanım Amacı"]),
+            ("İşlemci", ["İşlemci"]),
             ("RAM", ["RAM"]),
             ("Depolama", ["Depolama"]),
             ("GPU", ["GPU"]),
             ("Ekran", ["Ekran"]),
-            ("Batarya", ["Batarya (mAh)", "Pil ├ûmr├╝", "Pil ├ûmr├╝ (g├╝n)"]),
+            ("Batarya", ["Batarya (mAh)", "Pil Ömrü", "Pil Ömrü (gün)"]),
             ("Kamera", ["Kamera (MP)"]),
             ("5G", ["5G"]),
             ("NFC", ["NFC"]),
-            ("Su Ge├ğirmezlik", ["Su Ge├ğirmezlik"]),
-            ("─░┼şletim Sistemi", ["─░┼şletim Sistemi"]),
-            ("Ba─şlant─▒", ["Ba─şlant─▒ T├╝r├╝"]),
-            ("G├╝r├╝lt├╝ Engelleme", ["G├╝r├╝lt├╝ Engelleme"]),
+            ("Su Geçirmezlik", ["Su Geçirmezlik"]),
+            ("İşletim Sistemi", ["İşletim Sistemi"]),
+            ("Bağlantı", ["Bağlantı Türü"]),
+            ("Gürültü Engelleme", ["Gürültü Engelleme"]),
             ("Mikrofon", ["Mikrofon"]),
             ("GPS", ["GPS"]),
         ]
 
-    elif kaynak_turu == "Elektronik Ev E┼şyalar─▒":
+    elif kaynak_turu == "Elektronik Ev Eşyaları":
         ekstra = [
-            ("Kullan─▒m Amac─▒", ["Kullanim_Amaci"]),
-            ("├ûzellikler", ["Ozellikler"]),
-            ("Enerji S─▒n─▒f─▒", ["Enerji_Sinifi"]),
+            ("Kullanım Amacı", ["Kullanim_Amaci"]),
+            ("Özellikler", ["Ozellikler"]),
+            ("Enerji Sınıfı", ["Enerji_Sinifi"]),
             ("Renk", ["Renk"]),
             ("Garanti", ["Garanti_Ay"]),
             ("Kaynak Site", ["Kaynak_Site"]),
-            ("Pop├╝lerlik", ["Populerlik"]),
+            ("Popülerlik", ["Populerlik"]),
         ]
 
     else:
@@ -1485,28 +1485,28 @@ def karsilastirma_tablo_olustur(row1, row2, kaynak_turu):
             ("Uyumluluk", ["Uyumluluk"]),
             ("RGB", ["RGB"]),
             ("Boyut", ["Boyut"]),
-            ("├ç├Âz├╝n├╝rl├╝k", ["Cozunurluk"]),
+            ("Çözünürlük", ["Cozunurluk"]),
             ("VRAM", ["VRAM"]),
             ("Kaynak", ["Kaynak"]),
-            ("Pop├╝lerlik", ["Populerlik"]),
+            ("Popülerlik", ["Populerlik"]),
         ]
 
     for ozellik, kolonlar in ekstra:
         satir = karsilastirma_satiri_uret(ozellik, row1, row2, kolonlar)
-        if satir["1. ├£r├╝n"] != "Yok" or satir["2. ├£r├╝n"] != "Yok":
+        if satir["1. Ürün"] != "Yok" or satir["2. Ürün"] != "Yok":
             satirlar.append(satir)
 
     return pd.DataFrame(satirlar)
 
 
 def karsilastirma_dataframe_getir(kaynak_turu, kategori_secimi):
-    if kaynak_turu == "Haz─▒r Teknoloji ├£r├╝nleri":
+    if kaynak_turu == "Hazır Teknoloji Ürünleri":
         if tech_df.empty:
             return pd.DataFrame()
 
         df = tech_df.copy()
 
-        if "Kategori" in df.columns and kategori_secimi != "T├╝m├╝":
+        if "Kategori" in df.columns and kategori_secimi != "Tümü":
             df = df[df["Kategori"].astype(str) == str(kategori_secimi)]
 
         if "FIYAT_SAYI" not in df.columns:
@@ -1517,13 +1517,13 @@ def karsilastirma_dataframe_getir(kaynak_turu, kategori_secimi):
 
         return df.drop_duplicates(subset=["Model"], keep="first").copy()
 
-    if kaynak_turu == "Elektronik Ev E┼şyalar─▒":
+    if kaynak_turu == "Elektronik Ev Eşyaları":
         if ev_df.empty:
             return pd.DataFrame()
 
         df = ev_df.copy()
 
-        if "Alt_Kategori" in df.columns and kategori_secimi != "T├╝m├╝":
+        if "Alt_Kategori" in df.columns and kategori_secimi != "Tümü":
             df = df[df["Alt_Kategori"].astype(str) == str(kategori_secimi)]
 
         return df.drop_duplicates(subset=["Marka", "Model"], keep="first").copy()
@@ -1533,7 +1533,7 @@ def karsilastirma_dataframe_getir(kaynak_turu, kategori_secimi):
 
     df = pc_df.copy()
 
-    if "Alt_Kategori" in df.columns and kategori_secimi != "T├╝m├╝":
+    if "Alt_Kategori" in df.columns and kategori_secimi != "Tümü":
         df = df[df["Alt_Kategori"].astype(str) == str(kategori_secimi)]
 
     return df.drop_duplicates(subset=["Alt_Kategori", "Marka", "Model"], keep="first").copy()
@@ -1565,11 +1565,11 @@ def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon
 
     sonuc = df.copy()
 
-    if siralama == "En D├╝┼ş├╝k Fiyat":
+    if siralama == "En Düşük Fiyat":
         if fiyat_kolon and fiyat_kolon in sonuc.columns:
             sonuc = sonuc.sort_values(by=fiyat_kolon, ascending=True)
 
-    elif siralama == "En Y├╝ksek Fiyat":
+    elif siralama == "En Yüksek Fiyat":
         if fiyat_kolon and fiyat_kolon in sonuc.columns:
             sonuc = sonuc.sort_values(by=fiyat_kolon, ascending=False)
 
@@ -1577,7 +1577,7 @@ def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon
         if puan_kolon and puan_kolon in sonuc.columns:
             sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
 
-    elif siralama == "Yorum Say─▒s─▒":
+    elif siralama == "Yorum Sayısı":
         if yorum_kolon and yorum_kolon in sonuc.columns:
             sonuc = sonuc.sort_values(by=yorum_kolon, ascending=False)
 
@@ -1589,7 +1589,7 @@ def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon
             sonuc = sonuc.sort_values(by="_ram_sort", ascending=False)
             sonuc = sonuc.drop(columns=["_ram_sort"])
 
-    elif siralama == "Ak─▒ll─▒ S─▒ralama":
+    elif siralama == "Akıllı Sıralama":
         if puan_kolon and puan_kolon in sonuc.columns and fiyat_kolon and fiyat_kolon in sonuc.columns:
             fiyat = pd.to_numeric(sonuc[fiyat_kolon], errors="coerce").fillna(0)
             puan = pd.to_numeric(sonuc[puan_kolon], errors="coerce").fillna(0)
@@ -1600,7 +1600,7 @@ def siralama_uygula(df, siralama, fiyat_kolon=None, puan_kolon=None, yorum_kolon
         elif puan_kolon and puan_kolon in sonuc.columns:
             sonuc = sonuc.sort_values(by=puan_kolon, ascending=False)
 
-    elif siralama == "Pop├╝lerlik":
+    elif siralama == "Popülerlik":
         if yorum_kolon and yorum_kolon in sonuc.columns:
             sonuc = sonuc.sort_values(by=yorum_kolon, ascending=False)
         elif puan_kolon and puan_kolon in sonuc.columns:
@@ -1717,8 +1717,8 @@ def pc_aday_sec(adaylar, hedef_fiyat, seed):
     return havuz.loc[secilen_index].drop(labels=["_fark"], errors="ignore")
 
 
-# HIZLI S─░STEM ├£RET─░C─░
-# Eski yava┼ş kodun yerine tek seferde havuz haz─▒rlay─▒p 5 sistemi h─▒zl─▒ ├╝retir.
+# HIZLI SİSTEM ÜRETİCİ
+# Eski yavaş kodun yerine tek seferde havuz hazırlayıp 5 sistemi hızlı üretir.
 def fiyat_hedefine_yakin_satir(df, hedef, varyasyon=0):
     if df is None or df.empty:
         return None
@@ -1755,7 +1755,7 @@ def pc_havuzu_fast(alt_kategori, max_butce, kullanim=""):
     if df.empty:
         return df
 
-    if alt_kategori in ["─░┼şlemci", "Ekran Kart─▒"] and kullanim and "Kullanim_Amaci" in df.columns:
+    if alt_kategori in ["İşlemci", "Ekran Kartı"] and kullanim and "Kullanim_Amaci" in df.columns:
         filtre = df[
             df["Kullanim_Amaci"]
             .astype(str)
@@ -1793,13 +1793,13 @@ def uyumlu_havuz_filtrele(df, kategori, soket=None, ram_tipi=None, min_psu=0):
             if not filtre.empty:
                 sonuc = filtre
 
-    if kategori == "G├╝├ğ Kayna─ş─▒":
+    if kategori == "Güç Kaynağı":
         if min_psu > 0 and "Watt" in sonuc.columns:
             filtre = sonuc[sayisal_filtre_degeri(sonuc["Watt"]) >= int(min_psu)]
             if not filtre.empty:
                 sonuc = filtre
 
-    if kategori == "So─şutucu":
+    if kategori == "Soğutucu":
         if soket and "Soket" in sonuc.columns:
             filtre = sonuc[sonuc["Soket"].astype(str).str.contains(str(soket), na=False)]
             if not filtre.empty:
@@ -1820,7 +1820,7 @@ def sistem_imza(parcalar):
 
 
 def sistemi_butceye_yaklastir(parcalar, havuzlar, min_butce, max_butce, hedef_fiyat):
-    # En fazla 10 ucuz/pahal─▒ de─şi┼şim yapar. Sonsuz d├Âng├╝ yok, h─▒zl─▒ ├ğal─▒┼ş─▒r.
+    # En fazla 10 ucuz/pahalı değişim yapar. Sonsuz döngü yok, hızlı çalışır.
     for _ in range(10):
         toplam = sistem_toplam_fiyat(parcalar)
 
@@ -1882,18 +1882,18 @@ def sistemi_butceye_yaklastir(parcalar, havuzlar, min_butce, max_butce, hedef_fi
 
 def pc_kurulum_kategorileri(kurulum_tipi="Temel Sistem"):
     temel = [
-        "─░┼şlemci",
-        "Ekran Kart─▒",
+        "İşlemci",
+        "Ekran Kartı",
         "Anakart",
         "RAM",
         "SSD",
-        "G├╝├ğ Kayna─ş─▒",
+        "Güç Kaynağı",
         "Kasa",
-        "So─şutucu"
+        "Soğutucu"
     ]
 
     if kurulum_tipi == "Tam Kurulum":
-        return temel + ["HDD", "Monit├Âr", "Klavye", "Mouse"]
+        return temel + ["HDD", "Monitör", "Klavye", "Mouse"]
 
     return temel
 
@@ -1901,29 +1901,29 @@ def pc_kurulum_kategorileri(kurulum_tipi="Temel Sistem"):
 def pc_butce_oranlari(kurulum_tipi="Temel Sistem"):
     if kurulum_tipi == "Tam Kurulum":
         return {
-            "─░┼şlemci": 0.15,
-            "Ekran Kart─▒": 0.30,
+            "İşlemci": 0.15,
+            "Ekran Kartı": 0.30,
             "Anakart": 0.09,
             "RAM": 0.08,
             "SSD": 0.07,
             "HDD": 0.04,
-            "G├╝├ğ Kayna─ş─▒": 0.06,
+            "Güç Kaynağı": 0.06,
             "Kasa": 0.05,
-            "So─şutucu": 0.04,
-            "Monit├Âr": 0.09,
+            "Soğutucu": 0.04,
+            "Monitör": 0.09,
             "Klavye": 0.015,
             "Mouse": 0.015,
         }
 
     return {
-        "─░┼şlemci": 0.18,
-        "Ekran Kart─▒": 0.35,
+        "İşlemci": 0.18,
+        "Ekran Kartı": 0.35,
         "Anakart": 0.12,
         "RAM": 0.10,
         "SSD": 0.08,
-        "G├╝├ğ Kayna─ş─▒": 0.07,
+        "Güç Kaynağı": 0.07,
         "Kasa": 0.05,
-        "So─şutucu": 0.05
+        "Soğutucu": 0.05
     }
 
 
@@ -1932,37 +1932,37 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
     parcalar = {}
 
     islemci = fiyat_hedefine_yakin_satir(
-        ana_havuzlar.get("─░┼şlemci", pd.DataFrame()),
-        hedef_fiyat * oranlar["─░┼şlemci"],
+        ana_havuzlar.get("İşlemci", pd.DataFrame()),
+        hedef_fiyat * oranlar["İşlemci"],
         varyasyon
     )
     if islemci is None:
         return None
 
-    parcalar["─░┼şlemci"] = islemci
+    parcalar["İşlemci"] = islemci
     soket = str(islemci.get("Soket", ""))
     ram_tipi = str(islemci.get("RAM_Tipi", ""))
 
     ekran_karti = fiyat_hedefine_yakin_satir(
-        ana_havuzlar.get("Ekran Kart─▒", pd.DataFrame()),
-        hedef_fiyat * oranlar["Ekran Kart─▒"],
+        ana_havuzlar.get("Ekran Kartı", pd.DataFrame()),
+        hedef_fiyat * oranlar["Ekran Kartı"],
         varyasyon
     )
     if ekran_karti is None:
         return None
 
-    parcalar["Ekran Kart─▒"] = ekran_karti
+    parcalar["Ekran Kartı"] = ekran_karti
 
     gpu_watt = sayi_cek(ekran_karti.get("Watt", 0))
     min_psu = max(500, gpu_watt + 250) if gpu_watt > 0 else 500
 
     uyumlu_havuzlar = {
-        "─░┼şlemci": ana_havuzlar.get("─░┼şlemci", pd.DataFrame()),
-        "Ekran Kart─▒": ana_havuzlar.get("Ekran Kart─▒", pd.DataFrame()),
+        "İşlemci": ana_havuzlar.get("İşlemci", pd.DataFrame()),
+        "Ekran Kartı": ana_havuzlar.get("Ekran Kartı", pd.DataFrame()),
     }
 
-    zorunlu_kategoriler = ["Anakart", "RAM", "SSD", "G├╝├ğ Kayna─ş─▒", "Kasa", "So─şutucu"]
-    ek_kategoriler = ["HDD", "Monit├Âr", "Klavye", "Mouse"] if kurulum_tipi == "Tam Kurulum" else []
+    zorunlu_kategoriler = ["Anakart", "RAM", "SSD", "Güç Kaynağı", "Kasa", "Soğutucu"]
+    ek_kategoriler = ["HDD", "Monitör", "Klavye", "Mouse"] if kurulum_tipi == "Tam Kurulum" else []
 
     for kategori in zorunlu_kategoriler + ek_kategoriler:
         uyumlu_havuzlar[kategori] = uyumlu_havuz_filtrele(
@@ -1979,7 +1979,7 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
             varyasyon
         )
 
-        # Temel par├ğalar olmadan sistem olu┼şturulmaz. Tam kurulum ek par├ğalar─▒nda veri yoksa sistem tamamen iptal edilmez.
+        # Temel parçalar olmadan sistem oluşturulmaz. Tam kurulum ek parçalarında veri yoksa sistem tamamen iptal edilmez.
         if secilen is None:
             if kategori in zorunlu_kategoriler:
                 return None
@@ -2002,7 +2002,7 @@ def tek_sistem_fast_olustur(min_butce, max_butce, hedef_fiyat, kullanim, seed, a
 
     return {
         "basarili": True,
-        "mesaj": "B├╝t├ğe aral─▒─ş─▒na uygun sistem olu┼şturuldu.",
+        "mesaj": "Bütçe aralığına uygun sistem oluşturuldu.",
         "parcalar": parcalar,
         "toplam_fiyat": toplam,
         "min_butce": min_butce,
@@ -2020,7 +2020,7 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed, kurulum_tipi="
 
     kategoriler = pc_kurulum_kategorileri(kurulum_tipi)
 
-    # En b├╝y├╝k h─▒z kazanc─▒ burada: Veri seti her sistem i├ğin tekrar tekrar filtrelenmez.
+    # En büyük hız kazancı burada: Veri seti her sistem için tekrar tekrar filtrelenmez.
     ana_havuzlar = {
         kategori: pc_havuzu_fast(kategori, max_butce, kullanim)
         for kategori in kategoriler
@@ -2040,7 +2040,7 @@ def besli_pc_sistem_olustur(min_butce, max_butce, kullanim, seed, kurulum_tipi="
     for i, hedef in enumerate(hedefler):
         secilen = None
 
-        # 100-200 deneme yok. En fazla 6 varyasyon, h─▒zl─▒.
+        # 100-200 deneme yok. En fazla 6 varyasyon, hızlı.
         for varyasyon in range(6):
             sistem = tek_sistem_fast_olustur(
                 min_butce=min_butce,
@@ -2080,7 +2080,7 @@ def uyumlu_pc_sistem_topla(max_butce, kullanim, seed):
         return sistemler[0]
     return {
         "basarili": False,
-        "mesaj": "Bu b├╝t├ğeye uygun sistem olu┼şturulamad─▒.",
+        "mesaj": "Bu bütçeye uygun sistem oluşturulamadı.",
         "parcalar": {},
         "toplam_fiyat": 0,
         "butce": max_butce
@@ -2114,12 +2114,12 @@ def ev_esyasi_oner(
         (ev_df["Fiyat_TL"] <= max_butce)
     ].copy()
 
-    if ana_kategori != "T├╝m├╝":
+    if ana_kategori != "Tümü":
         sonuc = sonuc[sonuc["Ana_Kategori"].astype(str) == ana_kategori]
 
-    if alt_kategori != "T├╝m├╝":
-        # Alt kategori birebir e┼şle┼şmezse esnek e┼şle┼şme yap.
-        # ├ûrn: "Kahve Makinesi" se├ğilince "Espresso Kahve Makinesi" de gelsin.
+    if alt_kategori != "Tümü":
+        # Alt kategori birebir eşleşmezse esnek eşleşme yap.
+        # Örn: "Kahve Makinesi" seçilince "Espresso Kahve Makinesi" de gelsin.
         alt_norm = temizle_yazi(alt_kategori)
         birebir = sonuc[sonuc["Alt_Kategori"].astype(str).apply(temizle_yazi) == alt_norm]
 
@@ -2182,11 +2182,11 @@ def ev_esyasi_oner(
     if rgb != "Farketmez":
         if rgb == "Var":
             sonuc = sonuc[
-                sonuc["Ozellikler"].astype(str).str.lower().str.contains("rgb|─▒┼ş─▒k|isik", na=False)
+                sonuc["Ozellikler"].astype(str).str.lower().str.contains("rgb|ışık|isik", na=False)
             ]
         else:
             sonuc = sonuc[
-                ~sonuc["Ozellikler"].astype(str).str.lower().str.contains("rgb|─▒┼ş─▒k|isik", na=False)
+                ~sonuc["Ozellikler"].astype(str).str.lower().str.contains("rgb|ışık|isik", na=False)
             ]
 
     if min_garanti != "Farketmez":
@@ -2206,33 +2206,33 @@ def ev_esyasi_oner(
 
 
 def auth_screen():
-    st.title("­şñû Ak─▒ll─▒ Teknoloji ├£r├╝nleri ├ûneri Sistemi")
-    st.write("Uygulamay─▒ kullanmak i├ğin giri┼ş yapmal─▒ veya kay─▒t olmal─▒s─▒n.")
+    st.title("🤖 Akıllı Teknoloji Ürünleri Öneri Sistemi")
+    st.write("Uygulamayı kullanmak için giriş yapmalı veya kayıt olmalısın.")
 
     tab1, tab2, tab3, tab4 = st.tabs([
-        "Giri┼ş Yap",
-        "Kay─▒t Ol",
-        "Mail Do─şrula",
-        "┼Şifremi Unuttum"
+        "Giriş Yap",
+        "Kayıt Ol",
+        "Mail Doğrula",
+        "Şifremi Unuttum"
     ])
 
     with tab1:
-        st.subheader("Giri┼ş Yap")
+        st.subheader("Giriş Yap")
 
         login_input = st.text_input(
-            "Kullan─▒c─▒ ad─▒ / E-posta",
+            "Kullanıcı adı / E-posta",
             key="login_input"
         )
 
         login_password = st.text_input(
-            "┼Şifre",
+            "Şifre",
             type="password",
             key="login_password"
         )
 
-        if st.button("Giri┼ş Yap", key="login_button"):
+        if st.button("Giriş Yap", key="login_button"):
             if login_input.strip() == "" or login_password.strip() == "":
-                st.error("Kullan─▒c─▒ ad─▒/e-posta ve ┼şifre bo┼ş b─▒rak─▒lamaz.")
+                st.error("Kullanıcı adı/e-posta ve şifre boş bırakılamaz.")
             else:
                 success, message, user = login_user(login_input, login_password)
 
@@ -2245,40 +2245,40 @@ def auth_screen():
                     st.error(message)
 
     with tab2:
-        st.subheader("Kay─▒t Ol")
+        st.subheader("Kayıt Ol")
 
-        username = st.text_input("Kullan─▒c─▒ ad─▒", key="register_username")
+        username = st.text_input("Kullanıcı adı", key="register_username")
         email = st.text_input("E-posta", key="register_email")
-        password = st.text_input("┼Şifre", type="password", key="register_password")
-        password_again = st.text_input("┼Şifre tekrar", type="password", key="register_password_again")
+        password = st.text_input("Şifre", type="password", key="register_password")
+        password_again = st.text_input("Şifre tekrar", type="password", key="register_password_again")
 
-        if st.button("Kay─▒t Ol", key="register_button"):
+        if st.button("Kayıt Ol", key="register_button"):
             if username.strip() == "" or email.strip() == "" or password.strip() == "":
-                st.error("L├╝tfen t├╝m alanlar─▒ doldur.")
+                st.error("Lütfen tüm alanları doldur.")
             elif password != password_again:
-                st.error("┼Şifreler ayn─▒ de─şil.")
+                st.error("Şifreler aynı değil.")
             elif "@" not in email or "." not in email:
-                st.error("Ge├ğerli bir e-posta adresi gir.")
+                st.error("Geçerli bir e-posta adresi gir.")
             else:
                 success, message = register_user(username, email, password)
 
                 if success:
                     st.success(message)
-                    st.info("Mail Do─şrula sekmesinden 5 haneli kodu gir.")
+                    st.info("Mail Doğrula sekmesinden 5 haneli kodu gir.")
                 else:
                     st.error(message)
 
     with tab3:
-        st.subheader("Mail Do─şrula")
+        st.subheader("Mail Doğrula")
 
         email = st.text_input("E-posta", key="verify_email")
-        code = st.text_input("5 haneli do─şrulama kodu", max_chars=5, key="verify_code")
+        code = st.text_input("5 haneli doğrulama kodu", max_chars=5, key="verify_code")
 
-        if st.button("Do─şrula", key="verify_button"):
+        if st.button("Doğrula", key="verify_button"):
             if email.strip() == "" or code.strip() == "":
-                st.error("E-posta ve do─şrulama kodu bo┼ş b─▒rak─▒lamaz.")
+                st.error("E-posta ve doğrulama kodu boş bırakılamaz.")
             elif len(code) != 5:
-                st.error("Kod 5 haneli olmal─▒d─▒r.")
+                st.error("Kod 5 haneli olmalıdır.")
             else:
                 success, message = verify_user(email, code)
 
@@ -2288,13 +2288,13 @@ def auth_screen():
                     st.error(message)
 
     with tab4:
-        st.subheader("┼Şifremi Unuttum")
+        st.subheader("Şifremi Unuttum")
 
-        forgot_email = st.text_input("Kay─▒tl─▒ e-posta", key="forgot_email")
+        forgot_email = st.text_input("Kayıtlı e-posta", key="forgot_email")
 
-        if st.button("┼Şifre S─▒f─▒rlama Kodu G├Ânder", key="forgot_send_button"):
+        if st.button("Şifre Sıfırlama Kodu Gönder", key="forgot_send_button"):
             if forgot_email.strip() == "":
-                st.error("E-posta bo┼ş b─▒rak─▒lamaz.")
+                st.error("E-posta boş bırakılamaz.")
             else:
                 success, message = sifre_sifirlama_kodu_gonder(forgot_email)
 
@@ -2310,24 +2310,24 @@ def auth_screen():
         )
 
         new_password = st.text_input(
-            "Yeni ┼şifre",
+            "Yeni şifre",
             type="password",
             key="new_password"
         )
 
         new_password_again = st.text_input(
-            "Yeni ┼şifre tekrar",
+            "Yeni şifre tekrar",
             type="password",
             key="new_password_again"
         )
 
-        if st.button("┼Şifreyi G├╝ncelle", key="reset_password_button"):
+        if st.button("Şifreyi Güncelle", key="reset_password_button"):
             if forgot_email.strip() == "" or reset_code.strip() == "" or new_password.strip() == "":
-                st.error("T├╝m alanlar─▒ doldur.")
+                st.error("Tüm alanları doldur.")
             elif len(reset_code) != 5:
-                st.error("Kod 5 haneli olmal─▒d─▒r.")
+                st.error("Kod 5 haneli olmalıdır.")
             elif new_password != new_password_again:
-                st.error("Yeni ┼şifreler ayn─▒ de─şil.")
+                st.error("Yeni şifreler aynı değil.")
             else:
                 success, message = sifreyi_guncelle(
                     forgot_email,
@@ -2344,25 +2344,25 @@ def auth_screen():
 def pc_parca_karti(row):
     st.markdown(f"""
 <div class="product-card">
-<div class="product-title">­şğ® {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">­şÆ░ Ortalama Piyasa Fiyat─▒: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
-<span class="badge-blue">­şÅÀ´©Å {veri_getir(row, 'Alt_Kategori')}</span>
-<span class="badge-purple">Ô¡É Puan: {kart_puani_getir(row)}</span>
+<div class="product-title">🧩 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
+<span class="badge-purple">⭐ Puan: {kart_puani_getir(row)}</span>
 <br><br>
-­şôî <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
-­şÄ» <b>Kullan─▒m Amac─▒:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
-­şöî <b>Soket:</b> {veri_getir(row, 'Soket')}<br>
-­şğá <b>RAM Tipi:</b> {veri_getir(row, 'RAM_Tipi')}<br>
-ÔÜí <b>Watt:</b> {veri_getir(row, 'Watt')}<br>
-­şÆ¥ <b>Kapasite:</b> {veri_getir(row, 'Kapasite')}<br>
-­şöù <b>Uyumluluk:</b> {veri_getir(row, 'Uyumluluk')}<br>
-­şöÑ <b>Pop├╝lerlik:</b> {kart_populerlik_getir(row)}<br>
-­şÆ¼ <b>Yorum Say─▒s─▒:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
-­şîê <b>RGB:</b> {veri_getir(row, 'RGB')}<br>
-­şôÅ <b>Boyut:</b> {veri_getir(row, 'Boyut')}<br>
-­şûÑ´©Å <b>├ç├Âz├╝n├╝rl├╝k:</b> {veri_getir(row, 'Cozunurluk')}<br>
-­şÄ« <b>VRAM:</b> {veri_getir(row, 'VRAM')}<br>
-­şôÜ <b>Kaynak:</b> {veri_getir(row, 'Kaynak')}
+📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
+🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
+🔌 <b>Soket:</b> {veri_getir(row, 'Soket')}<br>
+🧠 <b>RAM Tipi:</b> {veri_getir(row, 'RAM_Tipi')}<br>
+⚡ <b>Watt:</b> {veri_getir(row, 'Watt')}<br>
+💾 <b>Kapasite:</b> {veri_getir(row, 'Kapasite')}<br>
+🔗 <b>Uyumluluk:</b> {veri_getir(row, 'Uyumluluk')}<br>
+🔥 <b>Popülerlik:</b> {kart_populerlik_getir(row)}<br>
+💬 <b>Yorum Sayısı:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
+🌈 <b>RGB:</b> {veri_getir(row, 'RGB')}<br>
+📏 <b>Boyut:</b> {veri_getir(row, 'Boyut')}<br>
+🖥️ <b>Çözünürlük:</b> {veri_getir(row, 'Cozunurluk')}<br>
+🎮 <b>VRAM:</b> {veri_getir(row, 'VRAM')}<br>
+📚 <b>Kaynak:</b> {veri_getir(row, 'Kaynak')}
 {fiyat_karsilastirma_html('pc', row)}
 </div>
 """, unsafe_allow_html=True)
@@ -2371,29 +2371,29 @@ def pc_parca_karti(row):
 def ev_karti(row):
     st.markdown(f"""
 <div class="product-card">
-<div class="product-title">­şÅá {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">­şÆ░ Ortalama Piyasa Fiyat─▒: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
-<span class="badge-blue">­şÅÀ´©Å {veri_getir(row, 'Alt_Kategori')}</span>
-<span class="badge-purple">Ô¡É Puan: {kart_puani_getir(row)}</span>
+<div class="product-title">🏠 {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}</span>
+<span class="badge-blue">🏷️ {veri_getir(row, 'Alt_Kategori')}</span>
+<span class="badge-purple">⭐ Puan: {kart_puani_getir(row)}</span>
 <br><br>
-­şôé <b>Ana Kategori:</b> {veri_getir(row, 'Ana_Kategori')}<br>
-­şÄ» <b>Kullan─▒m Amac─▒:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
-­şôî <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
-ÔÜÖ´©Å <b>├ûzellikler:</b> {veri_getir(row, 'Ozellikler')}<br>
-­şöï <b>Enerji S─▒n─▒f─▒:</b> {veri_getir(row, 'Enerji_Sinifi')}<br>
-­şÄ¿ <b>Renk:</b> {veri_getir(row, 'Renk')}<br>
-­şøí´©Å <b>Garanti:</b> {veri_getir(row, 'Garanti_Ay')} ay<br>
-­şöÑ <b>Pop├╝lerlik:</b> {kart_populerlik_getir(row)}<br>
-­şÆ¼ <b>Yorum Say─▒s─▒:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
-­şøÆ <b>Kaynak Site:</b> {veri_getir(row, 'Kaynak_Site')}
+📂 <b>Ana Kategori:</b> {veri_getir(row, 'Ana_Kategori')}<br>
+🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanim_Amaci')}<br>
+📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
+⚙️ <b>Özellikler:</b> {veri_getir(row, 'Ozellikler')}<br>
+🔋 <b>Enerji Sınıfı:</b> {veri_getir(row, 'Enerji_Sinifi')}<br>
+🎨 <b>Renk:</b> {veri_getir(row, 'Renk')}<br>
+🛡️ <b>Garanti:</b> {veri_getir(row, 'Garanti_Ay')} ay<br>
+🔥 <b>Popülerlik:</b> {kart_populerlik_getir(row)}<br>
+💬 <b>Yorum Sayısı:</b> {veri_getir(row, 'Yorum_Sayisi')}<br>
+🛒 <b>Kaynak Site:</b> {veri_getir(row, 'Kaynak_Site')}
 {fiyat_karsilastirma_html('ev', row)}
 </div>
 """, unsafe_allow_html=True)
 
 
-st.sidebar.markdown("### ­şğ¬ Test Modu")
+st.sidebar.markdown("### 🧪 Test Modu")
 
-if st.sidebar.button("Test Kullan─▒c─▒s─▒ Olarak Gir", key="test_login_button"):
+if st.sidebar.button("Test Kullanıcısı Olarak Gir", key="test_login_button"):
     st.session_state.logged_in = True
     st.session_state.user = {
         "id": 0,
@@ -2411,13 +2411,13 @@ if not st.session_state.logged_in:
 
 def chatbot_kategori_bul(mesaj_lower):
     kategori_kelimeleri = {
-        "Toplama Bilgisayar": ["toplama", "sistem topla", "pc topla", "oyun sistemi", "par├ğa", "parca"],
-        "Elektronik Ev E┼şyalar─▒": ["s├╝p├╝rge", "supurge", "airfryer", "kahve", "klima", "├╝t├╝", "utu", "kettle", "blender", "ev e┼şyas─▒", "ev esyasi", "├ğay makinesi", "cay makinesi", "robot", "dikey s├╝p├╝rge", "hava temizleyici", "vantilat├Âr", "kombi", "kedi tuvaleti"],
-        "Bilgisayar": ["laptop", "notebook", "bilgisayar", "oyun bilgisayar─▒", "oyun bilgisayari"],
+        "Toplama Bilgisayar": ["toplama", "sistem topla", "pc topla", "oyun sistemi", "parça", "parca"],
+        "Elektronik Ev Eşyaları": ["süpürge", "supurge", "airfryer", "kahve", "klima", "ütü", "utu", "kettle", "blender", "ev eşyası", "ev esyasi", "çay makinesi", "cay makinesi", "robot", "dikey süpürge", "hava temizleyici", "vantilatör", "kombi", "kedi tuvaleti"],
+        "Bilgisayar": ["laptop", "notebook", "bilgisayar", "oyun bilgisayarı", "oyun bilgisayari"],
         "Telefon": ["telefon", "iphone", "android", "samsung", "xiaomi", "redmi", "oppo", "vivo", "realme"],
         "Tablet": ["tablet", "ipad"],
-        "Kulakl─▒k": ["kulakl─▒k", "kulaklik", "earbuds", "airpods", "kulak ├╝st├╝", "kulak ustu"],
-        "Ak─▒ll─▒ Saat / Bileklik": ["ak─▒ll─▒ saat", "akilli saat", "bileklik", "watch", "ak─▒ll─▒ bileklik", "akilli bileklik"],
+        "Kulaklık": ["kulaklık", "kulaklik", "earbuds", "airpods", "kulak üstü", "kulak ustu"],
+        "Akıllı Saat / Bileklik": ["akıllı saat", "akilli saat", "bileklik", "watch", "akıllı bileklik", "akilli bileklik"],
     }
     for kategori_adi, kelimeler in kategori_kelimeleri.items():
         if any(kelime in mesaj_lower for kelime in kelimeler):
@@ -2427,23 +2427,23 @@ def chatbot_kategori_bul(mesaj_lower):
 
 
 def chatbot_ev_alt_kategori_bul(mesaj_lower):
-    """Chatbotun elektronik ev e┼şyas─▒nda alt kategoriyi paneldeki filtreler kadar do─şru yakalamas─▒ i├ğin kullan─▒l─▒r."""
+    """Chatbotun elektronik ev eşyasında alt kategoriyi paneldeki filtreler kadar doğru yakalaması için kullanılır."""
     alt_map = {
-        "Dikey S├╝p├╝rge": ["dikey s├╝p├╝rge", "dikey supurge", "┼şarjl─▒ s├╝p├╝rge", "sarjli supurge"],
-        "Robot S├╝p├╝rge": ["robot s├╝p├╝rge", "robot supurge", "robot vacuum"],
-        "Elektrikli S├╝p├╝rge": ["elektrikli s├╝p├╝rge", "elektrikli supurge", "s├╝p├╝rge", "supurge"],
-        "Buharl─▒ ├£t├╝": ["buharl─▒ ├╝t├╝", "buharli utu", "├╝t├╝", "utu"],
-        "Buhar Kazanl─▒ ├£t├╝": ["buhar kazanl─▒", "buhar kazanli"],
-        "Airfryer": ["airfryer", "frit├Âz", "fritoz"],
+        "Dikey Süpürge": ["dikey süpürge", "dikey supurge", "şarjlı süpürge", "sarjli supurge"],
+        "Robot Süpürge": ["robot süpürge", "robot supurge", "robot vacuum"],
+        "Elektrikli Süpürge": ["elektrikli süpürge", "elektrikli supurge", "süpürge", "supurge"],
+        "Buharlı Ütü": ["buharlı ütü", "buharli utu", "ütü", "utu"],
+        "Buhar Kazanlı Ütü": ["buhar kazanlı", "buhar kazanli"],
+        "Airfryer": ["airfryer", "fritöz", "fritoz"],
         "Espresso Kahve Makinesi": ["espresso"],
         "Filtre Kahve Makinesi": ["filtre kahve"],
-        "T├╝rk Kahvesi Makinesi": ["t├╝rk kahvesi", "turk kahvesi"],
+        "Türk Kahvesi Makinesi": ["türk kahvesi", "turk kahvesi"],
         "Kahve Makinesi": ["kahve makinesi", "kahve"],
-        "├çay Makinesi": ["├ğay makinesi", "cay makinesi"],
-        "Kettle": ["kettle", "su ─▒s─▒t─▒c─▒", "su isitici"],
+        "Çay Makinesi": ["çay makinesi", "cay makinesi"],
+        "Kettle": ["kettle", "su ısıtıcı", "su isitici"],
         "Hava Temizleyici": ["hava temizleyici", "hava temizleme"],
         "Klima": ["klima"],
-        "Ak─▒ll─▒ Kedi Tuvaleti": ["kedi tuvaleti", "ak─▒ll─▒ kedi", "akilli kedi"],
+        "Akıllı Kedi Tuvaleti": ["kedi tuvaleti", "akıllı kedi", "akilli kedi"],
     }
 
     mevcut_altlar = []
@@ -2454,54 +2454,54 @@ def chatbot_ev_alt_kategori_bul(mesaj_lower):
         if any(k in mesaj_lower for k in kelimeler):
             if hedef_alt in mevcut_altlar:
                 return hedef_alt
-            # Datasette "Dikey S├╝p├╝rge" yerine "┼Şarjl─▒ Dikey S├╝p├╝rge" gibi daha uzun ad varsa onu yakala.
+            # Datasette "Dikey Süpürge" yerine "Şarjlı Dikey Süpürge" gibi daha uzun ad varsa onu yakala.
             hedef_norm = temizle_yazi(hedef_alt)
             for alt in mevcut_altlar:
                 alt_norm = temizle_yazi(alt)
                 if hedef_norm in alt_norm or alt_norm in hedef_norm:
                     return alt
-            # Sadece s├╝p├╝rge gibi genel ifadelerde, varsa en yak─▒n s├╝p├╝rge alt kategorisini d├Ând├╝r.
+            # Sadece süpürge gibi genel ifadelerde, varsa en yakın süpürge alt kategorisini döndür.
             if "supurge" in hedef_norm:
                 for alt in mevcut_altlar:
                     if "supurge" in temizle_yazi(alt):
                         return alt
             return hedef_alt
 
-    return "T├╝m├╝"
+    return "Tümü"
 
 
 def chatbot_pc_kurulum_tipi_bul(mesaj_lower):
-    if any(k in mesaj_lower for k in ["tam kurulum", "monit├Âr", "monitor", "klavye", "mouse", "fare", "hdd"]):
+    if any(k in mesaj_lower for k in ["tam kurulum", "monitör", "monitor", "klavye", "mouse", "fare", "hdd"]):
         return "Tam Kurulum"
     return "Temel Sistem"
 
 def chatbot_urun_istegi_var_mi(mesaj_lower):
     urun_kelimeleri = [
-        "├Âner", "oner", "al", "alay─▒m", "alayim", "ne al", "b├╝t├ğe", "butce", "tl", "Ôé║",
-        "telefon", "bilgisayar", "laptop", "tablet", "kulakl─▒k", "kulaklik", "saat",
-        "toplama", "s├╝p├╝rge", "supurge", "kahve", "airfryer", "├╝t├╝", "utu"
+        "öner", "oner", "al", "alayım", "alayim", "ne al", "bütçe", "butce", "tl", "₺",
+        "telefon", "bilgisayar", "laptop", "tablet", "kulaklık", "kulaklik", "saat",
+        "toplama", "süpürge", "supurge", "kahve", "airfryer", "ütü", "utu"
     ]
     return any(kelime in mesaj_lower for kelime in urun_kelimeleri)
 
 
 def chatbot_resmi_kontrol(mesaj_lower):
     ton_kelimeleri = [
-        "sayg─▒l─▒ ol", "saygili ol", "resmi konu┼ş", "resmi konus", "kanka deme",
-        "samimi konu┼şma", "samimi konusma", "d├╝zg├╝n konu┼ş", "duzgun konus"
+        "saygılı ol", "saygili ol", "resmi konuş", "resmi konus", "kanka deme",
+        "samimi konuşma", "samimi konusma", "düzgün konuş", "duzgun konus"
     ]
     return any(kelime in mesaj_lower for kelime in ton_kelimeleri)
 
 
 def chatbot_kriter_mesaji(kategori, min_butce, max_butce, ram=0, kullanim=""):
     satirlar = [
-        "Alg─▒lanan kriterler:",
+        "Algılanan kriterler:",
         f"- Kategori: {kategori if kategori else 'Belirtilmedi'}",
-        f"- B├╝t├ğe aral─▒─ş─▒: {fiyat_formatla(min_butce)} - {fiyat_formatla(max_butce)}",
+        f"- Bütçe aralığı: {fiyat_formatla(min_butce)} - {fiyat_formatla(max_butce)}",
     ]
     if ram and int(ram) > 0:
         satirlar.append(f"- Minimum RAM: {ram} GB")
     if kullanim:
-        satirlar.append(f"- Kullan─▒m amac─▒: {kullanim}")
+        satirlar.append(f"- Kullanım amacı: {kullanim}")
     return "\n".join(satirlar)
 
 
@@ -2517,12 +2517,12 @@ def chatbot_sonuc_mesaji(sonuc, kategori, min_butce, max_butce, ram=0, kullanim=
         adet = 0
     if adet == 0:
         return (
-            "Belirtti─şiniz kriterlere uygun ├╝r├╝n bulunamad─▒.\n\n"
+            "Belirttiğiniz kriterlere uygun ürün bulunamadı.\n\n"
             f"{kriter}\n\n"
-            "├ûneri: B├╝t├ğe aral─▒─ş─▒n─▒ art─▒rabilir, kategori tercihini netle┼ştirebilir veya filtreleri azaltabilirsiniz."
+            "Öneri: Bütçe aralığını artırabilir, kategori tercihini netleştirebilir veya filtreleri azaltabilirsiniz."
         )
     return (
-        f"Belirtti─şiniz kriterlere g├Âre {adet} uygun sonu├ğ bulundu. En uygun se├ğenekler a┼şa─ş─▒da listelenmi┼ştir.\n\n"
+        f"Belirttiğiniz kriterlere göre {adet} uygun sonuç bulundu. En uygun seçenekler aşağıda listelenmiştir.\n\n"
         f"{kriter}"
     )
 
@@ -2530,21 +2530,21 @@ def chatbot_sonuc_mesaji(sonuc, kategori, min_butce, max_butce, ram=0, kullanim=
 col_title, col_chat = st.columns([5, 1])
 
 with col_title:
-    st.title("­şñû Ak─▒ll─▒ Teknoloji ├£r├╝nleri ├ûneri Sistemi")
+    st.title("🤖 Akıllı Teknoloji Ürünleri Öneri Sistemi")
 
 with col_chat:
-    with st.popover("­şÆ¼ Chatbot"):
-        st.subheader("├£r├╝n Asistan─▒")
+    with st.popover("💬 Chatbot"):
+        st.subheader("Ürün Asistanı")
 
         chatbot_siralama = st.selectbox(
-            "Sonu├ğ s─▒ralamas─▒",
+            "Sonuç sıralaması",
             [
-                "Ak─▒ll─▒ S─▒ralama",
-                "Pop├╝lerlik",
+                "Akıllı Sıralama",
+                "Popülerlik",
                 "Teknik Puan",
-                "En D├╝┼ş├╝k Fiyat",
-                "En Y├╝ksek Fiyat",
-                "Yorum Say─▒s─▒",
+                "En Düşük Fiyat",
+                "En Yüksek Fiyat",
+                "Yorum Sayısı",
                 "Bellek / RAM"
             ],
             key="chatbot_siralama_select"
@@ -2554,7 +2554,7 @@ with col_chat:
 
         with mesaj_alani:
             if len(st.session_state.mesajlar) == 0:
-                st.info("─░ste─şini a┼şa─ş─▒ya yazabilirsin.")
+                st.info("İsteğini aşağıya yazabilirsin.")
             else:
                 for mesaj in st.session_state.mesajlar:
                     rol = mesaj.get("rol", "")
@@ -2572,7 +2572,7 @@ with col_chat:
                                 color:#111827;
                                 font-weight:600;
                             ">
-                                ­şæñ {icerik}
+                                👤 {icerik}
                             </div>
                             """,
                             unsafe_allow_html=True
@@ -2589,7 +2589,7 @@ with col_chat:
                                 color:#111827;
                                 font-weight:500;
                             ">
-                                ­şñû {icerik}
+                                🤖 {icerik}
                             </div>
                             """,
                             unsafe_allow_html=True
@@ -2598,7 +2598,7 @@ with col_chat:
         with st.form("chatbot_form", clear_on_submit=True):
             kullanici_mesaji = st.text_area(
                 "Mesaj",
-                placeholder="├ûrnek: 50000 TL b├╝t├ğem var, oyun i├ğin toplama bilgisayar istiyorum",
+                placeholder="Örnek: 50000 TL bütçem var, oyun için toplama bilgisayar istiyorum",
                 label_visibility="collapsed",
                 height=80,
                 key="chatbot_text_area"
@@ -2607,10 +2607,10 @@ with col_chat:
             form_col1, form_col2 = st.columns([5, 1])
 
             with form_col1:
-                gonderildi = st.form_submit_button("G├Ânder")
+                gonderildi = st.form_submit_button("Gönder")
 
             with form_col2:
-                temizlendi = st.form_submit_button("­şùæ´©Å")
+                temizlendi = st.form_submit_button("🗑️")
 
         if temizlendi:
             st.session_state.mesajlar = []
@@ -2629,7 +2629,7 @@ with col_chat:
             mesaj_lower = kullanici_mesaji.lower()
 
             if chatbot_resmi_kontrol(mesaj_lower):
-                bot_mesaji = "Elbette. Bundan sonra daha resmi, sayg─▒l─▒ ve a├ğ─▒klay─▒c─▒ bir dil kullanaca─ş─▒m."
+                bot_mesaji = "Elbette. Bundan sonra daha resmi, saygılı ve açıklayıcı bir dil kullanacağım."
 
             else:
                 chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim = chatbot_metnini_anla(kullanici_mesaji)
@@ -2655,14 +2655,14 @@ with col_chat:
                         chat_kullanim
                     )
 
-                elif chat_kategori == "Elektronik Ev E┼şyalar─▒":
+                elif chat_kategori == "Elektronik Ev Eşyaları":
                     st.session_state.aktif_mod = "chatbot"
                     st.session_state.pc_build = None
                     st.session_state.pc_builds = []
 
                     st.session_state.sonuc = ev_esyasi_oner(
-                        ana_kategori="T├╝m├╝",
-                        alt_kategori="T├╝m├╝",
+                        ana_kategori="Tümü",
+                        alt_kategori="Tümü",
                         min_butce=chat_min_butce,
                         max_butce=chat_max_butce,
                         kullanim_amaci=chat_kullanim,
@@ -2721,13 +2721,13 @@ with col_chat:
 
 
 st.write(
-    "Bu sistem; haz─▒r teknoloji ├╝r├╝nleri, toplama bilgisayar par├ğalar─▒ ve elektronik ev e┼şyalar─▒ i├ğin "
-    "b├╝t├ğe ve kullan─▒m amac─▒na g├Âre ├Âneri sunar."
+    "Bu sistem; hazır teknoloji ürünleri, toplama bilgisayar parçaları ve elektronik ev eşyaları için "
+    "bütçe ve kullanım amacına göre öneri sunar."
 )
 
-st.sidebar.write(f"­şæñ Kullan─▒c─▒: {st.session_state.user['username']}")
+st.sidebar.write(f"👤 Kullanıcı: {st.session_state.user['username']}")
 
-if st.sidebar.button("├ç─▒k─▒┼ş Yap", key="logout_button"):
+if st.sidebar.button("Çıkış Yap", key="logout_button"):
     st.session_state.logged_in = False
     st.session_state.user = None
     st.rerun()
@@ -2735,43 +2735,43 @@ if st.sidebar.button("├ç─▒k─▒┼ş Yap", key="logout_button"):
 
 st.sidebar.markdown("---")
 
-with st.sidebar.expander("Ô¡É Favorilerim", expanded=False):
+with st.sidebar.expander("⭐ Favorilerim", expanded=False):
     favoriler = favorileri_getir(st.session_state.user["id"])
 
     if len(favoriler) == 0:
-        st.write("Hen├╝z favori yok.")
+        st.write("Henüz favori yok.")
     else:
         for fav_name, fav_type in favoriler:
-            st.write(f"Ô¡É {fav_name} ({fav_type})")
+            st.write(f"⭐ {fav_name} ({fav_type})")
 
-with st.sidebar.expander("­şÆ¥ Kaydedilen Sistemlerim", expanded=False):
+with st.sidebar.expander("💾 Kaydedilen Sistemlerim", expanded=False):
     sistemler = kayitli_sistemleri_getir(st.session_state.user["id"])
 
     if len(sistemler) == 0:
-        st.write("Hen├╝z kay─▒tl─▒ sistem yok.")
+        st.write("Henüz kayıtlı sistem yok.")
     else:
         for build_name, total_price in sistemler:
-            st.write(f"­şûÑ´©Å {build_name} - {fiyat_formatla(total_price)}")
+            st.write(f"🖥️ {build_name} - {fiyat_formatla(total_price)}")
 
 
 st.sidebar.markdown("---")
-st.sidebar.header("Kullan─▒c─▒ Gereksinimleri")
+st.sidebar.header("Kullanıcı Gereksinimleri")
 
 kategori = st.sidebar.selectbox(
-    "├£r├╝n Kategorisi",
+    "Ürün Kategorisi",
     [
         "Telefon",
         "Bilgisayar",
         "Tablet",
-        "Kulakl─▒k",
-        "Ak─▒ll─▒ Saat / Bileklik",
+        "Kulaklık",
+        "Akıllı Saat / Bileklik",
         "Toplama Bilgisayar",
-        "Elektronik Ev E┼şyalar─▒",
-        "├£r├╝n Kar┼ş─▒la┼şt─▒rma"
+        "Elektronik Ev Eşyaları",
+        "Ürün Karşılaştırma"
     ]
 )
 
-st.sidebar.markdown("### B├╝t├ğe Aral─▒─ş─▒ (TL)")
+st.sidebar.markdown("### Bütçe Aralığı (TL)")
 
 butce_col1, butce_col2 = st.sidebar.columns(2)
 
@@ -2796,42 +2796,42 @@ with butce_col2:
     )
 
 if min_butce > max_butce:
-    st.sidebar.warning("Minimum b├╝t├ğe maximum b├╝t├ğeden b├╝y├╝k olamaz. De─şerler otomatik d├╝zeltildi.")
+    st.sidebar.warning("Minimum bütçe maximum bütçeden büyük olamaz. Değerler otomatik düzeltildi.")
     min_butce, max_butce = max_butce, min_butce
 
 st.session_state.min_butce = int(min_butce)
 st.session_state.max_butce = int(max_butce)
 
 siralama_secenekleri = [
-    "Ak─▒ll─▒ S─▒ralama",
-    "Pop├╝lerlik",
+    "Akıllı Sıralama",
+    "Popülerlik",
     "Teknik Puan",
-    "En D├╝┼ş├╝k Fiyat",
-    "En Y├╝ksek Fiyat",
-    "Yorum Say─▒s─▒"
+    "En Düşük Fiyat",
+    "En Yüksek Fiyat",
+    "Yorum Sayısı"
 ]
 
 if kategori in ["Bilgisayar", "Toplama Bilgisayar"]:
     siralama_secenekleri.append("Bellek / RAM")
 
 siralama = st.sidebar.selectbox(
-    "Listeyi S─▒rala",
+    "Listeyi Sırala",
     siralama_secenekleri
 )
 
 kullanim_secimleri = {
-    "Telefon": ["", "G├╝nl├╝k Kullan─▒m", "Oyun", "Kamera / Foto─şraf", "Video ─░├ğerik ├£retimi", "Sosyal Medya", "Uzun Pil", "─░┼ş"],
-    "Bilgisayar": ["", "Oyun", "Yaz─▒l─▒m", "Ofis", "Okul", "Tasar─▒m", "Video Edit", "G├╝nl├╝k Kullan─▒m"],
-    "Tablet": ["", "Okul", "Not Alma", "├çizim", "Film / Dizi", "G├╝nl├╝k Kullan─▒m", "─░┼ş"],
-    "Kulakl─▒k": ["", "M├╝zik", "Oyun", "Spor", "G├╝r├╝lt├╝ Engelleme", "Toplant─▒", "G├╝nl├╝k Kullan─▒m"],
-    "Ak─▒ll─▒ Saat / Bileklik": ["", "Spor", "Sa─şl─▒k Takibi", "G├╝nl├╝k Kullan─▒m", "Bildirim", "Uzun Pil"],
-    "Toplama Bilgisayar": ["", "Oyun", "Yaz─▒l─▒m", "Tasar─▒m", "Video Edit", "Ofis"],
-    "Elektronik Ev E┼şyalar─▒": ["", "Ev Temizli─şi", "Pratik Yemek", "Ak─▒ll─▒ Ev", "Alerji", "Hava Kalitesi", "G├╝venlik", "G├╝nl├╝k Kullan─▒m"],
-    "├£r├╝n Kar┼ş─▒la┼şt─▒rma": [""]
+    "Telefon": ["", "Günlük Kullanım", "Oyun", "Kamera / Fotoğraf", "Video İçerik Üretimi", "Sosyal Medya", "Uzun Pil", "İş"],
+    "Bilgisayar": ["", "Oyun", "Yazılım", "Ofis", "Okul", "Tasarım", "Video Edit", "Günlük Kullanım"],
+    "Tablet": ["", "Okul", "Not Alma", "Çizim", "Film / Dizi", "Günlük Kullanım", "İş"],
+    "Kulaklık": ["", "Müzik", "Oyun", "Spor", "Gürültü Engelleme", "Toplantı", "Günlük Kullanım"],
+    "Akıllı Saat / Bileklik": ["", "Spor", "Sağlık Takibi", "Günlük Kullanım", "Bildirim", "Uzun Pil"],
+    "Toplama Bilgisayar": ["", "Oyun", "Yazılım", "Tasarım", "Video Edit", "Ofis"],
+    "Elektronik Ev Eşyaları": ["", "Ev Temizliği", "Pratik Yemek", "Akıllı Ev", "Alerji", "Hava Kalitesi", "Güvenlik", "Günlük Kullanım"],
+    "Ürün Karşılaştırma": [""]
 }
 
 kullanim = st.sidebar.selectbox(
-    "Kullan─▒m Amac─▒",
+    "Kullanım Amacı",
     kullanim_secimleri.get(kategori, [""])
 )
 
@@ -2873,39 +2873,39 @@ ev_garanti = "Farketmez"
 ev_marka = "Farketmez"
 
 
-if kategori == "├£r├╝n Kar┼ş─▒la┼şt─▒rma":
-    st.sidebar.markdown("### ÔÜû´©Å ├£r├╝n Kar┼ş─▒la┼şt─▒rma")
+if kategori == "Ürün Karşılaştırma":
+    st.sidebar.markdown("### ⚖️ Ürün Karşılaştırma")
 
     karsilastirma_kaynak = st.sidebar.selectbox(
-        "Kar┼ş─▒la┼şt─▒rma Grubu",
+        "Karşılaştırma Grubu",
         [
-            "Haz─▒r Teknoloji ├£r├╝nleri",
-            "Elektronik Ev E┼şyalar─▒",
-            "Toplama PC Par├ğalar─▒"
+            "Hazır Teknoloji Ürünleri",
+            "Elektronik Ev Eşyaları",
+            "Toplama PC Parçaları"
         ],
         key="karsilastirma_kaynak"
     )
 
-    if karsilastirma_kaynak == "Haz─▒r Teknoloji ├£r├╝nleri":
+    if karsilastirma_kaynak == "Hazır Teknoloji Ürünleri":
         if tech_df.empty or "Kategori" not in tech_df.columns:
-            karsilastirma_kategoriler = ["T├╝m├╝"]
+            karsilastirma_kategoriler = ["Tümü"]
         else:
-            karsilastirma_kategoriler = ["T├╝m├╝"] + sorted(tech_df["Kategori"].dropna().astype(str).unique())
+            karsilastirma_kategoriler = ["Tümü"] + sorted(tech_df["Kategori"].dropna().astype(str).unique())
 
-    elif karsilastirma_kaynak == "Elektronik Ev E┼şyalar─▒":
+    elif karsilastirma_kaynak == "Elektronik Ev Eşyaları":
         if ev_df.empty or "Alt_Kategori" not in ev_df.columns:
-            karsilastirma_kategoriler = ["T├╝m├╝"]
+            karsilastirma_kategoriler = ["Tümü"]
         else:
-            karsilastirma_kategoriler = ["T├╝m├╝"] + sorted(ev_df["Alt_Kategori"].dropna().astype(str).unique())
+            karsilastirma_kategoriler = ["Tümü"] + sorted(ev_df["Alt_Kategori"].dropna().astype(str).unique())
 
     else:
         if pc_df.empty or "Alt_Kategori" not in pc_df.columns:
-            karsilastirma_kategoriler = ["T├╝m├╝"]
+            karsilastirma_kategoriler = ["Tümü"]
         else:
-            karsilastirma_kategoriler = ["T├╝m├╝"] + sorted(pc_df["Alt_Kategori"].dropna().astype(str).unique())
+            karsilastirma_kategoriler = ["Tümü"] + sorted(pc_df["Alt_Kategori"].dropna().astype(str).unique())
 
     karsilastirma_kategori = st.sidebar.selectbox(
-        "Kar┼ş─▒la┼şt─▒r─▒lacak Kategori",
+        "Karşılaştırılacak Kategori",
         karsilastirma_kategoriler,
         key="karsilastirma_kategori"
     )
@@ -2918,24 +2918,24 @@ if kategori == "├£r├╝n Kar┼ş─▒la┼şt─▒rma":
     urun_listesi = karsilastirma_urun_listesi(karsilastirma_df)
 
     if len(urun_listesi) < 2:
-        st.sidebar.warning("Bu grupta kar┼ş─▒la┼şt─▒rma i├ğin yeterli ├╝r├╝n yok.")
+        st.sidebar.warning("Bu grupta karşılaştırma için yeterli ürün yok.")
     else:
         urun_etiketleri = [x[0] for x in urun_listesi]
 
         urun1_label = st.sidebar.selectbox(
-            "1. ├£r├╝n",
+            "1. Ürün",
             urun_etiketleri,
             key="karsilastirma_urun1"
         )
 
         urun2_label = st.sidebar.selectbox(
-            "2. ├£r├╝n",
+            "2. Ürün",
             urun_etiketleri,
             index=1,
             key="karsilastirma_urun2"
         )
 
-        if st.sidebar.button("ÔÜû´©Å ├£r├╝nleri Kar┼ş─▒la┼şt─▒r", key="karsilastirma_button"):
+        if st.sidebar.button("⚖️ Ürünleri Karşılaştır", key="karsilastirma_button"):
             urun1_index = dict(urun_listesi)[urun1_label]
             urun2_index = dict(urun_listesi)[urun2_label]
 
@@ -2954,22 +2954,22 @@ if kategori == "├£r├╝n Kar┼ş─▒la┼şt─▒rma":
 
 
 if kategori == "Toplama Bilgisayar":
-    st.sidebar.markdown("### ­şğ® Toplama Bilgisayar Modu")
+    st.sidebar.markdown("### 🧩 Toplama Bilgisayar Modu")
 
     pc_mod = st.sidebar.radio(
         "Ne yapmak istiyorsun?",
         [
-            "Par├ğalar─▒ tek tek incele",
-            "B├╝t├ğeye g├Âre uyumlu sistem topla"
+            "Parçaları tek tek incele",
+            "Bütçeye göre uyumlu sistem topla"
         ],
         key="pc_mod_radio"
     )
 
-    if pc_mod == "Par├ğalar─▒ tek tek incele":
-        st.sidebar.info("Par├ğa ba┼şl─▒klar─▒n─▒ a├ğ, se├ğimlerini yap, en alttaki butonla sonu├ğlar─▒ getir.")
+    if pc_mod == "Parçaları tek tek incele":
+        st.sidebar.info("Parça başlıklarını aç, seçimlerini yap, en alttaki butonla sonuçları getir.")
 
-        with st.sidebar.expander("─░┼şlemci"):
-            marka_cpu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "─░┼şlemci"), key="cpu_marka")
+        with st.sidebar.expander("İşlemci"):
+            marka_cpu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "İşlemci"), key="cpu_marka")
             soket_cpu = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="cpu_soket")
 
         with st.sidebar.expander("Anakart"):
@@ -2982,8 +2982,8 @@ if kategori == "Toplama Bilgisayar":
             ramtip_ram = st.selectbox("RAM Tipi", ["Farketmez", "DDR4", "DDR5"], key="ram_ramtip")
             rgb_ram = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="ram_rgb")
 
-        with st.sidebar.expander("Ekran Kart─▒"):
-            marka_gpu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Ekran Kart─▒"), key="gpu_marka")
+        with st.sidebar.expander("Ekran Kartı"):
+            marka_gpu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Ekran Kartı"), key="gpu_marka")
             min_vram_gpu = st.selectbox("Minimum VRAM", ["Farketmez", "4", "6", "8", "12", "16", "24"], key="gpu_vram")
 
         with st.sidebar.expander("SSD"):
@@ -2994,21 +2994,21 @@ if kategori == "Toplama Bilgisayar":
             marka_hdd = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "HDD"), key="hdd_marka")
             min_kapasite_hdd = st.selectbox("Minimum Kapasite", ["Farketmez", "500", "1000", "2000", "4000"], key="hdd_capacity")
 
-        with st.sidebar.expander("G├╝├ğ Kayna─ş─▒"):
-            marka_psu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "G├╝├ğ Kayna─ş─▒"), key="psu_marka")
+        with st.sidebar.expander("Güç Kaynağı"):
+            marka_psu = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Güç Kaynağı"), key="psu_marka")
             min_watt_psu = st.selectbox("Minimum Watt", ["Farketmez", "500", "600", "650", "750", "850", "1000"], key="psu_watt")
 
         with st.sidebar.expander("Kasa"):
             marka_kasa = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Kasa"), key="case_marka")
             rgb_kasa = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="case_rgb")
 
-        with st.sidebar.expander("So─şutucu"):
-            marka_cooler = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "So─şutucu"), key="cooler_marka")
+        with st.sidebar.expander("Soğutucu"):
+            marka_cooler = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Soğutucu"), key="cooler_marka")
             soket_cooler = st.selectbox("Soket", ["Farketmez", "AM4", "AM5", "LGA1700", "LGA1851"], key="cooler_soket")
             rgb_cooler = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="cooler_rgb")
 
-        with st.sidebar.expander("Monit├Âr"):
-            marka_monitor = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Monit├Âr"), key="monitor_marka")
+        with st.sidebar.expander("Monitör"):
+            marka_monitor = st.selectbox("Marka", marka_listesi_getir(pc_df, "Alt_Kategori", "Monitör"), key="monitor_marka")
             monitor_rgb = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="monitor_rgb")
 
         with st.sidebar.expander("Klavye"):
@@ -3020,12 +3020,12 @@ if kategori == "Toplama Bilgisayar":
             rgb_mouse = st.selectbox("RGB", ["Farketmez", "Var", "Yok"], key="mouse_rgb")
         st.sidebar.markdown("---")
 
-        if st.sidebar.button("­şöÄ Se├ğimlerime G├Âre ├ûnerilenleri Getir", key="pc_all_parts_filter_button"):
+        if st.sidebar.button("🔎 Seçimlerime Göre Önerilenleri Getir", key="pc_all_parts_filter_button"):
             sonuc_listesi = []
 
             sonuc_listesi.append(
                 pc_parca_filtrele(
-                    "─░┼şlemci",
+                    "İşlemci",
                     min_butce,
                     max_butce,
                     soket_cpu,
@@ -3073,7 +3073,7 @@ if kategori == "Toplama Bilgisayar":
 
             sonuc_listesi.append(
                 pc_parca_filtrele(
-                    "Ekran Kart─▒",
+                    "Ekran Kartı",
                     min_butce,
                     max_butce,
                     "Farketmez",
@@ -3121,7 +3121,7 @@ if kategori == "Toplama Bilgisayar":
 
             sonuc_listesi.append(
                 pc_parca_filtrele(
-                    "G├╝├ğ Kayna─ş─▒",
+                    "Güç Kaynağı",
                     min_butce,
                     max_butce,
                     "Farketmez",
@@ -3153,7 +3153,7 @@ if kategori == "Toplama Bilgisayar":
 
             sonuc_listesi.append(
                 pc_parca_filtrele(
-                    "So─şutucu",
+                    "Soğutucu",
                     min_butce,
                     max_butce,
                     soket_cooler,
@@ -3169,7 +3169,7 @@ if kategori == "Toplama Bilgisayar":
 
             sonuc_listesi.append(
                 pc_parca_filtrele(
-                    "Monit├Âr",
+                    "Monitör",
                     min_butce,
                     max_butce,
                     "Farketmez",
@@ -3231,12 +3231,12 @@ if kategori == "Toplama Bilgisayar":
         pc_kurulum_tipi = st.sidebar.selectbox(
             "Kurulum Tipi",
             ["Temel Sistem", "Tam Kurulum"],
-            help="Temel Sistem sadece kasa i├ği par├ğalar─▒ toplar. Tam Kurulum monit├Âr, klavye, mouse ve varsa HDD de ekler.",
+            help="Temel Sistem sadece kasa içi parçaları toplar. Tam Kurulum monitör, klavye, mouse ve varsa HDD de ekler.",
             key="pc_kurulum_tipi_select"
         )
         st.session_state.pc_kurulum_tipi = pc_kurulum_tipi
 
-        if st.sidebar.button("­şûÑ´©Å Sistem Topla", key="build_pc_button"):
+        if st.sidebar.button("🖥️ Sistem Topla", key="build_pc_button"):
             st.session_state.aktif_mod = "pc_build"
             st.session_state.pc_build = None
             st.session_state.pc_builds = besli_pc_sistem_olustur(
@@ -3251,16 +3251,16 @@ if kategori == "Toplama Bilgisayar":
             st.rerun()
 
 
-elif kategori == "Elektronik Ev E┼şyalar─▒":
-    st.sidebar.markdown("### ­şÅá Elektronik Ev E┼şyalar─▒")
+elif kategori == "Elektronik Ev Eşyaları":
+    st.sidebar.markdown("### 🏠 Elektronik Ev Eşyaları")
 
-    ana_kategoriler = ["T├╝m├╝"] + ev_ana_kategorileri_getir()
+    ana_kategoriler = ["Tümü"] + ev_ana_kategorileri_getir()
     ev_ana_kategori = st.sidebar.selectbox("Ana Kategori", ana_kategoriler)
 
-    if ev_ana_kategori == "T├╝m├╝":
-        alt_kategoriler = ["T├╝m├╝"] + ev_alt_kategorileri_getir()
+    if ev_ana_kategori == "Tümü":
+        alt_kategoriler = ["Tümü"] + ev_alt_kategorileri_getir()
     else:
-        alt_kategoriler = ["T├╝m├╝"] + sorted(
+        alt_kategoriler = ["Tümü"] + sorted(
             ev_df[ev_df["Ana_Kategori"] == ev_ana_kategori]["Alt_Kategori"].dropna().unique()
         )
 
@@ -3283,13 +3283,13 @@ elif kategori == "Elektronik Ev E┼şyalar─▒":
 
     ev_site = st.sidebar.selectbox(
         "Kaynak Site",
-        ["Farketmez", "Hepsiburada", "Trendyol", "Teknosa", "MediaMarkt", "Vatan Bilgisayar", "Amazon T├╝rkiye", "n11"]
+        ["Farketmez", "Hepsiburada", "Trendyol", "Teknosa", "MediaMarkt", "Vatan Bilgisayar", "Amazon Türkiye", "n11"]
     )
 
     if ev_tipi in ["pisirme", "icecek", "hava_iklim", "utu", "beyaz_esya"]:
         ev_enerji = st.sidebar.selectbox(
-            "Enerji S─▒n─▒f─▒",
-            ["Farketmez", "A+++", "A++", "A+", "A", "B", "C", "Belirtilmemi┼ş"]
+            "Enerji Sınıfı",
+            ["Farketmez", "A+++", "A++", "A+", "A", "B", "C", "Belirtilmemiş"]
         )
 
     if ev_tipi in ["pisirme", "icecek", "hava_iklim", "utu"]:
@@ -3300,14 +3300,14 @@ elif kategori == "Elektronik Ev E┼şyalar─▒":
 
     if ev_tipi == "supurge":
         ev_min_emis = st.sidebar.selectbox(
-            "Minimum Emi┼ş G├╝c├╝ / Pa",
+            "Minimum Emiş Gücü / Pa",
             ["Farketmez", "1000", "2000", "3000", "4000", "5000", "6000", "7000"]
         )
 
     if ev_tipi in ["supurge", "pisirme", "icecek", "evcil"]:
         hazne_etiketi = "Minimum Hazne / Litre"
         if ev_tipi == "evcil":
-            hazne_etiketi = "Minimum At─▒k/Hazne Kapasitesi"
+            hazne_etiketi = "Minimum Atık/Hazne Kapasitesi"
         ev_min_hazne = st.sidebar.selectbox(
             hazne_etiketi,
             ["Farketmez", "1", "2", "3", "4", "5", "6", "7", "8"]
@@ -3315,13 +3315,13 @@ elif kategori == "Elektronik Ev E┼şyalar─▒":
 
     if ev_tipi in ["supurge", "icecek", "hava_iklim", "evcil", "guvenlik"]:
         ev_wifi = st.sidebar.selectbox(
-            "Wi-Fi / Ak─▒ll─▒ Ba─şlant─▒",
+            "Wi-Fi / Akıllı Bağlantı",
             ["Farketmez", "Var", "Yok"]
         )
 
     if ev_tipi in ["guvenlik"]:
         ev_rgb = st.sidebar.selectbox(
-            "RGB / I┼ş─▒k",
+            "RGB / Işık",
             ["Farketmez", "Var", "Yok"]
         )
 
@@ -3331,8 +3331,8 @@ elif kategori == "Elektronik Ev E┼şyalar─▒":
     )
 
 
-elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulakl─▒k", "Ak─▒ll─▒ Saat / Bileklik"]:
-    st.sidebar.markdown("### ­şöÄ Kategoriye ├ûzel Filtreler")
+elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulaklık", "Akıllı Saat / Bileklik"]:
+    st.sidebar.markdown("### 🔎 Kategoriye Özel Filtreler")
 
     hazir_marka = st.sidebar.selectbox(
         "Marka",
@@ -3344,51 +3344,51 @@ elif kategori in ["Telefon", "Bilgisayar", "Tablet", "Kulakl─▒k", "Ak─▒l
         hazir_min_depolama = st.sidebar.selectbox("Minimum Depolama", ["Farketmez", "64", "128", "256", "512", "1000"], key="telefon_depolama")
         hazir_min_kamera = st.sidebar.selectbox("Minimum Kamera / MP", ["Farketmez", "12", "24", "48", "64", "108", "200"], key="telefon_kamera")
         hazir_min_batarya = st.sidebar.selectbox("Minimum Batarya / mAh", ["Farketmez", "3000", "4000", "4500", "5000", "5500", "6000"], key="telefon_batarya")
-        hazir_5g = st.sidebar.selectbox("5G", ["Farketmez", "Evet", "Hay─▒r"], key="telefon_5g")
-        hazir_nfc = st.sidebar.selectbox("NFC", ["Farketmez", "Evet", "Hay─▒r"], key="telefon_nfc")
-        hazir_su = st.sidebar.selectbox("Su Ge├ğirmezlik", ["Farketmez", "Evet", "Hay─▒r"], key="telefon_su")
+        hazir_5g = st.sidebar.selectbox("5G", ["Farketmez", "Evet", "Hayır"], key="telefon_5g")
+        hazir_nfc = st.sidebar.selectbox("NFC", ["Farketmez", "Evet", "Hayır"], key="telefon_nfc")
+        hazir_su = st.sidebar.selectbox("Su Geçirmezlik", ["Farketmez", "Evet", "Hayır"], key="telefon_su")
 
     elif kategori == "Bilgisayar":
-        hazir_cpu_marka = st.sidebar.selectbox("─░┼şlemci Markas─▒", ["Farketmez", "Intel", "AMD", "Apple"], key="bilgisayar_cpu_marka")
-        hazir_cpu_seviye = st.sidebar.selectbox("─░┼şlemci Seviyesi", ["Farketmez", "Giri┼ş", "Orta", "├£st", "Premium"], key="bilgisayar_cpu_seviye")
+        hazir_cpu_marka = st.sidebar.selectbox("İşlemci Markası", ["Farketmez", "Intel", "AMD", "Apple"], key="bilgisayar_cpu_marka")
+        hazir_cpu_seviye = st.sidebar.selectbox("İşlemci Seviyesi", ["Farketmez", "Giriş", "Orta", "Üst", "Premium"], key="bilgisayar_cpu_seviye")
         min_ram = st.sidebar.selectbox("Minimum RAM", [0, 4, 8, 12, 16, 24, 32, 64], index=2, key="bilgisayar_ram")
         hazir_min_depolama = st.sidebar.selectbox("Minimum Depolama", ["Farketmez", "256", "512", "1000", "2000", "4000"], key="bilgisayar_depolama")
-        hazir_gpu = st.sidebar.selectbox("GPU Tercihi", ["Farketmez", "RTX", "GTX", "Radeon", "Intel", "Apple", "Payla┼ş─▒ml─▒"], key="bilgisayar_gpu")
-        hazir_gpu_seviye = st.sidebar.selectbox("GPU Seviyesi", ["Farketmez", "Payla┼ş─▒ml─▒", "Giri┼ş", "Orta", "├£st"], key="bilgisayar_gpu_seviye")
+        hazir_gpu = st.sidebar.selectbox("GPU Tercihi", ["Farketmez", "RTX", "GTX", "Radeon", "Intel", "Apple", "Paylaşımlı"], key="bilgisayar_gpu")
+        hazir_gpu_seviye = st.sidebar.selectbox("GPU Seviyesi", ["Farketmez", "Paylaşımlı", "Giriş", "Orta", "Üst"], key="bilgisayar_gpu_seviye")
         hazir_panel = st.sidebar.selectbox("Ekran Paneli", ["Farketmez", "IPS", "OLED", "AMOLED", "Retina"], key="bilgisayar_panel")
-        hazir_min_hz = st.sidebar.selectbox("Minimum Yenileme H─▒z─▒", ["Farketmez", "60", "90", "120", "144", "165", "240"], key="bilgisayar_hz")
-        hazir_isletim = st.sidebar.selectbox("─░┼şletim Sistemi", secenekleri_getir(tech_df, kategori, "─░┼şletim Sistemi"), key="bilgisayar_isletim")
+        hazir_min_hz = st.sidebar.selectbox("Minimum Yenileme Hızı", ["Farketmez", "60", "90", "120", "144", "165", "240"], key="bilgisayar_hz")
+        hazir_isletim = st.sidebar.selectbox("İşletim Sistemi", secenekleri_getir(tech_df, kategori, "İşletim Sistemi"), key="bilgisayar_isletim")
 
     elif kategori == "Tablet":
         hazir_min_depolama = st.sidebar.selectbox("Minimum Depolama", ["Farketmez", "64", "128", "256", "512", "1000"], key="tablet_depolama")
         hazir_min_batarya = st.sidebar.selectbox("Minimum Batarya / mAh", ["Farketmez", "4000", "6000", "8000", "10000"], key="tablet_batarya")
         hazir_panel = st.sidebar.selectbox("Ekran Paneli", ["Farketmez", "IPS", "OLED", "AMOLED", "Retina"], key="tablet_panel")
-        hazir_min_hz = st.sidebar.selectbox("Minimum Yenileme H─▒z─▒", ["Farketmez", "60", "90", "120", "144"], key="tablet_hz")
-        hazir_isletim = st.sidebar.selectbox("─░┼şletim Sistemi", secenekleri_getir(tech_df, kategori, "─░┼şletim Sistemi"), key="tablet_isletim")
-        hazir_su = st.sidebar.selectbox("Su Ge├ğirmezlik", ["Farketmez", "Evet", "Hay─▒r"], key="tablet_su")
+        hazir_min_hz = st.sidebar.selectbox("Minimum Yenileme Hızı", ["Farketmez", "60", "90", "120", "144"], key="tablet_hz")
+        hazir_isletim = st.sidebar.selectbox("İşletim Sistemi", secenekleri_getir(tech_df, kategori, "İşletim Sistemi"), key="tablet_isletim")
+        hazir_su = st.sidebar.selectbox("Su Geçirmezlik", ["Farketmez", "Evet", "Hayır"], key="tablet_su")
 
-    elif kategori == "Kulakl─▒k":
-        hazir_kulaklik_tipi = st.sidebar.selectbox("Kulakl─▒k Tipi", secenekleri_getir(tech_df, kategori, "Kulakl─▒k Tipi"), key="kulaklik_tipi")
-        hazir_baglanti = st.sidebar.selectbox("Ba─şlant─▒ T├╝r├╝", secenekleri_getir(tech_df, kategori, "Ba─şlant─▒ T├╝r├╝"), key="kulaklik_baglanti")
-        hazir_gurultu = st.sidebar.selectbox("G├╝r├╝lt├╝ Engelleme", ["Farketmez", "Evet", "Hay─▒r"], key="kulaklik_gurultu")
-        hazir_mikrofon = st.sidebar.selectbox("Mikrofon", ["Farketmez", "Evet", "Hay─▒r"], key="kulaklik_mikrofon")
-        hazir_min_pil = st.sidebar.selectbox("Minimum Pil ├ûmr├╝ / saat", ["Farketmez", "5", "10", "20", "30", "40", "50"], key="kulaklik_pil")
+    elif kategori == "Kulaklık":
+        hazir_kulaklik_tipi = st.sidebar.selectbox("Kulaklık Tipi", secenekleri_getir(tech_df, kategori, "Kulaklık Tipi"), key="kulaklik_tipi")
+        hazir_baglanti = st.sidebar.selectbox("Bağlantı Türü", secenekleri_getir(tech_df, kategori, "Bağlantı Türü"), key="kulaklik_baglanti")
+        hazir_gurultu = st.sidebar.selectbox("Gürültü Engelleme", ["Farketmez", "Evet", "Hayır"], key="kulaklik_gurultu")
+        hazir_mikrofon = st.sidebar.selectbox("Mikrofon", ["Farketmez", "Evet", "Hayır"], key="kulaklik_mikrofon")
+        hazir_min_pil = st.sidebar.selectbox("Minimum Pil Ömrü / saat", ["Farketmez", "5", "10", "20", "30", "40", "50"], key="kulaklik_pil")
 
-    elif kategori == "Ak─▒ll─▒ Saat / Bileklik":
-        hazir_gps = st.sidebar.selectbox("GPS", ["Farketmez", "Evet", "Hay─▒r"], key="saat_gps")
-        hazir_su = st.sidebar.selectbox("Su Ge├ğirmezlik", ["Farketmez", "Evet", "Hay─▒r"], key="saat_su")
-        hazir_min_pil_gun = st.sidebar.selectbox("Minimum Pil ├ûmr├╝ / g├╝n", ["Farketmez", "1", "3", "5", "7", "10", "14"], key="saat_pil")
-        hazir_isletim = st.sidebar.selectbox("─░┼şletim Sistemi", secenekleri_getir(tech_df, kategori, "─░┼şletim Sistemi"), key="saat_isletim")
+    elif kategori == "Akıllı Saat / Bileklik":
+        hazir_gps = st.sidebar.selectbox("GPS", ["Farketmez", "Evet", "Hayır"], key="saat_gps")
+        hazir_su = st.sidebar.selectbox("Su Geçirmezlik", ["Farketmez", "Evet", "Hayır"], key="saat_su")
+        hazir_min_pil_gun = st.sidebar.selectbox("Minimum Pil Ömrü / gün", ["Farketmez", "1", "3", "5", "7", "10", "14"], key="saat_pil")
+        hazir_isletim = st.sidebar.selectbox("İşletim Sistemi", secenekleri_getir(tech_df, kategori, "İşletim Sistemi"), key="saat_isletim")
 
 
 st.sidebar.markdown("---")
 
-if kategori not in ["Toplama Bilgisayar", "├£r├╝n Kar┼ş─▒la┼şt─▒rma"]:
-    if st.sidebar.button("├ûneri Getir", key="oneri_getir_button"):
+if kategori not in ["Toplama Bilgisayar", "Ürün Karşılaştırma"]:
+    if st.sidebar.button("Öneri Getir", key="oneri_getir_button"):
         st.session_state.pc_build = None
         st.session_state.sonuc = None
 
-        if kategori == "Elektronik Ev E┼şyalar─▒":
+        if kategori == "Elektronik Ev Eşyaları":
             st.session_state.aktif_mod = "ev_esyalari"
             st.session_state.sonuc = ev_esyasi_oner(
                 ana_kategori=ev_ana_kategori,
@@ -3471,85 +3471,85 @@ pc_build_ekrani_acik = (
     or (
         kategori == "Toplama Bilgisayar"
         and "pc_mod" in locals()
-        and pc_mod == "B├╝t├ğeye g├Âre uyumlu sistem topla"
+        and pc_mod == "Bütçeye göre uyumlu sistem topla"
     )
 )
 
 
 if st.session_state.aktif_mod == "karsilastirma":
-    st.subheader("ÔÜû´©Å ├£r├╝n Kar┼ş─▒la┼şt─▒rma")
+    st.subheader("⚖️ Ürün Karşılaştırma")
 
     bilgi = st.session_state.get("karsilastirma", None)
 
     if not bilgi:
-        st.info("Soldaki panelden iki ├╝r├╝n se├ğip kar┼ş─▒la┼şt─▒rabilirsin.")
+        st.info("Soldaki panelden iki ürün seçip karşılaştırabilirsin.")
 
     else:
         row1 = pd.Series(bilgi["urun1"])
         row2 = pd.Series(bilgi["urun2"])
-        kaynak = bilgi.get("kaynak", "Haz─▒r Teknoloji ├£r├╝nleri")
+        kaynak = bilgi.get("kaynak", "Hazır Teknoloji Ürünleri")
 
         col1, col2 = st.columns(2)
 
         with col1:
             st.markdown(f"""
 <div class="product-card">
-<div class="product-title">1´©ÅÔâú {karsilastirma_urun_adi(row1)}</div><br>
-<span class="badge-orange">­şÆ░ Ortalama Piyasa Fiyat─▒: {karsilastirma_fiyat(row1)}</span>
-<span class="badge-purple">Ô¡É Puan: {karsilastirma_puan(row1)}</span>
+<div class="product-title">1️⃣ {karsilastirma_urun_adi(row1)}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {karsilastirma_fiyat(row1)}</span>
+<span class="badge-purple">⭐ Puan: {karsilastirma_puan(row1)}</span>
 </div>
 """, unsafe_allow_html=True)
 
         with col2:
             st.markdown(f"""
 <div class="product-card">
-<div class="product-title">2´©ÅÔâú {karsilastirma_urun_adi(row2)}</div><br>
-<span class="badge-orange">­şÆ░ Ortalama Piyasa Fiyat─▒: {karsilastirma_fiyat(row2)}</span>
-<span class="badge-purple">Ô¡É Puan: {karsilastirma_puan(row2)}</span>
+<div class="product-title">2️⃣ {karsilastirma_urun_adi(row2)}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {karsilastirma_fiyat(row2)}</span>
+<span class="badge-purple">⭐ Puan: {karsilastirma_puan(row2)}</span>
 </div>
 """, unsafe_allow_html=True)
 
         tablo = karsilastirma_tablo_olustur(row1, row2, kaynak)
         st.dataframe(tablo, use_container_width=True, hide_index=True)
 
-        st.markdown("### ­şöÄ G├╝ncel Fiyat Kontrol├╝")
+        st.markdown("### 🔎 Güncel Fiyat Kontrolü")
 
         col_link1, col_link2 = st.columns(2)
 
         with col_link1:
-            if kaynak == "Elektronik Ev E┼şyalar─▒":
+            if kaynak == "Elektronik Ev Eşyaları":
                 st.markdown(fiyat_karsilastirma_html("ev", row1), unsafe_allow_html=True)
-            elif kaynak == "Toplama PC Par├ğalar─▒":
+            elif kaynak == "Toplama PC Parçaları":
                 st.markdown(fiyat_karsilastirma_html("pc", row1), unsafe_allow_html=True)
             else:
                 st.markdown(hazir_urun_guvenilir_link_html(row1), unsafe_allow_html=True)
 
         with col_link2:
-            if kaynak == "Elektronik Ev E┼şyalar─▒":
+            if kaynak == "Elektronik Ev Eşyaları":
                 st.markdown(fiyat_karsilastirma_html("ev", row2), unsafe_allow_html=True)
-            elif kaynak == "Toplama PC Par├ğalar─▒":
+            elif kaynak == "Toplama PC Parçaları":
                 st.markdown(fiyat_karsilastirma_html("pc", row2), unsafe_allow_html=True)
             else:
                 st.markdown(hazir_urun_guvenilir_link_html(row2), unsafe_allow_html=True)
 
 elif pc_build_ekrani_acik:
-    st.subheader("­şûÑ´©Å B├╝t├ğeye G├Âre 5 Farkl─▒ Uyumlu Toplama Bilgisayar Sistemi")
+    st.subheader("🖥️ Bütçeye Göre 5 Farklı Uyumlu Toplama Bilgisayar Sistemi")
 
     builds = st.session_state.get("pc_builds", [])
 
     if not builds:
         if st.session_state.aktif_mod == "pc_build":
-            st.warning("Bu b├╝t├ğe aral─▒─ş─▒nda uygun sistem bulunamad─▒. B├╝t├ğe aral─▒─ş─▒n─▒ biraz geni┼şletip tekrar deneyebilirsin.")
+            st.warning("Bu bütçe aralığında uygun sistem bulunamadı. Bütçe aralığını biraz genişletip tekrar deneyebilirsin.")
         else:
-            st.info("Soldaki ­şûÑ´©Å Sistem Topla butonuna bas─▒nca 5 sistem burada g├Âr├╝necek.")
+            st.info("Soldaki 🖥️ Sistem Topla butonuna basınca 5 sistem burada görünecek.")
 
     else:
         st.markdown(
             """
 <div class="summary-box">
-<b>Nas─▒l okunmal─▒?</b><br>
-Sistem 1 daha ekonomik tarafa, Sistem 5 ise se├ğti─şin b├╝t├ğe aral─▒─ş─▒n─▒n ├╝st performans taraf─▒na yak─▒nd─▒r. 
-Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet kartlar g├Âsterilir; se├ğti─şin sistemin detaylar─▒ altta a├ğ─▒l─▒r.
+<b>Nasıl okunmalı?</b><br>
+Sistem 1 daha ekonomik tarafa, Sistem 5 ise seçtiğin bütçe aralığının üst performans tarafına yakındır. 
+Ekran kalabalığı olmaması için önce sadece özet kartlar gösterilir; seçtiğin sistemin detayları altta açılır.
 </div>
 """,
             unsafe_allow_html=True
@@ -3561,7 +3561,7 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
         for i, build_item in enumerate(builds):
             with kart_kolonlari[i]:
                 secili_mi = st.session_state.get("selected_pc_build_index", 0) == i
-                secili_yazi = "Ô£ô Se├ğili" if secili_mi else "─░ncele"
+                secili_yazi = "✓ Seçili" if secili_mi else "İncele"
                 sistem_ismi = build_item.get("isim", f"Sistem {i + 1}")
                 sistem_fiyati = fiyat_formatla(build_item.get("toplam_fiyat", 0))
                 sistem_etiketi = etiketler[i] if i < len(etiketler) else "Alternatif"
@@ -3590,15 +3590,15 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
         kalan = build.get("max_butce", max_butce) - toplam_fiyat
         secili_sistem_adi = build.get("isim", f"Sistem {secili_index + 1}")
 
-        st.markdown(f"## Se├ğili Sistem: {secili_sistem_adi}")
+        st.markdown(f"## Seçili Sistem: {secili_sistem_adi}")
 
         st.markdown(
             f"""
 <div class="summary-box">
 <b>Toplam Fiyat:</b> {fiyat_formatla(toplam_fiyat)}<br>
-<b>B├╝t├ğe Aral─▒─ş─▒:</b> {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build.get('max_butce', max_butce))}<br>
-<b>B├╝t├ğede Kalan:</b> {fiyat_formatla(max(kalan, 0))}<br>
-<b>Par├ğa Say─▒s─▒:</b> {len(build.get('parcalar', {}))}
+<b>Bütçe Aralığı:</b> {fiyat_formatla(build.get('min_butce', min_butce))} - {fiyat_formatla(build.get('max_butce', max_butce))}<br>
+<b>Bütçede Kalan:</b> {fiyat_formatla(max(kalan, 0))}<br>
+<b>Parça Sayısı:</b> {len(build.get('parcalar', {}))}
 </div>
 """,
             unsafe_allow_html=True
@@ -3607,7 +3607,7 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
         parca_satirlari = []
         for parca_adi, row in build.get("parcalar", {}).items():
             parca_satirlari.append({
-                "Par├ğa": parca_adi,
+                "Parça": parca_adi,
                 "Marka": veri_getir(row, "Marka"),
                 "Model": veri_getir(row, "Model"),
                 "Fiyat": fiyat_formatla(veri_getir(row, "Fiyat_TL")),
@@ -3620,12 +3620,12 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
 
         with col_a:
             sistem_adi = st.text_input(
-                "Bu sistemi kaydetmek i├ğin isim ver",
-                value=f"Benim Toplama Bilgisayar─▒m - {secili_sistem_adi}",
+                "Bu sistemi kaydetmek için isim ver",
+                value=f"Benim Toplama Bilgisayarım - {secili_sistem_adi}",
                 key="save_build_name"
             )
 
-            if st.button("­şÆ¥ Bu Sistemi Kaydet", key="save_build_button"):
+            if st.button("💾 Bu Sistemi Kaydet", key="save_build_button"):
                 success, message = sistemi_kaydet(
                     st.session_state.user["id"],
                     sistem_adi,
@@ -3639,7 +3639,7 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
                     st.error(message)
 
         with col_b:
-            if st.button("­şöä Alternatifleri Yenile", key="change_build_button"):
+            if st.button("🔄 Alternatifleri Yenile", key="change_build_button"):
                 st.session_state.pc_random_seed += 1
                 st.session_state.pc_build = None
                 st.session_state.pc_builds = besli_pc_sistem_olustur(
@@ -3652,7 +3652,7 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
                 st.session_state.selected_pc_build_index = 0
                 st.rerun()
 
-        st.markdown("### Par├ğa Detaylar─▒")
+        st.markdown("### Parça Detayları")
         for parca_adi, row in build.get("parcalar", {}).items():
             detay_baslik = f"{parca_adi} - {veri_getir(row, 'Marka')} {veri_getir(row, 'Model')} / {fiyat_formatla(veri_getir(row, 'Fiyat_TL'))}"
             with st.expander(detay_baslik):
@@ -3660,18 +3660,18 @@ Ekran kalabal─▒─ş─▒ olmamas─▒ i├ğin ├Ânce sadece ├Âzet k
 
 
 elif st.session_state.aktif_mod == "pc_parca":
-    st.subheader("­şğ® Se├ğimlere G├Âre ├ûnerilen Toplama Bilgisayar Par├ğalar─▒")
+    st.subheader("🧩 Seçimlere Göre Önerilen Toplama Bilgisayar Parçaları")
 
     sonuc = st.session_state.sonuc
 
     if sonuc is None:
-        st.info("Soldan par├ğa ba┼şl─▒klar─▒n─▒ a├ğ─▒p se├ğim yapabilirsin.")
+        st.info("Soldan parça başlıklarını açıp seçim yapabilirsin.")
 
     elif sonuc.empty:
-        st.warning("Bu kriterlere uygun par├ğa bulunamad─▒.")
+        st.warning("Bu kriterlere uygun parça bulunamadı.")
 
     else:
-        st.success(f"{len(sonuc)} par├ğa bulundu.")
+        st.success(f"{len(sonuc)} parça bulundu.")
 
         if "Alt_Kategori" in sonuc.columns:
             for alt_kategori_adi in sonuc["Alt_Kategori"].dropna().unique():
@@ -3682,12 +3682,12 @@ elif st.session_state.aktif_mod == "pc_parca":
                 for index, row in alt_df.iterrows():
                     pc_parca_karti(row)
 
-                    if st.button("Ô¡É Favorilere Ekle", key=f"fav_pc_{alt_kategori_adi}_{index}"):
+                    if st.button("⭐ Favorilere Ekle", key=f"fav_pc_{alt_kategori_adi}_{index}"):
                         product_name = f"{veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}"
 
                         success, message = favori_ekle(
                             st.session_state.user["id"],
-                            "Toplama Bilgisayar Par├ğas─▒",
+                            "Toplama Bilgisayar Parçası",
                             product_name,
                             row.to_dict()
                         )
@@ -3702,31 +3702,31 @@ elif st.session_state.aktif_mod == "pc_parca":
 
 
 elif st.session_state.aktif_mod == "ev_esyalari":
-    st.subheader("­şÅá Elektronik Ev E┼şyalar─▒")
+    st.subheader("🏠 Elektronik Ev Eşyaları")
 
     sonuc = st.session_state.sonuc
 
     if ev_df.empty:
-        st.error("elektronik_ev_esyalari_dataset.csv bulunamad─▒.")
+        st.error("elektronik_ev_esyalari_dataset.csv bulunamadı.")
 
     elif sonuc is None:
-        st.info("Soldan elektronik ev e┼şyas─▒ filtrelerini se├ğip ├Âneri alabilirsin.")
+        st.info("Soldan elektronik ev eşyası filtrelerini seçip öneri alabilirsin.")
 
     elif sonuc.empty:
-        st.warning("Bu kriterlere uygun elektronik ev e┼şyas─▒ bulunamad─▒.")
+        st.warning("Bu kriterlere uygun elektronik ev eşyası bulunamadı.")
 
     else:
-        st.success(f"{len(sonuc)} ├╝r├╝n bulundu.")
+        st.success(f"{len(sonuc)} ürün bulundu.")
 
         for index, row in sonuc.iterrows():
             ev_karti(row)
 
-            if st.button("Ô¡É Favorilere Ekle", key=f"fav_ev_{index}"):
+            if st.button("⭐ Favorilere Ekle", key=f"fav_ev_{index}"):
                 product_name = f"{veri_getir(row, 'Marka')} {veri_getir(row, 'Model')}"
 
                 success, message = favori_ekle(
                     st.session_state.user["id"],
-                    "Elektronik Ev E┼şyas─▒",
+                    "Elektronik Ev Eşyası",
                     product_name,
                     row.to_dict()
                 )
@@ -3738,40 +3738,40 @@ elif st.session_state.aktif_mod == "ev_esyalari":
 
 
 else:
-    st.subheader("­şöÄ ├ûnerilen ├£r├╝nler")
+    st.subheader("🔎 Önerilen Ürünler")
 
     if st.session_state.sonuc is None:
-        st.info("Soldaki panelden filtreleme yapabilir veya sa─ş ├╝stteki chatbot butonuna basarak iste─şini yazabilirsin.")
+        st.info("Soldaki panelden filtreleme yapabilir veya sağ üstteki chatbot butonuna basarak isteğini yazabilirsin.")
 
     else:
         sonuc = st.session_state.sonuc
 
         if sonuc.empty:
-            st.warning("Bu kriterlere uygun ├╝r├╝n bulunamad─▒.")
+            st.warning("Bu kriterlere uygun ürün bulunamadı.")
 
         else:
-            st.success(f"{len(sonuc)} ├╝r├╝n bulundu.")
+            st.success(f"{len(sonuc)} ürün bulundu.")
 
             for index, row in sonuc.iterrows():
                 st.markdown(f"""
 <div class="product-card">
-<div class="product-title">­şôĞ {veri_getir(row, 'Model')}</div><br>
-<span class="badge-orange">­şÆ░ Ortalama Piyasa Fiyat─▒: {fiyat_formatla(veri_getir(row, 'FIYAT_SAYI'))}</span>
-<span class="badge-blue">­şÅÀ´©Å {veri_getir(row, 'Kategori')}</span>
-<span class="badge-purple">Ô¡É Puan: {kart_puani_getir(row)}</span>
+<div class="product-title">📦 {veri_getir(row, 'Model')}</div><br>
+<span class="badge-orange">💰 Ortalama Piyasa Fiyatı: {fiyat_formatla(veri_getir(row, 'FIYAT_SAYI'))}</span>
+<span class="badge-blue">🏷️ {veri_getir(row, 'Kategori')}</span>
+<span class="badge-purple">⭐ Puan: {kart_puani_getir(row)}</span>
 <br><br>
-­şÄ» <b>Kullan─▒m Amac─▒:</b> {veri_getir(row, 'Kullan─▒m Amac─▒')}<br>
-­şôî <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
-ÔÜÖ´©Å <b>─░┼şlemci:</b> {veri_getir(row, '─░┼şlemci')}<br>
-­şğá <b>RAM:</b> {veri_getir(row, 'RAM')}<br>
-­şÆ¥ <b>Depolama:</b> {veri_getir(row, 'Depolama')}<br>
-­şÄ« <b>GPU:</b> {veri_getir(row, 'GPU')}<br>
-­şûÑ´©Å <b>Ekran:</b> {veri_getir(row, 'Ekran')}<br>
+🎯 <b>Kullanım Amacı:</b> {veri_getir(row, 'Kullanım Amacı')}<br>
+📌 <b>Segment:</b> {veri_getir(row, 'Segment')}<br>
+⚙️ <b>İşlemci:</b> {veri_getir(row, 'İşlemci')}<br>
+🧠 <b>RAM:</b> {veri_getir(row, 'RAM')}<br>
+💾 <b>Depolama:</b> {veri_getir(row, 'Depolama')}<br>
+🎮 <b>GPU:</b> {veri_getir(row, 'GPU')}<br>
+🖥️ <b>Ekran:</b> {veri_getir(row, 'Ekran')}<br>
 {hazir_urun_guvenilir_link_html(row)}
 </div>
 """, unsafe_allow_html=True)
 
-                if st.button("Ô¡É Favorilere Ekle", key=f"fav_normal_{index}"):
+                if st.button("⭐ Favorilere Ekle", key=f"fav_normal_{index}"):
                     product_name = str(veri_getir(row, "Model"))
 
                     success, message = favori_ekle(
