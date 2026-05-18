@@ -2319,7 +2319,7 @@ def chatbot_ev_alt_kategori_bul(mesaj_lower):
     alt_map = {
         "Dikey Süpürge": ["dikey supurge", "sarjli supurge", "stick supurge"],
         "Robot Süpürge": ["robot supurge", "robot vacuum"],
-        "Elektrikli Süpürge": ["elektrikli supurge", "supurge"],
+        "Elektrikli Süpürge": ["elektrikli supurge"],
         "Buhar Kazanlı Ütü": ["buhar kazanli"],
         "Buharlı Ütü": ["buharli utu", "utu"],
         "Airfryer": ["airfryer", "fritoz"],
