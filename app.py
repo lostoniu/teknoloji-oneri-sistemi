@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import random
 import pandas as pd
 import streamlit as st
@@ -2163,41 +2164,177 @@ if not st.session_state.logged_in:
 
 
 
+
+def chatbot_df_marka_bul(df, mesaj_lower, modelden=False):
+    """Mesajdaki marka adını mevcut datasetlerden esnek şekilde yakalar."""
+    if df is None or df.empty:
+        return "Farketmez"
+
+    aday_markalar = set()
+
+    if "Marka" in df.columns:
+        for marka in df["Marka"].dropna().astype(str).unique():
+            temiz = marka.strip()
+            if temiz and temiz.lower() not in ["nan", "none", "null", "yok"]:
+                aday_markalar.add(temiz)
+
+    if modelden and "Model" in df.columns:
+        for model in df["Model"].dropna().astype(str).head(5000):
+            marka = modelden_marka_bul(model)
+            if marka and marka.lower() not in ["nan", "none", "null", "bilinmiyor"]:
+                aday_markalar.add(marka)
+
+    # Bazı markalar model içinde geçiyor, dataset Marka kolonu boş olsa da yakalayalım.
+    for marka in MARKA_KELIMELERI:
+        aday_markalar.add(marka)
+
+    mesaj_norm = temizle_yazi(mesaj_lower)
+
+    for marka in sorted(aday_markalar, key=lambda x: len(str(x)), reverse=True):
+        marka_norm = temizle_yazi(marka)
+        if marka_norm and marka_norm in mesaj_norm:
+            return marka
+
+    return "Farketmez"
+
+
+def chatbot_sayilari_bul(mesaj_lower):
+    """20 bin, 20k, 20000 gibi sayıları TL/GB/W gibi işlemlerde kullanmak için çıkarır."""
+    mesaj = mesaj_lower.replace(".", "").replace(",", ".")
+    sayilar = []
+
+    for eslesme in re.finditer(r"(\d+(?:\.\d+)?)\s*(bin|k)?", mesaj):
+        sayi = float(eslesme.group(1))
+        ek = eslesme.group(2)
+
+        if ek in ["bin", "k"]:
+            sayi *= 1000
+
+        sayilar.append(int(sayi))
+
+    return sayilar
+
+
+def chatbot_butce_duzelt(mesaj_lower, min_butce, max_butce):
+    """LLM veya mevcut parser yetersiz kalırsa bütçeyi mesajdan daha sağlam okur."""
+    mesaj = mesaj_lower.replace(".", "").replace(",", ".")
+    butce_sayilari = []
+
+    for eslesme in re.finditer(r"(\d+(?:\.\d+)?)\s*(bin|k)?\s*(tl|₺|lira)?", mesaj):
+        sayi = float(eslesme.group(1))
+        ek = eslesme.group(2)
+        para = eslesme.group(3)
+
+        if ek in ["bin", "k"]:
+            sayi *= 1000
+
+        # Küçük teknik sayıları bütçe sanmasın: 16GB, 512GB, 750W gibi.
+        yakin_metin = mesaj[max(0, eslesme.start() - 8): eslesme.end() + 8]
+        if any(birim in yakin_metin for birim in ["gb", "tb", "ram", "w", "watt", "hz", "mp", "mah", "pa"]):
+            continue
+
+        if para or sayi >= 1000:
+            butce_sayilari.append(int(sayi))
+
+    if len(butce_sayilari) >= 2 and any(k in mesaj for k in ["arası", "arasi", "-", "ile"]):
+        return min(butce_sayilari[:2]), max(butce_sayilari[:2])
+
+    if len(butce_sayilari) >= 1:
+        tek = butce_sayilari[0]
+
+        if any(k in mesaj for k in ["üstü", "ustu", "fazla", "en az", "minimum"]):
+            return tek, max(max_butce, tek)
+
+        return 0, tek
+
+    return int(min_butce), int(max_butce)
+
+
+def chatbot_siralama_bul(mesaj_lower, mevcut_siralama):
+    mesaj = temizle_yazi(mesaj_lower)
+
+    if any(k in mesaj for k in ["ucuzdan pahaliya", "en dusuk fiyat", "en ucuz", "ucuz olsun"]):
+        return "En Düşük Fiyat"
+
+    if any(k in mesaj for k in ["pahalidan ucuza", "en yuksek fiyat", "en pahali"]):
+        return "En Yüksek Fiyat"
+
+    if any(k in mesaj for k in ["puan", "teknik puan", "performans", "en iyi"]):
+        return "Teknik Puan"
+
+    if any(k in mesaj for k in ["populer", "popüler", "yorum", "cok satan", "çok satan"]):
+        return "Popülerlik"
+
+    if any(k in mesaj for k in ["ram", "bellek"]):
+        return "Bellek / RAM"
+
+    return mevcut_siralama
+
+
 def chatbot_kategori_bul(mesaj_lower):
-    kategori_kelimeleri = {
-        "Toplama Bilgisayar": ["toplama", "sistem topla", "pc topla", "oyun sistemi", "parça", "parca"],
-        "Elektronik Ev Eşyaları": ["süpürge", "supurge", "airfryer", "kahve", "klima", "ütü", "utu", "kettle", "blender", "ev eşyası", "ev esyasi", "çay makinesi", "cay makinesi", "robot", "dikey süpürge", "hava temizleyici", "vantilatör", "kombi", "kedi tuvaleti"],
-        "Bilgisayar": ["laptop", "notebook", "bilgisayar", "oyun bilgisayarı", "oyun bilgisayari"],
-        "Telefon": ["telefon", "iphone", "android", "samsung", "xiaomi", "redmi", "oppo", "vivo", "realme"],
-        "Tablet": ["tablet", "ipad"],
-        "Kulaklık": ["kulaklık", "kulaklik", "earbuds", "airpods", "kulak üstü", "kulak ustu"],
-        "Akıllı Saat / Bileklik": ["akıllı saat", "akilli saat", "bileklik", "watch", "akıllı bileklik", "akilli bileklik"],
-    }
-    for kategori_adi, kelimeler in kategori_kelimeleri.items():
-        if any(kelime in mesaj_lower for kelime in kelimeler):
-            return kategori_adi
+    mesaj = temizle_yazi(mesaj_lower)
+
+    # Önce özel ürünleri yakala. Böylece "dikey süpürge" yanlışlıkla ütü gibi algılanmaz.
+    ev_kelimeleri = [
+        "supurge", "robot supurge", "dikey supurge", "sarjli supurge",
+        "airfryer", "fritoz", "kahve", "espresso", "cay makinesi", "kettle",
+        "su isitici", "klima", "vantilator", "hava temizleyici", "utu", "buharli",
+        "blender", "mikser", "tost makinesi", "kedi tuvaleti", "beyaz esya"
+    ]
+    if any(k in mesaj for k in ev_kelimeleri):
+        return "Elektronik Ev Eşyaları"
+
+    pc_parca_kelimeleri = [
+        "islemci", "cpu", "ekran karti", "gpu", "anakart", "ram", "ssd", "hdd",
+        "guc kaynagi", "psu", "kasa", "sogutucu", "monitor", "klavye", "mouse", "fare"
+    ]
+    if any(k in mesaj for k in pc_parca_kelimeleri):
+        return "Toplama Bilgisayar"
+
+    if any(k in mesaj for k in ["toplama", "sistem topla", "pc topla", "oyun sistemi", "hazir sistem"]):
+        return "Toplama Bilgisayar"
+
+    if any(k in mesaj for k in ["laptop", "notebook", "bilgisayar", "oyun bilgisayari"]):
+        return "Bilgisayar"
+
+    if any(k in mesaj for k in ["telefon", "iphone", "android", "samsung", "xiaomi", "redmi", "oppo", "vivo", "realme"]):
+        return "Telefon"
+
+    if any(k in mesaj for k in ["tablet", "ipad"]):
+        return "Tablet"
+
+    if any(k in mesaj for k in ["kulaklik", "earbuds", "airpods", "kulak ustu", "kulak ici"]):
+        return "Kulaklık"
+
+    if any(k in mesaj for k in ["akilli saat", "bileklik", "watch", "akilli bileklik"]):
+        return "Akıllı Saat / Bileklik"
+
     return None
 
 
-
 def chatbot_ev_alt_kategori_bul(mesaj_lower):
-    """Chatbotun elektronik ev eşyasında alt kategoriyi paneldeki filtreler kadar doğru yakalaması için kullanılır."""
+    """Elektronik ev eşyasında alt kategoriyi paneldeki filtre kadar net yakalar."""
+    mesaj = temizle_yazi(mesaj_lower)
+
     alt_map = {
-        "Dikey Süpürge": ["dikey süpürge", "dikey supurge", "şarjlı süpürge", "sarjli supurge"],
-        "Robot Süpürge": ["robot süpürge", "robot supurge", "robot vacuum"],
-        "Elektrikli Süpürge": ["elektrikli süpürge", "elektrikli supurge", "süpürge", "supurge"],
-        "Buharlı Ütü": ["buharlı ütü", "buharli utu", "ütü", "utu"],
-        "Buhar Kazanlı Ütü": ["buhar kazanlı", "buhar kazanli"],
-        "Airfryer": ["airfryer", "fritöz", "fritoz"],
+        "Dikey Süpürge": ["dikey supurge", "sarjli supurge", "stick supurge"],
+        "Robot Süpürge": ["robot supurge", "robot vacuum"],
+        "Elektrikli Süpürge": ["elektrikli supurge", "supurge"],
+        "Buhar Kazanlı Ütü": ["buhar kazanli"],
+        "Buharlı Ütü": ["buharli utu", "utu"],
+        "Airfryer": ["airfryer", "fritoz"],
         "Espresso Kahve Makinesi": ["espresso"],
         "Filtre Kahve Makinesi": ["filtre kahve"],
-        "Türk Kahvesi Makinesi": ["türk kahvesi", "turk kahvesi"],
+        "Türk Kahvesi Makinesi": ["turk kahvesi"],
         "Kahve Makinesi": ["kahve makinesi", "kahve"],
-        "Çay Makinesi": ["çay makinesi", "cay makinesi"],
-        "Kettle": ["kettle", "su ısıtıcı", "su isitici"],
+        "Çay Makinesi": ["cay makinesi"],
+        "Kettle": ["kettle", "su isitici"],
         "Hava Temizleyici": ["hava temizleyici", "hava temizleme"],
         "Klima": ["klima"],
-        "Akıllı Kedi Tuvaleti": ["kedi tuvaleti", "akıllı kedi", "akilli kedi"],
+        "Vantilatör": ["vantilator"],
+        "Blender": ["blender"],
+        "Tost Makinesi": ["tost makinesi"],
+        "Akıllı Kedi Tuvaleti": ["kedi tuvaleti", "akilli kedi"],
     }
 
     mevcut_altlar = []
@@ -2205,62 +2342,383 @@ def chatbot_ev_alt_kategori_bul(mesaj_lower):
         mevcut_altlar = [str(x) for x in ev_df["Alt_Kategori"].dropna().unique()]
 
     for hedef_alt, kelimeler in alt_map.items():
-        if any(k in mesaj_lower for k in kelimeler):
-            if hedef_alt in mevcut_altlar:
-                return hedef_alt
-            # Datasette "Dikey Süpürge" yerine "Şarjlı Dikey Süpürge" gibi daha uzun ad varsa onu yakala.
+        if any(k in mesaj for k in kelimeler):
             hedef_norm = temizle_yazi(hedef_alt)
+
+            for alt in mevcut_altlar:
+                alt_norm = temizle_yazi(alt)
+                if alt_norm == hedef_norm:
+                    return alt
+
             for alt in mevcut_altlar:
                 alt_norm = temizle_yazi(alt)
                 if hedef_norm in alt_norm or alt_norm in hedef_norm:
                     return alt
-            # Sadece süpürge gibi genel ifadelerde, varsa en yakın süpürge alt kategorisini döndür.
+
             if "supurge" in hedef_norm:
                 for alt in mevcut_altlar:
                     if "supurge" in temizle_yazi(alt):
                         return alt
+
             return hedef_alt
 
     return "Tümü"
 
 
+def chatbot_pc_alt_kategori_bul(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
+
+    alt_map = {
+        "İşlemci": ["islemci", "cpu", "ryzen", "intel core", "i3", "i5", "i7", "i9"],
+        "Ekran Kartı": ["ekran karti", "gpu", "rtx", "gtx", "rx ", "radeon", "nvidia"],
+        "Anakart": ["anakart", "motherboard", "b650", "b760", "x670", "z790"],
+        "RAM": ["ram", "bellek", "ddr4", "ddr5"],
+        "SSD": ["ssd", "nvme", "m2", "m.2"],
+        "HDD": ["hdd", "harddisk", "hard disk"],
+        "Güç Kaynağı": ["guc kaynagi", "psu", "watt", "750w", "650w"],
+        "Kasa": ["kasa"],
+        "Soğutucu": ["sogutucu", "fan", "sivi sogutma"],
+        "Monitör": ["monitor", "ekran"],
+        "Klavye": ["klavye", "mekanik klavye"],
+        "Mouse": ["mouse", "fare"],
+    }
+
+    mevcut_altlar = []
+    if not pc_df.empty and "Alt_Kategori" in pc_df.columns:
+        mevcut_altlar = [str(x) for x in pc_df["Alt_Kategori"].dropna().unique()]
+
+    for hedef_alt, kelimeler in alt_map.items():
+        if any(k in mesaj for k in kelimeler):
+            hedef_norm = temizle_yazi(hedef_alt)
+            for alt in mevcut_altlar:
+                alt_norm = temizle_yazi(alt)
+                if alt_norm == hedef_norm or hedef_norm in alt_norm or alt_norm in hedef_norm:
+                    return alt
+            return hedef_alt
+
+    return None
+
+
 def chatbot_pc_kurulum_tipi_bul(mesaj_lower):
-    if any(k in mesaj_lower for k in ["tam kurulum", "monitör", "monitor", "klavye", "mouse", "fare", "hdd"]):
+    mesaj = temizle_yazi(mesaj_lower)
+    if any(k in mesaj for k in ["tam kurulum", "monitor", "klavye", "mouse", "fare", "hdd"]):
         return "Tam Kurulum"
     return "Temel Sistem"
 
+
 def chatbot_urun_istegi_var_mi(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
     urun_kelimeleri = [
-        "öner", "oner", "al", "alayım", "alayim", "ne al", "bütçe", "butce", "tl", "₺",
-        "telefon", "bilgisayar", "laptop", "tablet", "kulaklık", "kulaklik", "saat",
-        "toplama", "süpürge", "supurge", "kahve", "airfryer", "ütü", "utu"
+        "oner", "al", "alayim", "ne al", "butce", "tl", "₺", "fiyat",
+        "telefon", "bilgisayar", "laptop", "tablet", "kulaklik", "saat",
+        "toplama", "supurge", "kahve", "airfryer", "utu", "islemci",
+        "ekran karti", "ram", "ssd", "monitor", "klavye", "mouse"
     ]
-    return any(kelime in mesaj_lower for kelime in urun_kelimeleri)
+    return any(kelime in mesaj for kelime in urun_kelimeleri)
 
 
 def chatbot_resmi_kontrol(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
     ton_kelimeleri = [
-        "saygılı ol", "saygili ol", "resmi konuş", "resmi konus", "kanka deme",
-        "samimi konuşma", "samimi konusma", "düzgün konuş", "duzgun konus"
+        "saygili ol", "resmi konus", "kanka deme",
+        "samimi konusma", "duzgun konus"
     ]
-    return any(kelime in mesaj_lower for kelime in ton_kelimeleri)
+    return any(kelime in mesaj for kelime in ton_kelimeleri)
 
 
-def chatbot_kriter_mesaji(kategori, min_butce, max_butce, ram=0, kullanim=""):
+def chatbot_ram_bul(mesaj_lower, varsayilan=0):
+    mesaj = temizle_yazi(mesaj_lower)
+    eslesmeler = re.findall(r"(\d+)\s*gb\s*ram|ram\s*(\d+)\s*gb", mesaj)
+    for a, b in eslesmeler:
+        deger = a or b
+        if deger:
+            return int(deger)
+
+    if "16 ram" in mesaj:
+        return 16
+    if "32 ram" in mesaj:
+        return 32
+    if "64 ram" in mesaj:
+        return 64
+
+    return int(varsayilan or 0)
+
+
+def chatbot_depolama_bul(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
+    if "2tb" in mesaj or "2 tb" in mesaj:
+        return "2000"
+    if "1tb" in mesaj or "1 tb" in mesaj:
+        return "1000"
+
+    gbler = re.findall(r"(\d+)\s*gb", mesaj)
+    for gb in gbler:
+        sayi = int(gb)
+        if sayi in [128, 256, 512, 1000, 1024, 2000, 2048, 4000]:
+            return str(sayi)
+
+    return "Farketmez"
+
+
+def chatbot_hz_bul(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
+    hzler = re.findall(r"(\d+)\s*hz", mesaj)
+    if hzler:
+        return str(max([int(x) for x in hzler]))
+
+    if "144" in mesaj:
+        return "144"
+    if "120" in mesaj:
+        return "120"
+
+    return "Farketmez"
+
+
+def chatbot_hazir_filtreleri_bul(kategori, mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
+
+    filtreler = {
+        "marka": chatbot_df_marka_bul(tech_df, mesaj_lower, modelden=True),
+        "min_depolama": chatbot_depolama_bul(mesaj_lower),
+        "min_kamera": "Farketmez",
+        "min_batarya": "Farketmez",
+        "bes_g": "Farketmez",
+        "nfc": "Farketmez",
+        "su": "Farketmez",
+        "cpu_marka": "Farketmez",
+        "cpu_seviye": "Farketmez",
+        "gpu_tercihi": "Farketmez",
+        "gpu_seviye": "Farketmez",
+        "panel": "Farketmez",
+        "min_hz": chatbot_hz_bul(mesaj_lower),
+        "isletim": "Farketmez",
+        "kulaklik_tipi": "Farketmez",
+        "baglanti": "Farketmez",
+        "gurultu": "Farketmez",
+        "mikrofon": "Farketmez",
+        "min_pil": "Farketmez",
+        "gps": "Farketmez",
+        "min_pil_gun": "Farketmez",
+    }
+
+    if "5g" in mesaj:
+        filtreler["bes_g"] = "Evet"
+
+    if "nfc" in mesaj:
+        filtreler["nfc"] = "Evet"
+
+    if any(k in mesaj for k in ["su gecirmez", "suya dayanikli", "ip68", "ip67", "5atm"]):
+        filtreler["su"] = "Evet"
+
+    if "intel" in mesaj:
+        filtreler["cpu_marka"] = "Intel"
+    elif "amd" in mesaj or "ryzen" in mesaj:
+        filtreler["cpu_marka"] = "AMD"
+    elif "apple" in mesaj or "m1" in mesaj or "m2" in mesaj or "m3" in mesaj or "m4" in mesaj:
+        filtreler["cpu_marka"] = "Apple"
+
+    if any(k in mesaj for k in ["i3", "ryzen 3", "giris seviye"]):
+        filtreler["cpu_seviye"] = "Giriş"
+    elif any(k in mesaj for k in ["i5", "ryzen 5", "orta seviye"]):
+        filtreler["cpu_seviye"] = "Orta"
+    elif any(k in mesaj for k in ["i7", "ryzen 7", "ust seviye"]):
+        filtreler["cpu_seviye"] = "Üst"
+    elif any(k in mesaj for k in ["i9", "ryzen 9", "premium"]):
+        filtreler["cpu_seviye"] = "Premium"
+
+    if "rtx" in mesaj:
+        rtx = re.search(r"rtx\s*(\d{4})", mesaj)
+        filtreler["gpu_tercihi"] = f"RTX {rtx.group(1)}" if rtx else "RTX"
+    elif "gtx" in mesaj:
+        filtreler["gpu_tercihi"] = "GTX"
+    elif "radeon" in mesaj or "rx " in mesaj:
+        filtreler["gpu_tercihi"] = "RX"
+
+    if any(k in mesaj for k in ["dahili ekran karti", "paylasimli", "paylaşımlı"]):
+        filtreler["gpu_seviye"] = "Paylaşımlı"
+    elif any(k in mesaj for k in ["rtx 3050", "rtx 4050", "gtx", "mx"]):
+        filtreler["gpu_seviye"] = "Giriş"
+    elif any(k in mesaj for k in ["rtx 3060", "rtx 4060", "rtx 4070", "rx 7600", "rx 7700"]):
+        filtreler["gpu_seviye"] = "Orta"
+    elif any(k in mesaj for k in ["rtx 4080", "rtx 4090", "rtx 5080", "rtx 5090", "rx 7900"]):
+        filtreler["gpu_seviye"] = "Üst"
+
+    if "amoled" in mesaj:
+        filtreler["panel"] = "AMOLED"
+    elif "oled" in mesaj:
+        filtreler["panel"] = "OLED"
+    elif "ips" in mesaj:
+        filtreler["panel"] = "IPS"
+
+    if "android" in mesaj:
+        filtreler["isletim"] = "Android"
+    elif "ios" in mesaj or "iphone" in mesaj:
+        filtreler["isletim"] = "iOS"
+    elif "windows" in mesaj:
+        filtreler["isletim"] = "Windows"
+    elif "macos" in mesaj:
+        filtreler["isletim"] = "macOS"
+
+    if any(k in mesaj for k in ["kulak ustu", "kulak üstü"]):
+        filtreler["kulaklik_tipi"] = "Kulak Üstü"
+    elif any(k in mesaj for k in ["kulak ici", "kulak içi", "earbuds"]):
+        filtreler["kulaklik_tipi"] = "Kulak İçi"
+
+    if "bluetooth" in mesaj:
+        filtreler["baglanti"] = "Bluetooth"
+    elif "kablolu" in mesaj:
+        filtreler["baglanti"] = "Kablolu"
+
+    if any(k in mesaj for k in ["gurultu engelleme", "anc", "noise cancelling"]):
+        filtreler["gurultu"] = "Evet"
+
+    if "mikrofon" in mesaj:
+        filtreler["mikrofon"] = "Evet"
+
+    if "gps" in mesaj:
+        filtreler["gps"] = "Evet"
+
+    kamera = re.search(r"(\d+)\s*mp", mesaj)
+    if kamera:
+        filtreler["min_kamera"] = kamera.group(1)
+
+    batarya = re.search(r"(\d{3,5})\s*mah", mesaj)
+    if batarya:
+        filtreler["min_batarya"] = batarya.group(1)
+
+    pil = re.search(r"(\d+)\s*(saat|hour)", mesaj)
+    if pil:
+        filtreler["min_pil"] = pil.group(1)
+
+    pil_gun = re.search(r"(\d+)\s*(gun|gün)", mesaj)
+    if pil_gun:
+        filtreler["min_pil_gun"] = pil_gun.group(1)
+
+    return filtreler
+
+
+def chatbot_ev_filtreleri_bul(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
+
+    filtreler = {
+        "marka": chatbot_df_marka_bul(ev_df, mesaj_lower),
+        "min_watt": "Farketmez",
+        "min_emis": "Farketmez",
+        "min_hazne": "Farketmez",
+        "wifi": "Farketmez",
+        "rgb": "Farketmez",
+        "min_garanti": "Farketmez",
+        "kullanim": "",
+    }
+
+    watt = re.search(r"(\d{2,5})\s*w", mesaj)
+    if watt:
+        filtreler["min_watt"] = watt.group(1)
+
+    pa = re.search(r"(\d{3,6})\s*pa", mesaj)
+    if pa:
+        filtreler["min_emis"] = pa.group(1)
+
+    litre = re.search(r"(\d+)\s*l", mesaj)
+    if litre:
+        filtreler["min_hazne"] = litre.group(1)
+
+    if "wifi" in mesaj or "wi-fi" in mesaj:
+        filtreler["wifi"] = "Var"
+
+    if "rgb" in mesaj or "isikli" in mesaj:
+        filtreler["rgb"] = "Var"
+
+    garanti = re.search(r"(\d+)\s*(ay|yil|yıl)\s*garanti", mesaj)
+    if garanti:
+        sayi = int(garanti.group(1))
+        if "yil" in garanti.group(2) or "yıl" in garanti.group(2):
+            sayi *= 12
+        filtreler["min_garanti"] = str(sayi)
+
+    if any(k in mesaj for k in ["sessiz", "az ses", "dusuk ses"]):
+        filtreler["kullanim"] = "sessiz"
+    elif any(k in mesaj for k in ["evcil", "kedi", "kopek"]):
+        filtreler["kullanim"] = "evcil"
+    elif any(k in mesaj for k in ["halı", "hali"]):
+        filtreler["kullanim"] = "halı"
+
+    return filtreler
+
+
+def chatbot_pc_filtreleri_bul(mesaj_lower):
+    mesaj = temizle_yazi(mesaj_lower)
+
+    filtreler = {
+        "marka": chatbot_df_marka_bul(pc_df, mesaj_lower),
+        "soket": "Farketmez",
+        "ram_tipi": "Farketmez",
+        "min_vram": "Farketmez",
+        "min_kapasite": "Farketmez",
+        "min_watt": "Farketmez",
+        "rgb": "Farketmez",
+    }
+
+    for soket in ["AM4", "AM5", "LGA1200", "LGA1700", "LGA1851"]:
+        if temizle_yazi(soket) in mesaj:
+            filtreler["soket"] = soket
+
+    if "ddr5" in mesaj:
+        filtreler["ram_tipi"] = "DDR5"
+    elif "ddr4" in mesaj:
+        filtreler["ram_tipi"] = "DDR4"
+
+    vram = re.search(r"(\d+)\s*gb\s*(vram|ekran karti|gpu)", mesaj)
+    if vram:
+        filtreler["min_vram"] = vram.group(1)
+
+    if "2tb" in mesaj or "2 tb" in mesaj:
+        filtreler["min_kapasite"] = "2000"
+    elif "1tb" in mesaj or "1 tb" in mesaj:
+        filtreler["min_kapasite"] = "1000"
+    else:
+        gbler = re.findall(r"(\d+)\s*gb", mesaj)
+        for gb in gbler:
+            sayi = int(gb)
+            if sayi >= 120:
+                filtreler["min_kapasite"] = str(sayi)
+
+    watt = re.search(r"(\d{3,4})\s*w", mesaj)
+    if watt:
+        filtreler["min_watt"] = watt.group(1)
+
+    if "rgb" in mesaj or "isikli" in mesaj:
+        filtreler["rgb"] = "Var"
+
+    return filtreler
+
+
+def chatbot_kriter_mesaji(kategori, min_butce, max_butce, ram=0, kullanim="", alt_kategori="", marka="Farketmez"):
     satirlar = [
         "Algılanan kriterler:",
         f"- Kategori: {kategori if kategori else 'Belirtilmedi'}",
-        f"- Bütçe aralığı: {fiyat_formatla(min_butce)} - {fiyat_formatla(max_butce)}",
     ]
+
+    if alt_kategori and alt_kategori != "Tümü":
+        satirlar.append(f"- Alt kategori: {alt_kategori}")
+
+    if marka and marka != "Farketmez":
+        satirlar.append(f"- Marka: {marka}")
+
+    satirlar.append(f"- Bütçe aralığı: {fiyat_formatla(min_butce)} - {fiyat_formatla(max_butce)}")
+
     if ram and int(ram) > 0:
         satirlar.append(f"- Minimum RAM: {ram} GB")
+
     if kullanim:
         satirlar.append(f"- Kullanım amacı: {kullanim}")
+
     return "\n".join(satirlar)
 
 
-def chatbot_sonuc_mesaji(sonuc, kategori, min_butce, max_butce, ram=0, kullanim=""):
-    kriter = chatbot_kriter_mesaji(kategori, min_butce, max_butce, ram, kullanim)
+def chatbot_sonuc_mesaji(sonuc, kategori, min_butce, max_butce, ram=0, kullanim="", alt_kategori="", marka="Farketmez"):
+    kriter = chatbot_kriter_mesaji(kategori, min_butce, max_butce, ram, kullanim, alt_kategori, marka)
+
     if sonuc is None:
         adet = 0
     elif isinstance(sonuc, list):
@@ -2269,12 +2727,14 @@ def chatbot_sonuc_mesaji(sonuc, kategori, min_butce, max_butce, ram=0, kullanim=
         adet = 0 if sonuc.empty else len(sonuc)
     else:
         adet = 0
+
     if adet == 0:
         return (
-            "Belirttiğiniz kriterlere uygun ürün bulunamadı.\n\n"
+            "Ne yazık ki sistemimizde böyle bir ürün yok.\n\n"
             f"{kriter}\n\n"
-            "Öneri: Bütçe aralığını artırabilir, kategori tercihini netleştirebilir veya filtreleri azaltabilirsiniz."
+            "İstersen bütçe aralığını genişletebilir, farklı bir marka deneyebilir veya filtreleri azaltabilirsin."
         )
+
     return (
         f"Belirttiğiniz kriterlere göre {adet} uygun sonuç bulundu. En uygun seçenekler aşağıda listelenmiştir.\n\n"
         f"{kriter}"
@@ -2344,6 +2804,7 @@ with col_chat:
             )
 
             kategori_mesajdan = chatbot_kategori_bul(mesaj_lower)
+            chat_siralama = chatbot_siralama_bul(mesaj_lower, chatbot_siralama)
 
             llm_sonuc = None
             try:
@@ -2355,20 +2816,46 @@ with col_chat:
 
             if llm_sonuc is not None:
                 llm_kategori = llm_sonuc.get("kategori", None)
+
                 if kategori_mesajdan:
                     chat_kategori = kategori_mesajdan
                 elif llm_kategori and str(llm_kategori).strip() not in ["", "None", "null"]:
-                    chat_kategori = llm_kategori
+                    chat_kategori = str(llm_kategori).strip()
 
-                chat_min_butce = int(llm_sonuc.get("min_butce", chat_min_butce))
-                chat_max_butce = int(llm_sonuc.get("max_butce", chat_max_butce))
-                chat_ram = int(llm_sonuc.get("ram", chat_ram))
-                chat_kullanim = llm_sonuc.get("kullanim", chat_kullanim)
+                try:
+                    chat_min_butce = int(llm_sonuc.get("min_butce", chat_min_butce))
+                    chat_max_butce = int(llm_sonuc.get("max_butce", chat_max_butce))
+                except Exception:
+                    pass
+
+                try:
+                    chat_ram = int(llm_sonuc.get("ram", chat_ram))
+                except Exception:
+                    pass
+
+                llm_kullanim = llm_sonuc.get("kullanim", chat_kullanim)
+                if llm_kullanim is not None:
+                    chat_kullanim = str(llm_kullanim)
             else:
                 if kategori_mesajdan:
                     chat_kategori = kategori_mesajdan
 
-            if kategori_mesajdan is None:
+            # LLM veya eski parser bütçeyi kaçırırsa metinden tekrar oku.
+            chat_min_butce, chat_max_butce = chatbot_butce_duzelt(
+                mesaj_lower,
+                chat_min_butce,
+                chat_max_butce
+            )
+
+            chat_ram = chatbot_ram_bul(mesaj_lower, chat_ram)
+
+            if chat_kategori in ["Elektronik Ev Eşyası", "Elektronik Ev Esyasi"]:
+                chat_kategori = "Elektronik Ev Eşyaları"
+
+            if chat_kategori in ["Akıllı Saat", "Akilli Saat", "Akıllı Bileklik"]:
+                chat_kategori = "Akıllı Saat / Bileklik"
+
+            if kategori_mesajdan is None and not chat_kategori:
                 bot_mesaji = (
                     "Ürün kategorisi net olarak belirtilmediği için öneri listesi oluşturamadım.\n\n"
                     f"{chatbot_kriter_mesaji(None, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}\n\n"
@@ -2382,9 +2869,8 @@ with col_chat:
 
             if int(chat_max_butce) < 100:
                 bot_mesaji = (
-                    "Belirttiğiniz bütçe aralığında uygun teknoloji ürünü bulunması mümkün görünmüyor.\n\n"
-                    f"{chatbot_kriter_mesaji(chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}\n\n"
-                    "Öneri: Bütçeyi artırarak veya daha düşük fiyatlı bir kategori seçerek tekrar deneyebilirsiniz."
+                    "Ne yazık ki sistemimizde böyle bir ürün yok.\n\n"
+                    f"{chatbot_kriter_mesaji(chat_kategori, chat_min_butce, chat_max_butce, chat_ram, chat_kullanim)}"
                 )
                 st.session_state.mesajlar.append({
                     "rol": "assistant",
@@ -2392,11 +2878,51 @@ with col_chat:
                 })
                 st.rerun()
 
-            if chat_kategori == "Toplama Bilgisayar":
+            pc_alt_kategori = chatbot_pc_alt_kategori_bul(mesaj_lower)
+            pc_build_istegi = any(
+                k in temizle_yazi(mesaj_lower)
+                for k in ["toplama", "sistem topla", "pc topla", "oyun sistemi", "hazir sistem"]
+            )
+
+            if chat_kategori == "Toplama Bilgisayar" and pc_alt_kategori and not pc_build_istegi:
+                st.session_state.aktif_mod = "pc_parca"
+                st.session_state.pc_build = None
+                st.session_state.pc_builds = []
+
+                pc_filtreler = chatbot_pc_filtreleri_bul(mesaj_lower)
+                st.session_state.sonuc = pc_parca_filtrele(
+                    alt_kategori=pc_alt_kategori,
+                    min_butce=chat_min_butce,
+                    max_butce=chat_max_butce,
+                    soket=pc_filtreler["soket"],
+                    ram_tipi=pc_filtreler["ram_tipi"],
+                    min_vram=pc_filtreler["min_vram"],
+                    min_kapasite=pc_filtreler["min_kapasite"],
+                    min_watt=pc_filtreler["min_watt"],
+                    rgb=pc_filtreler["rgb"],
+                    siralama=chat_siralama,
+                    marka=pc_filtreler["marka"]
+                )
+
+                bot_mesaji = chatbot_sonuc_mesaji(
+                    st.session_state.sonuc,
+                    "Toplama Bilgisayar Parçası",
+                    chat_min_butce,
+                    chat_max_butce,
+                    chat_ram,
+                    chat_kullanim,
+                    pc_alt_kategori,
+                    pc_filtreler["marka"]
+                )
+
+            elif chat_kategori == "Toplama Bilgisayar":
                 st.session_state.aktif_mod = "pc_build"
                 st.session_state.sonuc = None
                 st.session_state.pc_build = None
+
                 chat_kurulum_tipi = chatbot_pc_kurulum_tipi_bul(mesaj_lower)
+                st.session_state.pc_kurulum_tipi = chat_kurulum_tipi
+
                 st.session_state.pc_builds = besli_pc_sistem_olustur(
                     min_butce=chat_min_butce,
                     max_butce=chat_max_butce,
@@ -2404,57 +2930,86 @@ with col_chat:
                     seed=st.session_state.pc_random_seed,
                     kurulum_tipi=chat_kurulum_tipi
                 )
+
                 st.session_state.selected_pc_build_index = 0
+
                 bot_mesaji = chatbot_sonuc_mesaji(
                     st.session_state.pc_builds,
                     chat_kategori,
                     chat_min_butce,
                     chat_max_butce,
                     chat_ram,
-                    chat_kullanim
+                    chat_kullanim,
+                    chat_kurulum_tipi
                 )
 
             elif chat_kategori == "Elektronik Ev Eşyaları":
                 st.session_state.aktif_mod = "ev_esyalari"
                 st.session_state.pc_build = None
                 st.session_state.pc_builds = []
+
                 chat_ev_alt_kategori = chatbot_ev_alt_kategori_bul(mesaj_lower)
+                ev_filtreler = chatbot_ev_filtreleri_bul(mesaj_lower)
+
+                # Kullanım amacı LLM'den gelmemişse ev özel filtrelerden gelen kullanımı kullan.
+                ev_kullanim = chat_kullanim if chat_kullanim else ev_filtreler["kullanim"]
+
                 st.session_state.sonuc = ev_esyasi_oner(
                     ana_kategori="Tümü",
                     alt_kategori=chat_ev_alt_kategori,
                     min_butce=chat_min_butce,
                     max_butce=chat_max_butce,
-                    siralama=chatbot_siralama,
-                    kullanim="",
+                    siralama=chat_siralama,
+                    kullanim=ev_kullanim,
                     min_puan=0,
                     enerji_sinifi="Farketmez",
-                    kaynak_site="Farketmez"
+                    kaynak_site="Farketmez",
+                    min_watt=ev_filtreler["min_watt"],
+                    min_emis=ev_filtreler["min_emis"],
+                    min_hazne=ev_filtreler["min_hazne"],
+                    wifi=ev_filtreler["wifi"],
+                    rgb=ev_filtreler["rgb"],
+                    min_garanti=ev_filtreler["min_garanti"],
+                    stok="Farketmez",
+                    marka=ev_filtreler["marka"]
                 )
+
                 bot_mesaji = chatbot_sonuc_mesaji(
                     st.session_state.sonuc,
                     chat_kategori,
                     chat_min_butce,
                     chat_max_butce,
                     chat_ram,
-                    chat_kullanim
+                    ev_kullanim,
+                    chat_ev_alt_kategori,
+                    ev_filtreler["marka"]
                 )
 
             else:
                 st.session_state.aktif_mod = "chatbot"
                 st.session_state.pc_build = None
                 st.session_state.pc_builds = []
+
+                hazir_filtreler = chatbot_hazir_filtreleri_bul(chat_kategori, mesaj_lower)
+
                 st.session_state.sonuc = hazir_urun_oner_db(
                     chat_kategori,
                     chat_min_butce,
                     chat_max_butce,
                     chat_ram,
-                    chatbot_siralama,
+                    chat_siralama,
                     chat_kullanim
+                )
+
+                st.session_state.sonuc = hazir_urun_detay_filtrele(
+                    st.session_state.sonuc,
+                    chat_kategori,
+                    hazir_filtreler
                 )
 
                 st.session_state.sonuc = siralama_uygula(
                     st.session_state.sonuc,
-                    chatbot_siralama,
+                    chat_siralama,
                     fiyat_kolon="FIYAT_SAYI",
                     puan_kolon="ONERI_PUANI",
                     ram_kolon="RAM"
@@ -2466,7 +3021,9 @@ with col_chat:
                     chat_min_butce,
                     chat_max_butce,
                     chat_ram,
-                    chat_kullanim
+                    chat_kullanim,
+                    "",
+                    hazir_filtreler["marka"]
                 )
 
             st.session_state.mesajlar.append({
@@ -3302,7 +3859,7 @@ elif pc_build_ekrani_acik:
 
     if not builds:
         if st.session_state.aktif_mod == "pc_build":
-            st.warning("Bu bütçe aralığında uygun sistem bulunamadı. Bütçe aralığını biraz genişletip tekrar deneyebilirsin.")
+            st.warning("Ne yazık ki sistemimizde böyle bir ürün yok.")
         else:
             st.info("Soldaki 🖥️ Sistem Topla butonuna basınca 5 sistem burada görünecek.")
 
@@ -3431,7 +3988,7 @@ elif st.session_state.aktif_mod == "pc_parca":
         st.info("Soldan parça başlıklarını açıp seçim yapabilirsin.")
 
     elif sonuc.empty:
-        st.warning("Bu kriterlere uygun parça bulunamadı.")
+        st.warning("Ne yazık ki sistemimizde böyle bir ürün yok.")
 
     else:
         st.success(f"{len(sonuc)} parça bulundu.")
@@ -3476,7 +4033,7 @@ elif st.session_state.aktif_mod == "ev_esyalari":
         st.info("Soldan elektronik ev eşyası filtrelerini seçip öneri alabilirsin.")
 
     elif sonuc.empty:
-        st.warning("Bu kriterlere uygun elektronik ev eşyası bulunamadı.")
+        st.warning("Ne yazık ki sistemimizde böyle bir ürün yok.")
 
     else:
         st.success(f"{len(sonuc)} ürün bulundu.")
@@ -3510,7 +4067,7 @@ else:
         sonuc = st.session_state.sonuc
 
         if sonuc.empty:
-            st.warning("Bu kriterlere uygun ürün bulunamadı.")
+            st.warning("Ne yazık ki sistemimizde böyle bir ürün yok.")
 
         else:
             st.success(f"{len(sonuc)} ürün bulundu.")
