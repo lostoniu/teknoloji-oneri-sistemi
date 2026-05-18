@@ -95,6 +95,14 @@ Kurallar:
 - Kullanıcı saat veya bileklik derse kategori Akıllı Saat / Bileklik olsun.
 - Kullanıcı 40000-50000 arası derse min_butce 40000, max_butce 50000 yap.
 - Kullanıcı sadece 30000 TL derse min_butce 0, max_butce 30000 yap.
+- Kullanıcı açık şekilde alt kategori belirtmediyse alt_kategori alanını boş bırak.
+- Tahmin yürütme.
+- "Süpürge" yazıyorsa otomatik olarak "Islak Kuru Süpürge" yapma.
+- "Kulaklık" yazıyorsa otomatik oyuncu kulaklığı yapma.
+- "Bilgisayar" yazıyorsa otomatik gaming laptop yapma.
+- Alt kategori sadece kullanıcı açıkça belirtirse doldur.
+- Emin olmadığın filtreleri boş bırak.
+- Tahmini kategori üretme.
 - Bütçe belirtilmemişse min_butce 0, max_butce 30000 yaz.
 - RAM belirtilmemişse 0 yaz.
 - Oyun, okul, ofis, tasarım, video, yazılım gibi kullanım amacı varsa kullanim alanına yaz.
